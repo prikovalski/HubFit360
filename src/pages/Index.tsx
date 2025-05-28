@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,21 +6,50 @@ import { Activity, Brain, FileText, Shield, Users, ArrowRight } from 'lucide-rea
 import AuthSection from '@/components/AuthSection';
 import AboutSection from '@/components/AboutSection';
 import UserDashboard from '@/components/UserDashboard';
+import { AuthProvider, useAuth } from '@/hooks/useAuth';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 const Index = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+};
+
+const AppContent = () => {
   const [currentSection, setCurrentSection] = useState('home');
-  const [user, setUser] = useState(null);
+  const { user, signOut } = useAuth();
+  const { userProfile, loading } = useUserProfile();
+
+  const handleLogout = async () => {
+    await signOut();
+    setCurrentSection('home');
+  };
 
   const renderSection = () => {
-    if (user) {
-      return <UserDashboard user={user} onLogout={() => setUser(null)} />;
+    if (loading) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-[#019f80] to-[#4ade80] rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse">
+              <Activity className="w-8 h-8 text-white" />
+            </div>
+            <p className="text-gray-600">Carregando...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (user && userProfile) {
+      return <UserDashboard user={userProfile} onLogout={handleLogout} />;
     }
 
     switch (currentSection) {
       case 'about':
         return <AboutSection onBack={() => setCurrentSection('home')} />;
       case 'auth':
-        return <AuthSection onBack={() => setCurrentSection('home')} onLogin={setUser} />;
+        return <AuthSection onBack={() => setCurrentSection('home')} onLogin={() => setCurrentSection('home')} />;
       default:
         return <HomeSection setCurrentSection={setCurrentSection} />;
     }
@@ -35,7 +65,6 @@ const Index = () => {
               className="flex items-center space-x-3 cursor-pointer"
               onClick={() => {
                 setCurrentSection('home');
-                setUser(null);
               }}
             >
               <div className="w-10 h-10 bg-gradient-to-br from-[#019f80] to-[#017a63] rounded-xl flex items-center justify-center">
@@ -163,7 +192,6 @@ const HomeSection = ({ setCurrentSection }) => {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
           <div className="max-w-3xl mx-auto bg-gradient-to-r from-[#019f80] to-[#4ade80] rounded-3xl p-12 text-white">

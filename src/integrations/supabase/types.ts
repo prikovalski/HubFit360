@@ -9,7 +9,113 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      patient_profiles: {
+        Row: {
+          activity_frequency: string | null
+          avoid_food: string | null
+          chronic_disease: string | null
+          city: string | null
+          created_at: string
+          fixed_meal_times: string | null
+          food_allergy: string | null
+          goal: string | null
+          height: number | null
+          hip_circumference: number | null
+          id: number
+          medical_restriction: string | null
+          must_have_food: string | null
+          neck_circumference: number | null
+          physical_activity: string | null
+          updated_at: string
+          user_id: number
+          waist_circumference: number | null
+          weight: number | null
+        }
+        Insert: {
+          activity_frequency?: string | null
+          avoid_food?: string | null
+          chronic_disease?: string | null
+          city?: string | null
+          created_at?: string
+          fixed_meal_times?: string | null
+          food_allergy?: string | null
+          goal?: string | null
+          height?: number | null
+          hip_circumference?: number | null
+          id?: number
+          medical_restriction?: string | null
+          must_have_food?: string | null
+          neck_circumference?: number | null
+          physical_activity?: string | null
+          updated_at?: string
+          user_id: number
+          waist_circumference?: number | null
+          weight?: number | null
+        }
+        Update: {
+          activity_frequency?: string | null
+          avoid_food?: string | null
+          chronic_disease?: string | null
+          city?: string | null
+          created_at?: string
+          fixed_meal_times?: string | null
+          food_allergy?: string | null
+          goal?: string | null
+          height?: number | null
+          hip_circumference?: number | null
+          id?: number
+          medical_restriction?: string | null
+          must_have_food?: string | null
+          neck_circumference?: number | null
+          physical_activity?: string | null
+          updated_at?: string
+          user_id?: number
+          waist_circumference?: number | null
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          auth_user_id: string
+          birth_date: string | null
+          created_at: string
+          email: string
+          gender: string | null
+          id: number
+          name: string
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Insert: {
+          auth_user_id: string
+          birth_date?: string | null
+          created_at?: string
+          email: string
+          gender?: string | null
+          id?: number
+          name: string
+          role?: Database["public"]["Enums"]["user_role"]
+        }
+        Update: {
+          auth_user_id?: string
+          birth_date?: string | null
+          created_at?: string
+          email?: string
+          gender?: string | null
+          id?: number
+          name?: string
+          role?: Database["public"]["Enums"]["user_role"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +124,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      user_role: "PATIENT" | "ADMIN" | "NUTRITIONIST" | "TRAINER"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +239,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["PATIENT", "ADMIN", "NUTRITIONIST", "TRAINER"],
+    },
   },
 } as const
