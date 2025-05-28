@@ -41,7 +41,7 @@ const Index = () => {
               <div className="w-10 h-10 bg-gradient-to-br from-[#019f80] to-[#017a63] rounded-xl flex items-center justify-center">
                 <Activity className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-gray-800">fitHub360</span>
+              <span className="text-2xl font-bold text-gray-800">HubFit360</span>
             </div>
             
             {!user && (
@@ -136,7 +136,7 @@ const HomeSection = ({ setCurrentSection }) => {
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              Por que escolher a fitHub360?
+              Por que escolher a HubFit360?
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Nossa tecnologia de ponta oferece uma análise completa e precisa do seu corpo

@@ -33,7 +33,7 @@ const AuthSection = ({ onBack, onLogin }) => {
     onLogin({
       id: 1,
       name: "Usuário Demo",
-      email: "demo@fitconnect.com"
+      email: "demo@hubfit360.com"
     });
   };
 
