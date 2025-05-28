@@ -3,11 +3,13 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Plus, FileText, Download, Lock, CreditCard, Calendar, User } from 'lucide-react';
+import { LogOut, Plus, FileText, Download, User } from 'lucide-react';
 import ReportViewer from '@/components/ReportViewer';
+import AssessmentForm from '@/components/AssessmentForm';
 
 const UserDashboard = ({ user, onLogout }) => {
   const [selectedReport, setSelectedReport] = useState(null);
+  const [showAssessmentForm, setShowAssessmentForm] = useState(false);
   
   // Mock data for user reports
   const reports = [
@@ -41,8 +43,22 @@ const UserDashboard = ({ user, onLogout }) => {
     }
   ];
 
+  const handleAssessmentSuccess = (assessment) => {
+    setShowAssessmentForm(false);
+    // Aqui você pode atualizar a lista de reports com a nova avaliação
+  };
+
   if (selectedReport) {
     return <ReportViewer report={selectedReport} onBack={() => setSelectedReport(null)} />;
+  }
+
+  if (showAssessmentForm) {
+    return (
+      <AssessmentForm 
+        onBack={() => setShowAssessmentForm(false)}
+        onSuccess={handleAssessmentSuccess}
+      />
+    );
   }
 
   return (
@@ -62,6 +78,7 @@ const UserDashboard = ({ user, onLogout }) => {
           
           <div className="flex space-x-3">
             <Button 
+              onClick={() => setShowAssessmentForm(true)}
               className="bg-[#019f80] hover:bg-[#017a63] text-white"
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -201,7 +218,10 @@ const UserDashboard = ({ user, onLogout }) => {
                 <p className="text-gray-500 mb-6">
                   Faça sua primeira avaliação física para começar
                 </p>
-                <Button className="bg-[#019f80] hover:bg-[#017a63] text-white">
+                <Button 
+                  onClick={() => setShowAssessmentForm(true)}
+                  className="bg-[#019f80] hover:bg-[#017a63] text-white"
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Fazer Primeira Avaliação
                 </Button>
