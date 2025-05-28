@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +10,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 
 const AuthSection = ({ onBack, onLogin }) => {
   const { signUp, signIn } = useAuth();
-  const { updateUserProfile, createOrUpdatePatientProfile } = useUserProfile();
+  const { createOrUpdatePatientProfile } = useUserProfile();
   const [isLogin, setIsLogin] = useState(true);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -73,11 +72,12 @@ const AuthSection = ({ onBack, onLogin }) => {
         if (step < 4) {
           setStep(step + 1);
         } else {
-          // Finalizar cadastro
+          // Finalizar cadastro - sem confirmação de email
           const { data, error } = await signUp(formData.email, formData.password, {
             name: formData.name,
             gender: formData.gender,
-            birth_date: formData.birthDate
+            birth_date: formData.birthDate,
+            email_confirm: false // Desabilitar confirmação de email
           });
 
           if (error) {
@@ -90,32 +90,12 @@ const AuthSection = ({ onBack, onLogin }) => {
           }
 
           if (data.user) {
-            // Aguardar um pouco para o trigger criar o usuário
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // Criar perfil do paciente
-            await createOrUpdatePatientProfile({
-              height: formData.height ? parseFloat(formData.height) : null,
-              weight: formData.weight ? parseFloat(formData.weight) : null,
-              city: formData.city || null,
-              goal: formData.goal || null,
-              chronic_disease: formData.chronicDisease || null,
-              medical_restriction: formData.medicalRestriction || null,
-              food_allergy: formData.foodAllergy || null,
-              avoid_food: formData.avoidFood || null,
-              physical_activity: formData.physicalActivity || null,
-              activity_frequency: formData.activityFrequency || null,
-              fixed_meal_times: formData.fixedMealTimes || null,
-              must_have_food: formData.mustHaveFood || null,
-              neck_circumference: formData.neckCircumference ? parseFloat(formData.neckCircumference) : null,
-              waist_circumference: formData.waistCircumference ? parseFloat(formData.waistCircumference) : null,
-              hip_circumference: formData.hipCircumference ? parseFloat(formData.hipCircumference) : null
-            });
-
             toast({
               title: "Cadastro realizado com sucesso!",
               description: "Bem-vindo ao HubFit360!"
             });
+            
+            // Usuário já está logado após o signup, redirecionar imediatamente
             onLogin(data.user);
           }
         }

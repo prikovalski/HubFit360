@@ -44,7 +44,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       email,
       password,
       options: {
-        data: metadata
+        data: metadata,
+        emailRedirectTo: undefined // Desabilitar confirmação de email
       }
     });
     return { data, error };
