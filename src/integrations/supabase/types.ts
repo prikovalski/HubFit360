@@ -9,6 +9,62 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      assessments: {
+        Row: {
+          assessment_text: string | null
+          back_photo: string
+          bmi: number | null
+          body_fat_percentage: number | null
+          created_at: string
+          fat_mass: number | null
+          front_photo: string
+          id: string
+          lean_mass: number | null
+          side_photo: string
+          status: string | null
+          updated_at: string
+          user_id: number
+        }
+        Insert: {
+          assessment_text?: string | null
+          back_photo: string
+          bmi?: number | null
+          body_fat_percentage?: number | null
+          created_at?: string
+          fat_mass?: number | null
+          front_photo: string
+          id?: string
+          lean_mass?: number | null
+          side_photo: string
+          status?: string | null
+          updated_at?: string
+          user_id: number
+        }
+        Update: {
+          assessment_text?: string | null
+          back_photo?: string
+          bmi?: number | null
+          body_fat_percentage?: number | null
+          created_at?: string
+          fat_mass?: number | null
+          front_photo?: string
+          id?: string
+          lean_mass?: number | null
+          side_photo?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_profiles: {
         Row: {
           activity_frequency: string | null

@@ -1,51 +1,70 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Plus, FileText, Download, User } from 'lucide-react';
+import { LogOut, Plus, FileText, Download, User, Loader2 } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { supabase } from '@/integrations/supabase/client';
 import ReportViewer from '@/components/ReportViewer';
 import AssessmentForm from '@/components/AssessmentForm';
 
+interface Assessment {
+  id: string;
+  created_at: string;
+  body_fat_percentage: number;
+  lean_mass: number;
+  bmi: number;
+  status: string;
+  assessment_text: string;
+}
+
 const UserDashboard = ({ user, onLogout }) => {
+  const { toast } = useToast();
+  const { userProfile } = useUserProfile();
   const [selectedReport, setSelectedReport] = useState(null);
   const [showAssessmentForm, setShowAssessmentForm] = useState(false);
-  
-  // Mock data for user reports
-  const reports = [
-    {
-      id: 1,
-      date: '2024-01-15',
-      status: 'paid',
-      bodyFat: 15.2,
-      leanMass: 84.8,
-      bmi: 23.4,
-      preview: {
-        bodyFat: '15.2%',
-        leanMass: '84.8%',
-        bmi: '23.4',
-        summary: 'Composição corporal dentro da faixa ideal para homens ativos...'
-      }
-    },
-    {
-      id: 2,
-      date: '2024-01-28',
-      status: 'free',
-      bodyFat: 14.8,
-      leanMass: 85.2,
-      bmi: 23.2,
-      preview: {
-        bodyFat: '14.8%',
-        leanMass: '85.2%',
-        bmi: '23.2',
-        summary: 'Melhora na composição corporal comparado à avaliação anterior...'
-      }
+  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (userProfile?.id) {
+      fetchAssessments();
     }
-  ];
+  }, [userProfile?.id]);
+
+  const fetchAssessments = async () => {
+    if (!userProfile?.id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('assessments')
+        .select('*')
+        .eq('user_id', userProfile.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setAssessments(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar avaliações:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar suas avaliações.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAssessmentSuccess = (assessment) => {
     setShowAssessmentForm(false);
-    // Aqui você pode atualizar a lista de reports com a nova avaliação
+    fetchAssessments(); // Recarregar a lista
+    toast({
+      title: "Avaliação criada!",
+      description: "Sua avaliação física foi processada com sucesso."
+    });
   };
 
   if (selectedReport) {
@@ -60,6 +79,17 @@ const UserDashboard = ({ user, onLogout }) => {
       />
     );
   }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <Badge className="bg-[#019f80] hover:bg-[#017a63]">Completo</Badge>;
+      case 'processing':
+        return <Badge variant="secondary">Processando</Badge>;
+      default:
+        return <Badge variant="outline">Pendente</Badge>;
+    }
+  };
 
   return (
     <div className="py-12 px-4">
@@ -102,7 +132,7 @@ const UserDashboard = ({ user, onLogout }) => {
               <CardTitle className="text-lg">Total de Avaliações</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{reports.length}</div>
+              <div className="text-3xl font-bold">{assessments.length}</div>
               <p className="text-white/80 text-sm">Avaliações realizadas</p>
             </CardContent>
           </Card>
@@ -112,20 +142,32 @@ const UserDashboard = ({ user, onLogout }) => {
               <CardTitle className="text-lg text-gray-800">Última Avaliação</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-[#019f80]">IMC: {reports[0]?.bmi}</div>
-              <p className="text-gray-600 text-sm">
-                {new Date(reports[0]?.date).toLocaleDateString('pt-BR')}
-              </p>
+              {assessments.length > 0 ? (
+                <>
+                  <div className="text-2xl font-bold text-[#019f80]">IMC: {assessments[0]?.bmi?.toFixed(1) || 'N/A'}</div>
+                  <p className="text-gray-600 text-sm">
+                    {new Date(assessments[0]?.created_at).toLocaleDateString('pt-BR')}
+                  </p>
+                </>
+              ) : (
+                <div className="text-2xl font-bold text-gray-400">--</div>
+              )}
             </CardContent>
           </Card>
           
           <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-lg text-gray-800">Progresso</CardTitle>
+              <CardTitle className="text-lg text-gray-800">Gordura Corporal</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">+0.4%</div>
-              <p className="text-gray-600 text-sm">Massa magra</p>
+              {assessments.length > 0 ? (
+                <>
+                  <div className="text-2xl font-bold text-green-600">{assessments[0]?.body_fat_percentage?.toFixed(1) || 'N/A'}%</div>
+                  <p className="text-gray-600 text-sm">Última medição</p>
+                </>
+              ) : (
+                <div className="text-2xl font-bold text-gray-400">--</div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -143,88 +185,102 @@ const UserDashboard = ({ user, onLogout }) => {
           </CardHeader>
           
           <CardContent>
-            <div className="space-y-4">
-              {reports.map((report) => (
-                <div 
-                  key={report.id}
-                  className="border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-all duration-300 cursor-pointer hover:border-[#019f80]/30"
-                  onClick={() => setSelectedReport(report)}
-                >
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-800">
-                          Avaliação de {new Date(report.date).toLocaleDateString('pt-BR')}
-                        </h3>
-                        <Badge 
-                          variant={report.status === 'paid' ? 'default' : 'secondary'}
-                          className={report.status === 'paid' ? 'bg-[#019f80] hover:bg-[#017a63]' : ''}
-                        >
-                          {report.status === 'paid' ? 'Completo' : 'Gratuito'}
-                        </Badge>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-[#019f80]" />
+                <span className="ml-2 text-gray-600">Carregando avaliações...</span>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {assessments.map((assessment) => (
+                  <div 
+                    key={assessment.id}
+                    className="border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-all duration-300 cursor-pointer hover:border-[#019f80]/30"
+                    onClick={() => setSelectedReport(assessment)}
+                  >
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-800">
+                            Avaliação de {new Date(assessment.created_at).toLocaleDateString('pt-BR')}
+                          </h3>
+                          {getStatusBadge(assessment.status)}
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-500">Gordura Corporal:</span>
+                            <div className="font-semibold text-[#019f80]">
+                              {assessment.body_fat_percentage?.toFixed(1) || 'N/A'}%
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Massa Magra:</span>
+                            <div className="font-semibold text-[#019f80]">
+                              {assessment.lean_mass?.toFixed(1) || 'N/A'}kg
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">IMC:</span>
+                            <div className="font-semibold text-[#019f80]">
+                              {assessment.bmi?.toFixed(1) || 'N/A'}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {assessment.assessment_text && (
+                          <p className="text-gray-600 text-sm mt-2 line-clamp-2">
+                            {assessment.assessment_text.substring(0, 150)}...
+                          </p>
+                        )}
                       </div>
                       
-                      <div className="grid grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <span className="text-gray-500">Gordura Corporal:</span>
-                          <div className="font-semibold text-[#019f80]">{report.preview.bodyFat}</div>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Massa Magra:</span>
-                          <div className="font-semibold text-[#019f80]">{report.preview.leanMass}</div>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">IMC:</span>
-                          <div className="font-semibold text-[#019f80]">{report.preview.bmi}</div>
-                        </div>
-                      </div>
-                      
-                      <p className="text-gray-600 text-sm mt-2 line-clamp-2">
-                        {report.preview.summary}
-                      </p>
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      {report.status === 'paid' && (
+                      <div className="flex items-center space-x-2">
+                        {assessment.status === 'completed' && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="border-[#019f80] text-[#019f80] hover:bg-[#019f80] hover:text-white"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // TODO: Implementar download PDF
+                            }}
+                          >
+                            <Download className="w-4 h-4 mr-2" />
+                            PDF
+                          </Button>
+                        )}
+                        
                         <Button 
-                          variant="outline" 
                           size="sm"
-                          className="border-[#019f80] text-[#019f80] hover:bg-[#019f80] hover:text-white"
+                          className="bg-[#019f80] hover:bg-[#017a63] text-white"
                         >
-                          <Download className="w-4 h-4 mr-2" />
-                          PDF
+                          <FileText className="w-4 h-4 mr-2" />
+                          Ver Detalhes
                         </Button>
-                      )}
-                      
-                      <Button 
-                        size="sm"
-                        className="bg-[#019f80] hover:bg-[#017a63] text-white"
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        Ver Detalhes
-                      </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-            
-            {reports.length === 0 && (
-              <div className="text-center py-12">
-                <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                  Nenhuma avaliação encontrada
-                </h3>
-                <p className="text-gray-500 mb-6">
-                  Faça sua primeira avaliação física para começar
-                </p>
-                <Button 
-                  onClick={() => setShowAssessmentForm(true)}
-                  className="bg-[#019f80] hover:bg-[#017a63] text-white"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Fazer Primeira Avaliação
-                </Button>
+                ))}
+                
+                {assessments.length === 0 && (
+                  <div className="text-center py-12">
+                    <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                      Nenhuma avaliação encontrada
+                    </h3>
+                    <p className="text-gray-500 mb-6">
+                      Faça sua primeira avaliação física para começar
+                    </p>
+                    <Button 
+                      onClick={() => setShowAssessmentForm(true)}
+                      className="bg-[#019f80] hover:bg-[#017a63] text-white"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Fazer Primeira Avaliação
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
