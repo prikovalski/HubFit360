@@ -10,7 +10,7 @@ interface UserProfile {
   gender: string | null;
   birth_date: string | null;
   email: string;
-  role: string;
+  role: "PATIENT" | "ADMIN" | "NUTRITIONIST" | "TRAINER";
   created_at: string;
 }
 
