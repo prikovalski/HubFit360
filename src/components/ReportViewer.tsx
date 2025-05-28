@@ -1,27 +1,22 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Download, Lock, CreditCard, FileText, TrendingUp, Target, AlertCircle, Activity, Scale, Zap } from 'lucide-react';
+import { ArrowLeft, Download, Lock, FileText, TrendingUp, Target, AlertCircle, Activity, Scale, Zap } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
+import PaymentModal from './PaymentModal';
 
 const ReportViewer = ({ report, onBack }) => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  const handlePayment = () => {
+  const handlePaymentSuccess = () => {
+    setShowPaymentModal(false);
     toast({
-      title: "Processando pagamento...",
-      description: "Redirecionando para o checkout",
+      title: "Pagamento aprovado!",
+      description: "Laudo completo desbloqueado com sucesso",
     });
-    // Simular pagamento
-    setTimeout(() => {
-      toast({
-        title: "Pagamento realizado!",
-        description: "Laudo completo desbloqueado com sucesso",
-      });
-      setShowPaymentModal(false);
-    }, 2000);
+    // Recarregar a página para atualizar o status
+    window.location.reload();
   };
 
   const generatePDF = () => {
@@ -428,10 +423,9 @@ const ReportViewer = ({ report, onBack }) => {
                   </div>
                   
                   <Button 
-                    onClick={handlePayment}
+                    onClick={() => setShowPaymentModal(true)}
                     className="w-full bg-gradient-to-r from-[#019f80] to-[#4ade80] hover:from-[#017a63] hover:to-[#3bc473] text-white py-3 text-lg font-semibold"
                   >
-                    <CreditCard className="w-5 h-5 mr-2" />
                     Desbloquear Laudo Completo
                   </Button>
                 </CardContent>
@@ -439,6 +433,14 @@ const ReportViewer = ({ report, onBack }) => {
             </div>
           )}
         </Card>
+
+        {/* Payment Modal */}
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          reportId={report.id}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
       </div>
     </div>
   );
