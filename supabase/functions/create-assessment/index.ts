@@ -25,6 +25,8 @@ serve(async (req) => {
       weight 
     } = await req.json();
 
+    console.log('Recebendo dados para avaliação:', { userId, sex, age, height, weight });
+
     // Calcular estimativas baseadas em fórmulas padrão
     const heightM = height / 100;
     const bmi = weight / (heightM * heightM);
@@ -58,6 +60,8 @@ serve(async (req) => {
 
 Escreva um laudo técnico realista, profissional e empático, como se você estivesse avaliando visualmente um paciente. Inclua observações sobre definição muscular, distribuição de gordura, proporções corporais, e uma breve recomendação.`;
 
+    console.log('Chamando OpenAI API...');
+
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -79,17 +83,22 @@ Escreva um laudo técnico realista, profissional e empático, como se você esti
     });
 
     if (!openAIResponse.ok) {
+      console.error('Erro na API do OpenAI:', await openAIResponse.text());
       throw new Error('Erro na API do OpenAI');
     }
 
     const openAIData = await openAIResponse.json();
     const assessment = openAIData.choices[0].message.content;
 
-    // Salvar no Supabase
-    const supabaseUrl = "https://bqixlrinahtauahcnpoc.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxaXhscmluYWh0YXVhaGNucG9jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0NTAzMzYsImV4cCI6MjA2NDAyNjMzNn0.PA_HchPYznAUbSUrHtnoDZsVq337oRwvmEOvHPyTtFg";
+    console.log('Avaliação gerada pelo OpenAI');
+
+    // Criar cliente Supabase com service role key para ter permissões completas
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    console.log('Salvando avaliação no banco de dados...');
 
     const { data: assessmentData, error } = await supabase
       .from('assessments')
@@ -110,8 +119,10 @@ Escreva um laudo técnico realista, profissional e empático, como se você esti
 
     if (error) {
       console.error('Erro ao salvar avaliação:', error);
-      throw new Error('Erro ao salvar avaliação');
+      throw new Error(`Erro ao salvar avaliação: ${error.message}`);
     }
+
+    console.log('Avaliação salva com sucesso:', assessmentData.id);
 
     return new Response(JSON.stringify({ 
       success: true, 
