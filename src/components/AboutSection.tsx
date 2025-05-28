@@ -17,7 +17,7 @@ const AboutSection = ({ onBack }) => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
           </Button>
-          <h1 className="text-4xl font-bold text-gray-800">Sobre a FitConnect</h1>
+          <h1 className="text-4xl font-bold text-gray-800">Sobre a HubFit360</h1>
         </div>
 
         {/* Main Content */}
@@ -122,7 +122,7 @@ const AboutSection = ({ onBack }) => {
               <div className="bg-amber-100 rounded-lg p-4">
                 <h3 className="font-semibold text-amber-800 mb-2">⚠️ Aviso Importante</h3>
                 <p className="text-amber-700 leading-relaxed">
-                  Os resultados fornecidos pela FitConnect são <strong>estimativas aproximadas</strong> baseadas em 
+                  Os resultados fornecidos pela HubFit360 são <strong>estimativas aproximadas</strong> baseadas em 
                   análise de IA e não devem ser considerados como valores exatos. Para avaliações médicas precisas, 
                   consulte sempre um profissional qualificado.
                 </p>
