@@ -418,7 +418,7 @@ const ReportViewer = ({ report, onBack }) => {
                   </div>
                   
                   <div className="text-center bg-gradient-to-r from-[#019f80]/10 to-green-50 rounded-lg p-4">
-                    <div className="text-4xl font-bold text-[#019f80] mb-1">R$ 29,90</div>
+                    <div className="text-4xl font-bold text-[#019f80] mb-1">R$ 9,90</div>
                     <p className="text-gray-600 text-sm">Pagamento único • Acesso imediato</p>
                   </div>
                   

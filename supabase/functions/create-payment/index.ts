@@ -35,7 +35,7 @@ serve(async (req) => {
           title: "Laudo Completo - Avaliação Física",
           description: "Análise detalhada com recomendações personalizadas e relatório em PDF",
           quantity: 1,
-          unit_price: 29.90,
+          unit_price: 9.90,
           currency_id: "BRL"
         }
       ],

@@ -85,7 +85,7 @@ const PaymentModal = ({ isOpen, onClose, reportId, onPaymentSuccess }: PaymentMo
         <div className="space-y-6">
           {/* Preço e Destaque */}
           <div className="text-center bg-gradient-to-r from-[#019f80]/10 to-green-50 rounded-xl p-6">
-            <div className="text-4xl font-bold text-[#019f80] mb-2">R$ 29,90</div>
+            <div className="text-4xl font-bold text-[#019f80] mb-2">R$ 9,90</div>
             <p className="text-gray-600">Pagamento único • Acesso imediato</p>
             <Badge className="mt-3 bg-green-100 text-green-800 hover:bg-green-100">
               🔥 Oferta limitada
