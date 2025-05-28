@@ -16,13 +16,17 @@ interface AssessmentFormProps {
 
 const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
   const { toast } = useToast();
-  const { userProfile, patientProfile } = useUserProfile();
+  const { userProfile, patientProfile, createOrUpdatePatientProfile } = useUserProfile();
   const [loading, setLoading] = useState(false);
   const [photos, setPhotos] = useState({
     front: null as File | null,
     side: null as File | null,
     back: null as File | null
   });
+  
+  // Estados para altura e peso editáveis
+  const [height, setHeight] = useState(patientProfile?.height?.toString() || '');
+  const [weight, setWeight] = useState(patientProfile?.weight?.toString() || '');
 
   const handlePhotoUpload = (position: 'front' | 'side' | 'back', file: File) => {
     if (file.type.startsWith('image/')) {
@@ -60,10 +64,22 @@ const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
       return;
     }
 
-    if (!patientProfile?.height || !patientProfile?.weight) {
+    if (!height || !weight) {
       toast({
-        title: "Dados incompletos",
-        description: "Por favor, complete seu perfil com altura e peso antes de fazer a avaliação.",
+        title: "Dados obrigatórios",
+        description: "Por favor, preencha altura e peso antes de fazer a avaliação.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const heightNum = parseFloat(height);
+    const weightNum = parseFloat(weight);
+
+    if (isNaN(heightNum) || isNaN(weightNum) || heightNum <= 0 || weightNum <= 0) {
+      toast({
+        title: "Dados inválidos",
+        description: "Por favor, insira valores válidos para altura e peso.",
         variant: "destructive"
       });
       return;
@@ -72,6 +88,12 @@ const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
     setLoading(true);
 
     try {
+      // Atualizar perfil do paciente com os novos valores de altura e peso
+      await createOrUpdatePatientProfile({
+        height: heightNum,
+        weight: weightNum
+      });
+
       // Upload das fotos
       const timestamp = Date.now();
       const userId = userProfile?.id;
@@ -95,8 +117,8 @@ const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
           backPhoto: backUrl,
           sex: userProfile?.gender === 'Masculino' ? 'male' : 'female',
           age: age,
-          height: patientProfile.height,
-          weight: patientProfile.weight
+          height: heightNum,
+          weight: weightNum
         }
       });
 
@@ -193,9 +215,51 @@ const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-gray-800">Nova Avaliação Física</h1>
-            <p className="text-gray-600">Faça o upload das suas fotos para análise</p>
+            <p className="text-gray-600">Confirme seus dados e faça o upload das suas fotos para análise</p>
           </div>
         </div>
+
+        {/* Seção de dados pessoais */}
+        <Card className="mb-8 bg-white border-green-200">
+          <CardHeader>
+            <CardTitle className="flex items-center text-green-800">
+              <Camera className="w-5 h-5 mr-2" />
+              Dados para Avaliação
+            </CardTitle>
+            <CardDescription>
+              Confirme ou atualize sua altura e peso para uma análise mais precisa
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="height">Altura (cm)</Label>
+                <Input
+                  id="height"
+                  type="number"
+                  placeholder="Ex: 175"
+                  value={height}
+                  onChange={(e) => setHeight(e.target.value)}
+                  className="border-green-200 focus:border-green-400"
+                />
+                <p className="text-xs text-gray-500">Insira sua altura em centímetros</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="weight">Peso (kg)</Label>
+                <Input
+                  id="weight"
+                  type="number"
+                  step="0.1"
+                  placeholder="Ex: 70.5"
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  className="border-green-200 focus:border-green-400"
+                />
+                <p className="text-xs text-gray-500">Insira seu peso em quilogramas</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card className="mb-8 bg-blue-50 border-blue-200">
           <CardHeader>
@@ -241,7 +305,7 @@ const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
             <div className="text-center">
               <Button 
                 onClick={handleSubmit}
-                disabled={loading || !photos.front || !photos.side || !photos.back}
+                disabled={loading || !photos.front || !photos.side || !photos.back || !height || !weight}
                 className="bg-[#019f80] hover:bg-[#017a63] text-white px-8 py-3 text-lg"
               >
                 {loading ? (
@@ -253,9 +317,9 @@ const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
                   'Solicitar Avaliação'
                 )}
               </Button>
-              {(!photos.front || !photos.side || !photos.back) && (
+              {(!photos.front || !photos.side || !photos.back || !height || !weight) && (
                 <p className="text-sm text-gray-500 mt-2">
-                  Adicione todas as três fotos para continuar
+                  Complete todos os campos e adicione as três fotos para continuar
                 </p>
               )}
             </div>
