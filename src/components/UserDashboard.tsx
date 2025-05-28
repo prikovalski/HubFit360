@@ -67,6 +67,24 @@ const UserDashboard = ({ user, onLogout }) => {
     });
   };
 
+  const handleReportClick = (assessment) => {
+    // Adaptar os dados da avaliação para o formato esperado pelo ReportViewer
+    const adaptedReport = {
+      id: assessment.id,
+      date: assessment.created_at,
+      status: 'completed', // Assumindo que todas as avaliações estão completas
+      preview: {
+        leanMass: `${assessment.lean_mass?.toFixed(1) || 'N/A'}kg`,
+        bodyFat: `${assessment.body_fat_percentage?.toFixed(1) || 'N/A'}%`,
+        bmi: assessment.bmi?.toFixed(1) || 'N/A',
+        summary: assessment.assessment_text ? 
+          assessment.assessment_text.substring(0, 300) + '...' : 
+          'Avaliação física completa com análise de composição corporal.'
+      }
+    };
+    setSelectedReport(adaptedReport);
+  };
+
   if (selectedReport) {
     return <ReportViewer report={selectedReport} onBack={() => setSelectedReport(null)} />;
   }
@@ -196,7 +214,7 @@ const UserDashboard = ({ user, onLogout }) => {
                   <div 
                     key={assessment.id}
                     className="border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-all duration-300 cursor-pointer hover:border-[#019f80]/30"
-                    onClick={() => setSelectedReport(assessment)}
+                    onClick={() => handleReportClick(assessment)}
                   >
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
                       <div className="flex-1">
