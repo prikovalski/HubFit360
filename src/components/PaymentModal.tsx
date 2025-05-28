@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Loader2, Pix, AlertCircle, CheckCircle, Shield } from 'lucide-react';
+import { CreditCard, Loader2, AlertCircle, CheckCircle, Shield, Banknote } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -132,7 +132,7 @@ const PaymentModal = ({ isOpen, onClose, reportId, onPaymentSuccess }: PaymentMo
             </h4>
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-center justify-center bg-white rounded-lg p-3 border">
-                <Pix className="w-6 h-6 text-[#019f80] mr-2" />
+                <Banknote className="w-6 h-6 text-[#019f80] mr-2" />
                 <span className="text-sm font-medium">PIX</span>
               </div>
               <div className="flex items-center justify-center bg-white rounded-lg p-3 border">
