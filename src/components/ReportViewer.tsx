@@ -81,7 +81,7 @@ const ReportViewer = ({ report, onBack }) => {
           </div>
         </div>
 
-        {/* Metrics Overview - Melhorado */}
+        {/* Metrics Overview */}
         <div className="grid lg:grid-cols-3 gap-6 mb-8">
           <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-y-10 translate-x-10"></div>
@@ -135,7 +135,7 @@ const ReportViewer = ({ report, onBack }) => {
           </Card>
         </div>
 
-        {/* Free Content - Melhorado */}
+        {/* Free Content */}
         <Card className="border-0 shadow-lg bg-white mb-6">
           <CardHeader className="bg-gradient-to-r from-[#019f80]/5 to-green-50 border-b border-green-100">
             <CardTitle className="text-xl text-gray-800 flex items-center">
