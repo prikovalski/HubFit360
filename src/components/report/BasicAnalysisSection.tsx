@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText } from 'lucide-react';
 
@@ -25,7 +26,8 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
     return gender === 'Masculino' ? 'Masculino' : 'Feminino';
   };
 
-  const age = calculateAge(userProfile?.birth_date);
+  // Usar a idade salva na avaliação se disponível, senão calcular a partir da data de nascimento
+  const displayAge = report.age || calculateAge(userProfile?.birth_date);
 
   return (
     <Card className="border-0 shadow-lg bg-white mb-6">
@@ -45,7 +47,7 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
             <div></div>
             <div>
               <span className="text-gray-600 font-medium">Idade:</span>
-              <div className="text-gray-800 font-semibold text-lg">{age} anos</div>
+              <div className="text-gray-800 font-semibold text-lg">{displayAge} anos</div>
             </div>
             <div>
               <span className="text-gray-600 font-medium">Gênero:</span>

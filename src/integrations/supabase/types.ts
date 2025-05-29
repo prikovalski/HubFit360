@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       assessments: {
         Row: {
+          age: number | null
           assessment_text: string | null
           back_photo: string
           bmi: number | null
@@ -26,6 +27,7 @@ export type Database = {
           user_id: number
         }
         Insert: {
+          age?: number | null
           assessment_text?: string | null
           back_photo: string
           bmi?: number | null
@@ -41,6 +43,7 @@ export type Database = {
           user_id: number
         }
         Update: {
+          age?: number | null
           assessment_text?: string | null
           back_photo?: string
           bmi?: number | null

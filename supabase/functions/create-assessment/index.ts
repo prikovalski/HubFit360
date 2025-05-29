@@ -107,6 +107,7 @@ Escreva um laudo técnico realista, profissional e empático, como se você esti
         front_photo: frontPhoto,
         side_photo: sidePhoto,
         back_photo: backPhoto,
+        age: age,
         body_fat_percentage: estimatedBodyFat,
         lean_mass: leanMass,
         fat_mass: fatMass,
