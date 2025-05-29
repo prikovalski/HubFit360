@@ -9,6 +9,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { supabase } from '@/integrations/supabase/client';
 import ReportViewer from '@/components/ReportViewer';
 import AssessmentForm from '@/components/AssessmentForm';
+import { generateAssessmentPDF } from '@/utils/pdfGenerator';
 
 interface Assessment {
   id: string;
@@ -85,6 +86,39 @@ const UserDashboard = ({ user, onLogout }) => {
     setSelectedReport(adaptedReport);
   };
 
+  const handleDownloadPDF = (assessment, e) => {
+    e.stopPropagation();
+    
+    try {
+      const adaptedReport = {
+        id: assessment.id,
+        date: assessment.created_at,
+        status: 'completed',
+        preview: {
+          leanMass: `${assessment.lean_mass?.toFixed(1) || 'N/A'}kg`,
+          bodyFat: `${assessment.body_fat_percentage?.toFixed(1) || 'N/A'}%`,
+          bmi: assessment.bmi?.toFixed(1) || 'N/A'
+        }
+      };
+      
+      const doc = generateAssessmentPDF(adaptedReport);
+      const fileName = `avaliacao-hubfit360-${new Date(assessment.created_at).toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
+      doc.save(fileName);
+      
+      toast({
+        title: "PDF gerado com sucesso!",
+        description: "Seu laudo foi baixado com sucesso",
+      });
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast({
+        title: "Erro ao gerar PDF",
+        description: "Ocorreu um erro ao gerar o arquivo. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (selectedReport) {
     return <ReportViewer report={selectedReport} onBack={() => setSelectedReport(null)} />;
   }
@@ -143,7 +177,6 @@ const UserDashboard = ({ user, onLogout }) => {
           </div>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card className="border-0 shadow-lg bg-gradient-to-br from-[#019f80] to-[#4ade80] text-white">
             <CardHeader>
@@ -259,10 +292,7 @@ const UserDashboard = ({ user, onLogout }) => {
                             variant="outline" 
                             size="sm"
                             className="border-[#019f80] text-[#019f80] hover:bg-[#019f80] hover:text-white"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              // TODO: Implementar download PDF
-                            }}
+                            onClick={(e) => handleDownloadPDF(assessment, e)}
                           >
                             <Download className="w-4 h-4 mr-2" />
                             PDF

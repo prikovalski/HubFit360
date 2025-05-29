@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Download, Lock, FileText, TrendingUp, Target, AlertCircle, Activity, Scale, Zap } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
 import PaymentModal from './PaymentModal';
+import { generateAssessmentPDF } from '@/utils/pdfGenerator';
 
 const ReportViewer = ({ report, onBack }) => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -20,10 +22,23 @@ const ReportViewer = ({ report, onBack }) => {
   };
 
   const generatePDF = () => {
-    toast({
-      title: "Gerando PDF...",
-      description: "Seu laudo será baixado em instantes",
-    });
+    try {
+      const doc = generateAssessmentPDF(report);
+      const fileName = `avaliacao-hubfit360-${new Date(report.date).toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
+      doc.save(fileName);
+      
+      toast({
+        title: "PDF gerado com sucesso!",
+        description: "Seu laudo foi baixado com sucesso",
+      });
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast({
+        title: "Erro ao gerar PDF",
+        description: "Ocorreu um erro ao gerar o arquivo. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   const isPaid = report.status === 'paid';
@@ -63,16 +78,14 @@ const ReportViewer = ({ report, onBack }) => {
               {isPaid ? 'Laudo Completo' : 'Versão Gratuita'}
             </Badge>
             
-            {isPaid && (
-              <Button 
-                onClick={generatePDF}
-                variant="outline" 
-                className="border-[#019f80] text-[#019f80] hover:bg-[#019f80] hover:text-white"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Baixar PDF
-              </Button>
-            )}
+            <Button 
+              onClick={generatePDF}
+              variant="outline" 
+              className="border-[#019f80] text-[#019f80] hover:bg-[#019f80] hover:text-white"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Baixar PDF
+            </Button>
           </div>
         </div>
 
@@ -139,7 +152,6 @@ const ReportViewer = ({ report, onBack }) => {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-8">
-            {/* Dados Pessoais */}
             <div className="mb-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mb-6">
                 <div>
@@ -166,7 +178,6 @@ const ReportViewer = ({ report, onBack }) => {
               </div>
             </div>
 
-            {/* Estimativas */}
             <div className="mb-8">
               <h3 className="text-xl font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2">Estimativas:</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
@@ -185,7 +196,6 @@ const ReportViewer = ({ report, onBack }) => {
               </div>
             </div>
 
-            {/* Ideais */}
             <div className="mb-8">
               <h3 className="text-xl font-bold text-gray-800 mb-4 border-b border-gray-200 pb-2">Ideais:</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
@@ -204,7 +214,6 @@ const ReportViewer = ({ report, onBack }) => {
               </div>
             </div>
 
-            {/* Análise Visual e Composição Corporal */}
             <div className="mb-8">
               <h3 className="text-xl font-bold text-gray-800 mb-6 border-b border-gray-200 pb-2">Análise Visual e Composição Corporal</h3>
               <div className="space-y-6">
@@ -265,7 +274,6 @@ const ReportViewer = ({ report, onBack }) => {
           
           <CardContent className={`pt-8 ${isPaid ? '' : 'filter blur-sm pointer-events-none'}`}>
             <div className="space-y-10">
-              {/* Detailed Analysis */}
               <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-8 border border-blue-200">
                 <h3 className="font-bold text-blue-800 mb-6 flex items-center text-xl">
                   <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center mr-4">
