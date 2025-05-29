@@ -2,6 +2,8 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { validateEmail, validatePassword } from '@/utils/inputValidation';
+import { useRateLimiter } from '@/hooks/useRateLimiter';
 
 interface AuthContextType {
   user: User | null;
@@ -10,6 +12,11 @@ interface AuthContextType {
   signUp: (email: string, password: string, metadata: any) => Promise<any>;
   signIn: (email: string, password: string) => Promise<any>;
   signOut: () => Promise<void>;
+  checkEmailExists: (email: string) => Promise<boolean>;
+  loginRateLimit: {
+    isBlocked: boolean;
+    remainingAttempts: number;
+  };
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,16 +26,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
+  // Rate limiting for login attempts
+  const loginRateLimiter = useRateLimiter({
+    maxAttempts: 5,
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    blockDurationMs: 30 * 60 * 1000 // 30 minutes block
+  });
 
+  useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -36,31 +41,105 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     });
 
+    // Set up auth state listener - fixed to remove async
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Use setTimeout for any async operations if needed
+        setTimeout(() => {
+          setLoading(false);
+        }, 0);
+      }
+    );
+
     return () => subscription.unsubscribe();
   }, []);
 
   const signUp = async (email: string, password: string, metadata: any) => {
+    // Validate inputs
+    if (!validateEmail(email)) {
+      return { 
+        data: null, 
+        error: { message: 'Email inválido' }
+      };
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return { 
+        data: null, 
+        error: { message: passwordValidation.errors.join(', ') }
+      };
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: metadata,
-        emailRedirectTo: undefined // Desabilitar confirmação de email
+        emailRedirectTo: undefined // Email confirmation disabled for development
       }
     });
     return { data, error };
   };
 
   const signIn = async (email: string, password: string) => {
+    // Check rate limit
+    if (!loginRateLimiter.checkRateLimit()) {
+      return { 
+        data: null, 
+        error: { message: 'Muitas tentativas de login. Tente novamente em 30 minutos.' }
+      };
+    }
+
+    // Validate inputs
+    if (!validateEmail(email)) {
+      return { 
+        data: null, 
+        error: { message: 'Email inválido' }
+      };
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
+
+    // Reset rate limiter on successful login
+    if (data.user && !error) {
+      loginRateLimiter.reset();
+    }
+
     return { data, error };
   };
 
   const signOut = async () => {
     await supabase.auth.signOut();
+  };
+
+  // Secure email existence check using edge function
+  const checkEmailExists = async (email: string): Promise<boolean> => {
+    if (!validateEmail(email)) {
+      return false;
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('check-email-exists', {
+        body: { email }
+      });
+
+      if (error) {
+        console.error('Error checking email:', error);
+        return false;
+      }
+
+      return data?.exists || false;
+    } catch (error) {
+      console.error('Error checking email:', error);
+      return false;
+    }
   };
 
   return (
@@ -70,7 +149,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       loading,
       signUp,
       signIn,
-      signOut
+      signOut,
+      checkEmailExists,
+      loginRateLimit: {
+        isBlocked: loginRateLimiter.isBlocked,
+        remainingAttempts: loginRateLimiter.remainingAttempts
+      }
     }}>
       {children}
     </AuthContext.Provider>
