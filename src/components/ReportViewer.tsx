@@ -1,12 +1,15 @@
 
 import { useState } from 'react';
 import { toast } from "@/hooks/use-toast";
+import { useUserProfile } from '@/hooks/useUserProfile';
 import ReportHeader from './report/ReportHeader';
 import MetricsOverview from './report/MetricsOverview';
 import BasicAnalysisSection from './report/BasicAnalysisSection';
 import PremiumSection from './report/PremiumSection';
 
 const ReportViewer = ({ report, onBack }) => {
+  const { userProfile, patientProfile } = useUserProfile();
+
   const handlePaymentSuccess = () => {
     toast({
       title: "Pagamento aprovado!",
@@ -29,7 +32,11 @@ const ReportViewer = ({ report, onBack }) => {
 
         <MetricsOverview report={report} />
 
-        <BasicAnalysisSection report={report} />
+        <BasicAnalysisSection 
+          report={report} 
+          userProfile={userProfile}
+          patientProfile={patientProfile}
+        />
 
         <PremiumSection 
           report={report} 

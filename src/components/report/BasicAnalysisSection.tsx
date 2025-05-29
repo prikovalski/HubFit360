@@ -1,12 +1,32 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText } from 'lucide-react';
 
 interface BasicAnalysisSectionProps {
   report: any;
+  userProfile: any;
+  patientProfile: any;
 }
 
-const BasicAnalysisSection = ({ report }: BasicAnalysisSectionProps) => {
+const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnalysisSectionProps) => {
+  const calculateAge = (birthDate: string | null) => {
+    if (!birthDate) return 'N/A';
+    const birth = new Date(birthDate);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  const formatGender = (gender: string | null) => {
+    if (!gender) return 'N/A';
+    return gender === 'Masculino' ? 'Masculino' : 'Feminino';
+  };
+
+  const age = calculateAge(userProfile?.birth_date);
+
   return (
     <Card className="border-0 shadow-lg bg-white mb-6">
       <CardHeader className="bg-gradient-to-r from-[#019f80]/5 to-green-50 border-b border-green-100">
@@ -20,24 +40,28 @@ const BasicAnalysisSection = ({ report }: BasicAnalysisSectionProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mb-6">
             <div>
               <span className="text-gray-600 font-medium">Nome:</span>
-              <div className="text-gray-800 font-semibold text-lg">João Silva Santos</div>
+              <div className="text-gray-800 font-semibold text-lg">{userProfile?.name || 'N/A'}</div>
             </div>
             <div></div>
             <div>
               <span className="text-gray-600 font-medium">Idade:</span>
-              <div className="text-gray-800 font-semibold text-lg">32 anos</div>
+              <div className="text-gray-800 font-semibold text-lg">{age} anos</div>
             </div>
             <div>
               <span className="text-gray-600 font-medium">Gênero:</span>
-              <div className="text-gray-800 font-semibold text-lg">Masculino</div>
+              <div className="text-gray-800 font-semibold text-lg">{formatGender(userProfile?.gender)}</div>
             </div>
             <div>
               <span className="text-gray-600 font-medium">Altura:</span>
-              <div className="text-gray-800 font-semibold text-lg">1,78m</div>
+              <div className="text-gray-800 font-semibold text-lg">
+                {patientProfile?.height ? `${(patientProfile.height / 100).toFixed(2)}m` : 'N/A'}
+              </div>
             </div>
             <div>
               <span className="text-gray-600 font-medium">Peso:</span>
-              <div className="text-gray-800 font-semibold text-lg">82kg</div>
+              <div className="text-gray-800 font-semibold text-lg">
+                {patientProfile?.weight ? `${patientProfile.weight}kg` : 'N/A'}
+              </div>
             </div>
           </div>
         </div>
@@ -65,7 +89,9 @@ const BasicAnalysisSection = ({ report }: BasicAnalysisSectionProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
             <div>
               <span className="text-gray-600 font-medium">Massa Gorda Ideal:</span>
-              <div className="text-[#019f80] font-semibold text-lg">12-15%</div>
+              <div className="text-[#019f80] font-semibold text-lg">
+                {userProfile?.gender === 'Masculino' ? '12-15%' : '16-24%'}
+              </div>
             </div>
             <div>
               <span className="text-gray-600 font-medium">Massa Magra Ideal:</span>
@@ -82,7 +108,7 @@ const BasicAnalysisSection = ({ report }: BasicAnalysisSectionProps) => {
           <h3 className="text-xl font-bold text-gray-800 mb-6 border-b border-gray-200 pb-2">Análise Visual e Composição Corporal</h3>
           <div className="space-y-6">
             <p className="text-gray-700 leading-relaxed text-base">
-              A análise visual demonstra uma composição corporal equilibrada, com distribuição homogênea da massa muscular nos principais grupos musculares. O percentual de gordura corporal atual encontra-se dentro da faixa considerada saudável para homens da faixa etária, apresentando leve acúmulo na região abdominal inferior, padrão típico masculino. A definição muscular é visível especialmente na região do peitoral e braços, indicando bom condicionamento físico e prática regular de exercícios resistidos.
+              A análise visual demonstra uma composição corporal equilibrada, com distribuição homogênea da massa muscular nos principais grupos musculares. O percentual de gordura corporal atual encontra-se dentro da faixa considerada saudável para {userProfile?.gender === 'Masculino' ? 'homens' : 'mulheres'} da faixa etária, apresentando leve acúmulo na região abdominal inferior, padrão típico {userProfile?.gender === 'Masculino' ? 'masculino' : 'feminino'}. A definição muscular é visível especialmente na região do peitoral e braços, indicando bom condicionamento físico e prática regular de exercícios resistidos.
             </p>
             <p className="text-gray-700 leading-relaxed text-base">
               Em relação às proporções corporais, observa-se simetria adequada entre membros superiores e inferiores, com desenvolvimento muscular proporcional. A estrutura óssea média oferece excelente potencial para ganho de massa muscular magra. A composição atual sugere que o indivíduo possui base sólida para progressão em programas de treinamento, seja para redução adicional do percentual de gordura ou para ganho de massa muscular, dependendo dos objetivos estabelecidos.
