@@ -68,7 +68,7 @@ const AppContent = () => {
               }}
             >
               <img 
-                src="/lovable-uploads/75f434d3-de70-45e6-87a8-ef9d6e41c372.png" 
+                src="/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.png" 
                 alt="HubFit360 Logo" 
                 className="w-16 h-16"
               />
