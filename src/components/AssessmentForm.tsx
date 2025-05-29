@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
@@ -25,8 +25,22 @@ const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
     back: null as File | null
   });
   
-  const [height, setHeight] = useState(patientProfile?.height?.toString() || '');
-  const [weight, setWeight] = useState(patientProfile?.weight?.toString() || '');
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
+  const [neckCircumference, setNeckCircumference] = useState('');
+  const [waistCircumference, setWaistCircumference] = useState('');
+  const [hipCircumference, setHipCircumference] = useState('');
+
+  // Carregar dados do perfil do paciente quando disponível
+  useEffect(() => {
+    if (patientProfile) {
+      setHeight(patientProfile.height?.toString() || '');
+      setWeight(patientProfile.weight?.toString() || '');
+      setNeckCircumference(patientProfile.neck_circumference?.toString() || '');
+      setWaistCircumference(patientProfile.waist_circumference?.toString() || '');
+      setHipCircumference(patientProfile.hip_circumference?.toString() || '');
+    }
+  }, [patientProfile]);
 
   const handlePhotoUpload = (position: 'front' | 'side' | 'back', file: File) => {
     if (file.type.startsWith('image/')) {
@@ -75,6 +89,9 @@ const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
 
     const heightNum = parseFloat(height);
     const weightNum = parseFloat(weight);
+    const neckNum = neckCircumference ? parseFloat(neckCircumference) : null;
+    const waistNum = waistCircumference ? parseFloat(waistCircumference) : null;
+    const hipNum = hipCircumference ? parseFloat(hipCircumference) : null;
 
     if (isNaN(heightNum) || isNaN(weightNum) || heightNum <= 0 || weightNum <= 0) {
       toast({
@@ -88,9 +105,13 @@ const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
     setLoading(true);
 
     try {
+      // Atualizar perfil do paciente com todas as medidas
       await createOrUpdatePatientProfile({
         height: heightNum,
-        weight: weightNum
+        weight: weightNum,
+        neck_circumference: neckNum,
+        waist_circumference: waistNum,
+        hip_circumference: hipNum
       });
 
       const timestamp = Date.now();
@@ -162,8 +183,14 @@ const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
         <PersonalDataSection
           height={height}
           weight={weight}
+          neckCircumference={neckCircumference}
+          waistCircumference={waistCircumference}
+          hipCircumference={hipCircumference}
           onHeightChange={setHeight}
           onWeightChange={setWeight}
+          onNeckCircumferenceChange={setNeckCircumference}
+          onWaistCircumferenceChange={setWaistCircumference}
+          onHipCircumferenceChange={setHipCircumference}
         />
 
         <InstructionsCard />
