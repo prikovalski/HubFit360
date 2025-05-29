@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -67,9 +66,11 @@ const AppContent = () => {
                 setCurrentSection('home');
               }}
             >
-              <div className="w-10 h-10 bg-gradient-to-br from-[#019f80] to-[#017a63] rounded-xl flex items-center justify-center">
-                <Activity className="w-6 h-6 text-white" />
-              </div>
+              <img 
+                src="/lovable-uploads/75f434d3-de70-45e6-87a8-ef9d6e41c372.png" 
+                alt="HubFit360 Logo" 
+                className="w-10 h-10"
+              />
               <span className="text-2xl font-bold text-gray-800">HubFit360</span>
             </div>
             
