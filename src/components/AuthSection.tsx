@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -67,6 +66,18 @@ const AuthSection = ({ onBack, onLogin }) => {
       console.error('Erro ao verificar email:', error);
       return false;
     }
+  };
+
+  const handleForgotPassword = () => {
+    if (!formData.email) {
+      toast({
+        title: "Email necessário",
+        description: "Por favor, insira seu email primeiro",
+        variant: "destructive"
+      });
+      return;
+    }
+    setShowPasswordReset(true);
   };
 
   const handlePasswordReset = async () => {
@@ -260,6 +271,7 @@ const AuthSection = ({ onBack, onLogin }) => {
                     onSubmit={handleSubmit}
                     onSocialLogin={handleSocialLogin}
                     onSwitchToSignup={() => setIsLogin(false)}
+                    onForgotPassword={handleForgotPassword}
                   />
                 ) : (
                   <SignupFormSteps

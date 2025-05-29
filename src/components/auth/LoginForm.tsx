@@ -14,6 +14,7 @@ interface LoginFormProps {
   onSubmit: (e: React.FormEvent) => void;
   onSocialLogin: (provider: string) => void;
   onSwitchToSignup: () => void;
+  onForgotPassword: () => void;
 }
 
 export const LoginForm = ({ 
@@ -22,7 +23,8 @@ export const LoginForm = ({
   onInputChange, 
   onSubmit, 
   onSocialLogin, 
-  onSwitchToSignup 
+  onSwitchToSignup,
+  onForgotPassword
 }: LoginFormProps) => {
   return (
     <>
@@ -52,7 +54,17 @@ export const LoginForm = ({
         </div>
         
         <div>
-          <Label htmlFor="password">Senha</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Senha</Label>
+            <button
+              type="button"
+              onClick={onForgotPassword}
+              className="text-sm text-[#019f80] hover:underline"
+              disabled={loading}
+            >
+              Esqueci minha senha
+            </button>
+          </div>
           <Input
             id="password"
             type="password"
