@@ -173,7 +173,7 @@ const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
             position="front"
             title="Foto de Frente"
             description="Posição frontal, braços ao lado do corpo"
-            exampleImage="https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=400&h=600&fit=crop"
+            exampleImage="/lovable-uploads/7e388ecd-243f-413c-92c0-21a5a3751761.png"
             photo={photos.front}
             onPhotoUpload={handlePhotoUpload}
           />
@@ -181,7 +181,7 @@ const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
             position="side"
             title="Foto de Lado"
             description="Perfil lateral direito, braços ao lado"
-            exampleImage="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=600&fit=crop"
+            exampleImage="/lovable-uploads/42608c3f-53f3-4d0d-bb0f-5436f91b0440.png"
             photo={photos.side}
             onPhotoUpload={handlePhotoUpload}
           />
@@ -189,7 +189,7 @@ const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
             position="back"
             title="Foto de Costas"
             description="Posição posterior, braços ao lado do corpo"
-            exampleImage="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400&h=600&fit=crop"
+            exampleImage="/lovable-uploads/1ce37401-3eb0-4b50-b9ef-7a88ddb5fb9b.png"
             photo={photos.back}
             onPhotoUpload={handlePhotoUpload}
           />
