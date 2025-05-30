@@ -23,28 +23,32 @@ const ResetPassword = () => {
       console.log('=== Password Reset Page Debug ===');
       console.log('Current URL:', window.location.href);
       
-      // Parse hash fragment parameters instead of search params
+      // Parse hash fragment parameters - fix the parsing logic
       const hash = window.location.hash.substring(1); // Remove the #
-      const hashParams = new URLSearchParams(hash);
-      
       console.log('Hash fragment:', hash);
-      console.log('Hash params string:', hashParams.toString());
       
-      // Extract all URL parameters for debugging
+      // Parse the hash parameters manually to handle URL encoding properly
       const allParams: Record<string, string | null> = {};
-      const paramNames = ['access_token', 'refresh_token', 'token_hash', 'type', 'error', 'error_code', 'error_description'];
       
-      paramNames.forEach(param => {
-        allParams[param] = hashParams.get(param);
-      });
+      if (hash) {
+        // Split by & and then by = to get key-value pairs
+        const pairs = hash.split('&');
+        pairs.forEach(pair => {
+          const [key, value] = pair.split('=');
+          if (key && value) {
+            allParams[decodeURIComponent(key)] = decodeURIComponent(value);
+          }
+        });
+      }
       
-      console.log('All hash parameters:', allParams);
+      console.log('Parsed hash parameters:', allParams);
       
       // Store debug info for display
       setDebugInfo({
         url: window.location.href,
         params: allParams,
-        hasParams: hash.length > 0
+        hasParams: hash.length > 0,
+        rawHash: hash
       });
 
       // Check for errors in URL
@@ -130,12 +134,22 @@ const ResetPassword = () => {
     setLoading(true);
 
     try {
-      // Parse hash fragment parameters
+      // Parse hash fragment parameters using the same logic
       const hash = window.location.hash.substring(1);
-      const hashParams = new URLSearchParams(hash);
+      const allParams: Record<string, string | null> = {};
       
-      const accessToken = hashParams.get('access_token');
-      const refreshToken = hashParams.get('refresh_token');
+      if (hash) {
+        const pairs = hash.split('&');
+        pairs.forEach(pair => {
+          const [key, value] = pair.split('=');
+          if (key && value) {
+            allParams[decodeURIComponent(key)] = decodeURIComponent(value);
+          }
+        });
+      }
+      
+      const accessToken = allParams.access_token;
+      const refreshToken = allParams.refresh_token;
       
       if (!accessToken || !refreshToken) {
         throw new Error('Tokens de autenticação não encontrados na URL');
@@ -268,6 +282,7 @@ const ResetPassword = () => {
                   <div className="text-xs text-blue-700 space-y-1">
                     <p><strong>URL atual:</strong> {debugInfo.url}</p>
                     <p><strong>Tem parâmetros:</strong> {debugInfo.hasParams ? 'Sim' : 'Não'}</p>
+                    <p><strong>Hash bruto:</strong> {debugInfo.rawHash || 'vazio'}</p>
                     <p><strong>Parâmetros encontrados:</strong></p>
                     <ul className="list-disc list-inside ml-2">
                       {Object.entries(debugInfo.params).map(([key, value]) => (
