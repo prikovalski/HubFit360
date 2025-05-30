@@ -20,6 +20,7 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
     setStep,
     loading,
     showPasswordReset,
+    setShowPasswordReset,
     emailExists,
     setEmailExists,
     formData,
