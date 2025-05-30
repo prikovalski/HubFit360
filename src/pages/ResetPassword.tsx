@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,6 @@ import { validatePassword } from '@/utils/inputValidation';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -23,23 +22,29 @@ const ResetPassword = () => {
     const validateResetToken = async () => {
       console.log('=== Password Reset Page Debug ===');
       console.log('Current URL:', window.location.href);
-      console.log('Search params string:', searchParams.toString());
+      
+      // Parse hash fragment parameters instead of search params
+      const hash = window.location.hash.substring(1); // Remove the #
+      const hashParams = new URLSearchParams(hash);
+      
+      console.log('Hash fragment:', hash);
+      console.log('Hash params string:', hashParams.toString());
       
       // Extract all URL parameters for debugging
       const allParams: Record<string, string | null> = {};
       const paramNames = ['access_token', 'refresh_token', 'token_hash', 'type', 'error', 'error_code', 'error_description'];
       
       paramNames.forEach(param => {
-        allParams[param] = searchParams.get(param);
+        allParams[param] = hashParams.get(param);
       });
       
-      console.log('All URL parameters:', allParams);
+      console.log('All hash parameters:', allParams);
       
       // Store debug info for display
       setDebugInfo({
         url: window.location.href,
         params: allParams,
-        hasParams: searchParams.toString().length > 0
+        hasParams: hash.length > 0
       });
 
       // Check for errors in URL
@@ -54,8 +59,8 @@ const ResetPassword = () => {
       }
 
       // Check if we have any parameters at all
-      if (!searchParams.toString()) {
-        console.log('❌ No URL parameters found - user may have accessed page directly');
+      if (!hash) {
+        console.log('❌ No hash parameters found - user may have accessed page directly');
         setTokenValid(false);
         return;
       }
@@ -87,7 +92,7 @@ const ResetPassword = () => {
     };
 
     validateResetToken();
-  }, [searchParams]);
+  }, []);
 
   const handleRequestNewLink = () => {
     console.log('Redirecting to request new password reset link');
@@ -125,8 +130,12 @@ const ResetPassword = () => {
     setLoading(true);
 
     try {
-      const accessToken = searchParams.get('access_token');
-      const refreshToken = searchParams.get('refresh_token');
+      // Parse hash fragment parameters
+      const hash = window.location.hash.substring(1);
+      const hashParams = new URLSearchParams(hash);
+      
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
       
       if (!accessToken || !refreshToken) {
         throw new Error('Tokens de autenticação não encontrados na URL');
