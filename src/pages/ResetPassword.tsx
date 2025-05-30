@@ -262,7 +262,7 @@ const ResetPassword = () => {
                     <p><strong>Parâmetros encontrados:</strong></p>
                     <ul className="list-disc list-inside ml-2">
                       {Object.entries(debugInfo.params).map(([key, value]) => (
-                        <li key={key}>{key}: {value || 'null'}</li>
+                        <li key={key}>{key}: {String(value || 'null')}</li>
                       ))}
                     </ul>
                   </div>
