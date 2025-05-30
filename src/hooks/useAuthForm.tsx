@@ -1,37 +1,19 @@
+
 import { useState } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
-
-interface FormData {
-  email: string;
-  password: string;
-  name: string;
-  gender: string;
-  birthDate: string;
-  weight: string;
-  height: string;
-  city: string;
-  goal: string;
-  chronicDisease: string;
-  medicalRestriction: string;
-  foodAllergy: string;
-  avoidFood: string;
-  physicalActivity: string;
-  activityFrequency: string;
-  fixedMealTimes: string;
-  mustHaveFood: string;
-  neckCircumference: string;
-  waistCircumference: string;
-  hipCircumference: string;
-}
+import { useEmailCheck } from '@/hooks/useEmailCheck';
+import { usePasswordReset } from '@/hooks/usePasswordReset';
+import { FormData } from '@/types/authForm';
 
 export const useAuthForm = (onLogin: (user: any) => void) => {
   const { signUp, signIn } = useAuth();
+  const { checkEmailExists } = useEmailCheck();
+  const { showPasswordReset, setShowPasswordReset, handleForgotPassword, handlePasswordReset } = usePasswordReset();
+  
   const [isLogin, setIsLogin] = useState(true);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [emailExists, setEmailExists] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     email: '',
@@ -61,73 +43,6 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
       title: `Login com ${provider}`,
       description: "Funcionalidade em desenvolvimento",
     });
-  };
-
-  const checkEmailExists = async (email: string) => {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password: 'dummy-password'
-      });
-      
-      if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          return true;
-        }
-        return false;
-      }
-      
-      return false;
-    } catch (error) {
-      console.error('Erro ao verificar email:', error);
-      return false;
-    }
-  };
-
-  const handleForgotPassword = () => {
-    if (!formData.email) {
-      toast({
-        title: "Email necessário",
-        description: "Por favor, insira seu email primeiro",
-        variant: "destructive"
-      });
-      return;
-    }
-    setShowPasswordReset(true);
-  };
-
-  const handlePasswordReset = async () => {
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
-        redirectTo: `${window.location.origin}/reset-password`
-      });
-
-      if (error) {
-        toast({
-          title: "Erro",
-          description: error.message,
-          variant: "destructive"
-        });
-        return;
-      }
-
-      toast({
-        title: "Email enviado!",
-        description: "Verifique sua caixa de entrada para redefinir sua senha."
-      });
-      
-      setShowPasswordReset(false);
-      setEmailExists(false);
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Ocorreu um erro ao enviar o email de recuperação",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -221,8 +136,8 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
     formData,
     setFormData,
     handleSocialLogin,
-    handleForgotPassword,
-    handlePasswordReset,
+    handleForgotPassword: () => handleForgotPassword(formData.email),
+    handlePasswordReset: () => handlePasswordReset(formData.email, setLoading, setEmailExists),
     handleInputChange,
     handleSubmit
   };
