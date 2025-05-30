@@ -21,16 +21,23 @@ export const usePasswordReset = () => {
   const handlePasswordReset = async (email: string, setLoading: (loading: boolean) => void, setEmailExists: (exists: boolean) => void) => {
     setLoading(true);
     try {
-      // Use a more specific redirect URL to avoid conflicts
-      const redirectUrl = `${window.location.origin}/reset-password`;
-      console.log('Sending password reset email with redirect URL:', redirectUrl);
+      // Use the exact domain from the current window location
+      const currentDomain = window.location.origin;
+      const redirectUrl = `${currentDomain}/reset-password`;
+      
+      console.log('=== Password Reset Request ===');
+      console.log('Email:', email);
+      console.log('Current domain:', currentDomain);
+      console.log('Redirect URL:', redirectUrl);
 
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectUrl
       });
 
+      console.log('Supabase resetPasswordForEmail response:', { data, error });
+
       if (error) {
-        console.error('Error sending password reset email:', error);
+        console.error('❌ Error sending password reset email:', error);
         toast({
           title: "Erro",
           description: error.message,
@@ -39,16 +46,16 @@ export const usePasswordReset = () => {
         return;
       }
 
-      console.log('Password reset email sent successfully');
+      console.log('✅ Password reset email sent successfully');
       toast({
         title: "Email enviado!",
-        description: "Verifique sua caixa de entrada para redefinir sua senha."
+        description: `Verifique sua caixa de entrada (${email}) para redefinir sua senha.`
       });
       
       setShowPasswordReset(false);
       setEmailExists(false);
     } catch (error) {
-      console.error('Unexpected error in password reset:', error);
+      console.error('❌ Unexpected error in password reset:', error);
       toast({
         title: "Erro",
         description: "Ocorreu um erro ao enviar o email de recuperação",
