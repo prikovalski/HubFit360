@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -17,31 +16,47 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [tokenValid, setTokenValid] = useState<boolean | null>(null);
   const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [parsedTokens, setParsedTokens] = useState<{accessToken: string | null, refreshToken: string | null}>({
+    accessToken: null,
+    refreshToken: null
+  });
+
+  // Helper function to parse hash parameters
+  const parseHashParams = () => {
+    const hash = window.location.hash.substring(1); // Remove the #
+    const allParams: Record<string, string | null> = {};
+    
+    if (hash) {
+      // Split by & and then by = to get key-value pairs
+      const pairs = hash.split('&');
+      pairs.forEach(pair => {
+        const [key, value] = pair.split('=');
+        if (key && value) {
+          allParams[decodeURIComponent(key)] = decodeURIComponent(value);
+        }
+      });
+    }
+    
+    return allParams;
+  };
 
   useEffect(() => {
     const validateResetToken = async () => {
       console.log('=== Password Reset Page Debug ===');
       console.log('Current URL:', window.location.href);
       
-      // Parse hash fragment parameters - fix the parsing logic
       const hash = window.location.hash.substring(1); // Remove the #
       console.log('Hash fragment:', hash);
       
-      // Parse the hash parameters manually to handle URL encoding properly
-      const allParams: Record<string, string | null> = {};
-      
-      if (hash) {
-        // Split by & and then by = to get key-value pairs
-        const pairs = hash.split('&');
-        pairs.forEach(pair => {
-          const [key, value] = pair.split('=');
-          if (key && value) {
-            allParams[decodeURIComponent(key)] = decodeURIComponent(value);
-          }
-        });
-      }
-      
+      // Parse the hash parameters
+      const allParams = parseHashParams();
       console.log('Parsed hash parameters:', allParams);
+      
+      // Store the tokens for later use
+      setParsedTokens({
+        accessToken: allParams.access_token,
+        refreshToken: allParams.refresh_token
+      });
       
       // Store debug info for display
       setDebugInfo({
@@ -134,25 +149,16 @@ const ResetPassword = () => {
     setLoading(true);
 
     try {
-      // Parse hash fragment parameters using the same logic
-      const hash = window.location.hash.substring(1);
-      const allParams: Record<string, string | null> = {};
+      // Use the tokens we parsed during initialization
+      const { accessToken, refreshToken } = parsedTokens;
       
-      if (hash) {
-        const pairs = hash.split('&');
-        pairs.forEach(pair => {
-          const [key, value] = pair.split('=');
-          if (key && value) {
-            allParams[decodeURIComponent(key)] = decodeURIComponent(value);
-          }
-        });
-      }
-      
-      const accessToken = allParams.access_token;
-      const refreshToken = allParams.refresh_token;
+      console.log('🔍 Using stored tokens:', {
+        hasAccessToken: !!accessToken,
+        hasRefreshToken: !!refreshToken
+      });
       
       if (!accessToken || !refreshToken) {
-        throw new Error('Tokens de autenticação não encontrados na URL');
+        throw new Error('Tokens de autenticação não encontrados. Tente solicitar um novo link de recuperação.');
       }
 
       console.log('🔐 Setting session for password update...');
