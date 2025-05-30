@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -18,12 +19,12 @@ const ResetPassword = () => {
   const [tokenValid, setTokenValid] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const validateToken = async () => {
-      console.log('Validating reset token...');
+    const validateResetToken = async () => {
+      console.log('=== Starting token validation ===');
       console.log('Current URL:', window.location.href);
       console.log('Search params:', searchParams.toString());
       
-      // Check if we have the required parameters from the email link
+      // Extract URL parameters
       const accessToken = searchParams.get('access_token');
       const refreshToken = searchParams.get('refresh_token');
       const tokenHash = searchParams.get('token_hash');
@@ -32,7 +33,7 @@ const ResetPassword = () => {
       const errorCode = searchParams.get('error_code');
       const errorDescription = searchParams.get('error_description');
       
-      console.log('URL parameters:', { 
+      console.log('URL parameters extracted:', { 
         hasAccessToken: !!accessToken, 
         hasRefreshToken: !!refreshToken, 
         hasTokenHash: !!tokenHash,
@@ -42,69 +43,73 @@ const ResetPassword = () => {
         errorDescription
       });
 
-      // Check if there's an error in the URL parameters
+      // Check for errors in URL
       if (error || errorCode) {
-        console.log('Error found in URL parameters:', { error, errorCode, errorDescription });
+        console.log('❌ Error found in URL parameters:', { error, errorCode, errorDescription });
         setTokenValid(false);
         return;
       }
 
-      // Check if it's a recovery type
+      // Validate type
       if (type !== 'recovery') {
-        console.log('Type is not recovery:', type);
+        console.log('❌ Invalid type, expected "recovery", got:', type);
         setTokenValid(false);
         return;
       }
 
+      // Check required tokens
       if (!accessToken || !refreshToken) {
-        console.log('Missing required tokens in URL');
+        console.log('❌ Missing required tokens');
         setTokenValid(false);
         return;
       }
 
       try {
-        // Validate the session tokens without setting them globally
-        // This prevents automatic login while still validating the reset token
-        const { data, error } = await supabase.auth.setSession({
+        console.log('🔍 Attempting to validate tokens...');
+        
+        // Create a temporary client to test the tokens without affecting the main session
+        const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken
         });
 
-        console.log('Session validation result:', { 
-          hasData: !!data, 
-          hasSession: !!data?.session,
-          hasUser: !!data?.user,
-          error: error?.message 
+        console.log('Session validation response:', {
+          hasData: !!sessionData,
+          hasSession: !!sessionData?.session,
+          hasUser: !!sessionData?.user,
+          sessionError: sessionError?.message
         });
 
-        if (error) {
-          console.error('Error validating session:', error);
+        if (sessionError) {
+          console.error('❌ Session validation error:', sessionError);
           setTokenValid(false);
           return;
         }
 
-        if (data.session && data.user) {
-          console.log('Session valid, tokens are good for password reset');
-          setTokenValid(true);
+        if (sessionData?.session && sessionData?.user) {
+          console.log('✅ Tokens are valid for password reset');
           
           // Important: Sign out immediately after validation
           // This prevents the user from being automatically logged in
           await supabase.auth.signOut();
-          console.log('Signed out after token validation');
+          console.log('🚪 Signed out to prevent auto-login');
+          
+          setTokenValid(true);
         } else {
-          console.log('No session or user created, token invalid');
+          console.log('❌ No valid session created from tokens');
           setTokenValid(false);
         }
       } catch (error) {
-        console.error('Error validating token:', error);
+        console.error('❌ Unexpected error during token validation:', error);
         setTokenValid(false);
       }
     };
 
-    validateToken();
+    validateResetToken();
   }, [searchParams]);
 
   const handleRequestNewLink = () => {
+    console.log('Redirecting to request new password reset link');
     toast({
       title: "Solicitar novo link",
       description: "Redirecionando para a página de login...",
@@ -114,6 +119,8 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log('=== Starting password update ===');
     
     if (password !== confirmPassword) {
       toast({
@@ -137,52 +144,61 @@ const ResetPassword = () => {
     setLoading(true);
 
     try {
-      // Re-establish the session for password update
+      // Re-establish session for password update
       const accessToken = searchParams.get('access_token');
       const refreshToken = searchParams.get('refresh_token');
       
       if (!accessToken || !refreshToken) {
-        throw new Error('Tokens de autenticação não encontrados');
+        throw new Error('Tokens de autenticação não encontrados na URL');
       }
 
-      // Set session again for the password update
+      console.log('🔐 Re-establishing session for password update...');
+      
+      // Set session for password update
       const { error: sessionError } = await supabase.auth.setSession({
         access_token: accessToken,
         refresh_token: refreshToken
       });
 
       if (sessionError) {
+        console.error('❌ Error re-establishing session:', sessionError);
         throw sessionError;
       }
 
+      console.log('✅ Session re-established, updating password...');
+
       // Update password
-      const { error } = await supabase.auth.updateUser({
+      const { error: updateError } = await supabase.auth.updateUser({
         password: password
       });
 
-      if (error) {
-        console.error('Error updating password:', error);
+      if (updateError) {
+        console.error('❌ Error updating password:', updateError);
         toast({
           title: "Erro",
-          description: error.message,
+          description: updateError.message,
           variant: "destructive"
         });
         return;
       }
 
+      console.log('✅ Password updated successfully');
+      
       toast({
         title: "Senha atualizada!",
         description: "Sua senha foi alterada com sucesso."
       });
 
-      // Sign out and redirect to home page
+      // Sign out and redirect
       await supabase.auth.signOut();
+      console.log('🚪 Signed out after password update');
+      
       navigate('/');
-    } catch (error) {
-      console.error('Error in password reset:', error);
+    } catch (error: any) {
+      console.error('❌ Error in password update process:', error);
       toast({
         title: "Erro",
-        description: "Ocorreu um erro ao alterar sua senha.",
+        description: error.message || "Ocorreu um erro ao alterar sua senha.",
         variant: "destructive"
       });
     } finally {
@@ -190,7 +206,7 @@ const ResetPassword = () => {
     }
   };
 
-  // Show loading state while checking token
+  // Loading state
   if (tokenValid === null) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#019f80] to-[#017a63] py-12 px-4">
@@ -222,7 +238,7 @@ const ResetPassword = () => {
     );
   }
 
-  // Show error state for invalid token
+  // Invalid token state
   if (tokenValid === false) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#019f80] to-[#017a63] py-12 px-4">
@@ -288,7 +304,7 @@ const ResetPassword = () => {
     );
   }
 
-  // Show password reset form for valid token
+  // Valid token - show password reset form
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#019f80] to-[#017a63] py-12 px-4">
       <div className="container mx-auto max-w-md">

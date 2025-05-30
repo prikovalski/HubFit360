@@ -21,11 +21,16 @@ export const usePasswordReset = () => {
   const handlePasswordReset = async (email: string, setLoading: (loading: boolean) => void, setEmailExists: (exists: boolean) => void) => {
     setLoading(true);
     try {
+      // Use a more specific redirect URL to avoid conflicts
+      const redirectUrl = `${window.location.origin}/reset-password`;
+      console.log('Sending password reset email with redirect URL:', redirectUrl);
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
+        redirectTo: redirectUrl
       });
 
       if (error) {
+        console.error('Error sending password reset email:', error);
         toast({
           title: "Erro",
           description: error.message,
@@ -34,6 +39,7 @@ export const usePasswordReset = () => {
         return;
       }
 
+      console.log('Password reset email sent successfully');
       toast({
         title: "Email enviado!",
         description: "Verifique sua caixa de entrada para redefinir sua senha."
@@ -42,6 +48,7 @@ export const usePasswordReset = () => {
       setShowPasswordReset(false);
       setEmailExists(false);
     } catch (error) {
+      console.error('Unexpected error in password reset:', error);
       toast({
         title: "Erro",
         description: "Ocorreu um erro ao enviar o email de recuperação",
