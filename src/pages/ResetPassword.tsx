@@ -21,19 +21,41 @@ const ResetPassword = () => {
   useEffect(() => {
     const validateToken = async () => {
       console.log('Validating reset token...');
+      console.log('Current URL:', window.location.href);
+      console.log('Search params:', searchParams.toString());
       
       // Check if we have the required parameters from the email link
       const accessToken = searchParams.get('access_token');
       const refreshToken = searchParams.get('refresh_token');
       const tokenHash = searchParams.get('token_hash');
       const type = searchParams.get('type');
+      const error = searchParams.get('error');
+      const errorCode = searchParams.get('error_code');
+      const errorDescription = searchParams.get('error_description');
       
       console.log('URL parameters:', { 
         hasAccessToken: !!accessToken, 
         hasRefreshToken: !!refreshToken, 
         hasTokenHash: !!tokenHash,
-        type 
+        type,
+        error,
+        errorCode,
+        errorDescription
       });
+
+      // Check if there's an error in the URL parameters
+      if (error || errorCode) {
+        console.log('Error found in URL parameters:', { error, errorCode, errorDescription });
+        setTokenValid(false);
+        return;
+      }
+
+      // Check if it's a recovery type
+      if (type !== 'recovery') {
+        console.log('Type is not recovery:', type);
+        setTokenValid(false);
+        return;
+      }
 
       if (!accessToken || !refreshToken) {
         console.log('Missing required tokens in URL');
@@ -48,7 +70,12 @@ const ResetPassword = () => {
           refresh_token: refreshToken
         });
 
-        console.log('Session set result:', { data: !!data, error });
+        console.log('Session set result:', { 
+          hasData: !!data, 
+          hasSession: !!data?.session,
+          hasUser: !!data?.user,
+          error: error?.message 
+        });
 
         if (error) {
           console.error('Error setting session:', error);
@@ -56,11 +83,11 @@ const ResetPassword = () => {
           return;
         }
 
-        if (data.session) {
+        if (data.session && data.user) {
           console.log('Session valid, token is good');
           setTokenValid(true);
         } else {
-          console.log('No session created, token invalid');
+          console.log('No session or user created, token invalid');
           setTokenValid(false);
         }
       } catch (error) {
@@ -211,6 +238,7 @@ const ResetPassword = () => {
                   <li>O link já foi usado anteriormente</li>
                   <li>O link expirou (válido por 24 horas)</li>
                   <li>O link foi corrompido ao ser copiado</li>
+                  <li>Parâmetros de autenticação inválidos</li>
                 </ul>
               </div>
 
