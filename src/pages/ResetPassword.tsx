@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -64,13 +63,14 @@ const ResetPassword = () => {
       }
 
       try {
-        // Set the session with the tokens from the URL
+        // Validate the session tokens without setting them globally
+        // This prevents automatic login while still validating the reset token
         const { data, error } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken
         });
 
-        console.log('Session set result:', { 
+        console.log('Session validation result:', { 
           hasData: !!data, 
           hasSession: !!data?.session,
           hasUser: !!data?.user,
@@ -78,14 +78,19 @@ const ResetPassword = () => {
         });
 
         if (error) {
-          console.error('Error setting session:', error);
+          console.error('Error validating session:', error);
           setTokenValid(false);
           return;
         }
 
         if (data.session && data.user) {
-          console.log('Session valid, token is good');
+          console.log('Session valid, tokens are good for password reset');
           setTokenValid(true);
+          
+          // Important: Sign out immediately after validation
+          // This prevents the user from being automatically logged in
+          await supabase.auth.signOut();
+          console.log('Signed out after token validation');
         } else {
           console.log('No session or user created, token invalid');
           setTokenValid(false);
@@ -132,6 +137,25 @@ const ResetPassword = () => {
     setLoading(true);
 
     try {
+      // Re-establish the session for password update
+      const accessToken = searchParams.get('access_token');
+      const refreshToken = searchParams.get('refresh_token');
+      
+      if (!accessToken || !refreshToken) {
+        throw new Error('Tokens de autenticação não encontrados');
+      }
+
+      // Set session again for the password update
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      });
+
+      if (sessionError) {
+        throw sessionError;
+      }
+
+      // Update password
       const { error } = await supabase.auth.updateUser({
         password: password
       });
@@ -151,7 +175,8 @@ const ResetPassword = () => {
         description: "Sua senha foi alterada com sucesso."
       });
 
-      // Redirect to home page after successful password reset
+      // Sign out and redirect to home page
+      await supabase.auth.signOut();
       navigate('/');
     } catch (error) {
       console.error('Error in password reset:', error);
