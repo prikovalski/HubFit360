@@ -70,7 +70,7 @@ const UserDashboard = ({ user, onLogout }) => {
     const adaptedReport = {
       id: assessment.id,
       date: assessment.created_at,
-      status: 'completed',
+      status: assessment.status, // Usar o status real da avaliação
       preview: {
         leanMass: `${assessment.lean_mass?.toFixed(1) || 'N/A'}kg`,
         bodyFat: `${assessment.body_fat_percentage?.toFixed(1) || 'N/A'}%`,

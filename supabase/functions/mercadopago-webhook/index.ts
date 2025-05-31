@@ -42,34 +42,20 @@ serve(async (req) => {
         const reportId = paymentData.external_reference;
         console.log('Pagamento aprovado para report:', reportId);
 
-        // Atualizar status do assessment
-        const { error: updateError } = await supabase
+        // Atualizar status do assessment para 'paid'
+        const { data: updateData, error: updateError } = await supabase
           .from('assessments')
           .update({ status: 'paid' })
-          .eq('id', reportId);
+          .eq('id', reportId)
+          .select();
 
         if (updateError) {
           console.error('Erro ao atualizar assessment:', updateError);
         } else {
-          console.log('Assessment atualizado com sucesso');
+          console.log('Assessment atualizado com sucesso:', updateData);
         }
-
-        // Salvar dados do pagamento
-        const { error: paymentError } = await supabase
-          .from('payments')
-          .insert({
-            payment_id: paymentId,
-            report_id: reportId,
-            status: paymentData.status,
-            amount: paymentData.transaction_amount,
-            currency: paymentData.currency_id,
-            payment_method: paymentData.payment_method_id,
-            payer_email: paymentData.payer.email
-          });
-
-        if (paymentError) {
-          console.error('Erro ao salvar pagamento:', paymentError);
-        }
+      } else {
+        console.log('Pagamento não aprovado. Status:', paymentData.status);
       }
     }
 

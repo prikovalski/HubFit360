@@ -1,7 +1,8 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { supabase } from '@/integrations/supabase/client';
 import ReportHeader from './report/ReportHeader';
 import MetricsOverview from './report/MetricsOverview';
 import BasicAnalysisSection from './report/BasicAnalysisSection';
@@ -9,37 +10,82 @@ import PremiumSection from './report/PremiumSection';
 
 const ReportViewer = ({ report, onBack }) => {
   const { userProfile, patientProfile } = useUserProfile();
+  const [currentReport, setCurrentReport] = useState(report);
 
-  const handlePaymentSuccess = () => {
+  // Verificar o status atual da avaliação ao carregar o componente
+  useEffect(() => {
+    const checkPaymentStatus = async () => {
+      if (!userProfile?.id || !report.id) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('assessments')
+          .select('status')
+          .eq('id', report.id)
+          .eq('user_id', userProfile.id)
+          .single();
+
+        if (error) {
+          console.error('Erro ao verificar status do pagamento:', error);
+          return;
+        }
+
+        if (data && data.status !== currentReport.status) {
+          console.log('Status atualizado:', data.status);
+          setCurrentReport({ ...currentReport, status: data.status });
+        }
+      } catch (error) {
+        console.error('Erro ao verificar status:', error);
+      }
+    };
+
+    checkPaymentStatus();
+  }, [userProfile?.id, report.id]);
+
+  const handlePaymentSuccess = async () => {
     toast({
       title: "Pagamento aprovado!",
       description: "Laudo completo desbloqueado com sucesso",
     });
-    // Recarregar a página para atualizar o status
-    window.location.reload();
+    
+    // Verificar o status atualizado da avaliação
+    try {
+      const { data, error } = await supabase
+        .from('assessments')
+        .select('status')
+        .eq('id', report.id)
+        .eq('user_id', userProfile.id)
+        .single();
+
+      if (!error && data) {
+        setCurrentReport({ ...currentReport, status: data.status });
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error);
+    }
   };
 
-  const isPaid = report.status === 'paid';
+  const isPaid = currentReport.status === 'paid';
 
   return (
     <div className="py-12 px-4">
       <div className="container mx-auto max-w-5xl">
         <ReportHeader 
-          report={report} 
+          report={currentReport} 
           onBack={onBack} 
           isPaid={isPaid} 
         />
 
-        <MetricsOverview report={report} />
+        <MetricsOverview report={currentReport} />
 
         <BasicAnalysisSection 
-          report={report} 
+          report={currentReport} 
           userProfile={userProfile}
           patientProfile={patientProfile}
         />
 
         <PremiumSection 
-          report={report} 
+          report={currentReport} 
           isPaid={isPaid} 
           onPaymentSuccess={handlePaymentSuccess} 
         />
