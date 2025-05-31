@@ -18,6 +18,7 @@ const ReportViewer = ({ report, onBack }) => {
       if (!userProfile?.id || !report.id) return;
       
       try {
+        console.log('Verificando status da avaliação:', report.id);
         const { data, error } = await supabase
           .from('assessments')
           .select('status')
@@ -31,8 +32,15 @@ const ReportViewer = ({ report, onBack }) => {
         }
 
         if (data && data.status !== currentReport.status) {
-          console.log('Status atualizado:', data.status);
+          console.log('Status atualizado de', currentReport.status, 'para', data.status);
           setCurrentReport({ ...currentReport, status: data.status });
+          
+          if (data.status === 'paid') {
+            toast({
+              title: "Pagamento confirmado!",
+              description: "Seu laudo completo foi desbloqueado",
+            });
+          }
         }
       } catch (error) {
         console.error('Erro ao verificar status:', error);
@@ -40,7 +48,16 @@ const ReportViewer = ({ report, onBack }) => {
     };
 
     checkPaymentStatus();
-  }, [userProfile?.id, report.id]);
+    
+    // Verificar o status a cada 10 segundos por 2 minutos após carregar a página
+    const interval = setInterval(checkPaymentStatus, 10000);
+    const timeout = setTimeout(() => clearInterval(interval), 120000); // 2 minutos
+    
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [userProfile?.id, report.id, currentReport.status]);
 
   const handlePaymentSuccess = async () => {
     toast({
