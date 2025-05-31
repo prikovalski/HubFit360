@@ -14,15 +14,40 @@ serve(async (req) => {
   }
 
   try {
-    const { productId, assessmentId, userEmail, userName } = await req.json();
+    console.log('=== INÍCIO DA FUNÇÃO CREATE-PAYMENT ===');
+    
+    const body = await req.json();
+    console.log('Body recebido:', JSON.stringify(body, null, 2));
+    
+    const { productId, assessmentId, userEmail, userName } = body;
 
     if (!productId) {
+      console.error('Product ID não fornecido');
       throw new Error('Product ID é obrigatório');
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const mercadoPagoToken = Deno.env.get('MERCADO_PAGO_ACCESS_TOKEN')!;
+    if (!userEmail) {
+      console.error('Email do usuário não fornecido');
+      throw new Error('Email do usuário é obrigatório');
+    }
+
+    if (!userName) {
+      console.error('Nome do usuário não fornecido');
+      throw new Error('Nome do usuário é obrigatório');
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const mercadoPagoToken = Deno.env.get('MERCADO_PAGO_ACCESS_TOKEN');
+
+    console.log('Verificando variáveis de ambiente...');
+    console.log('SUPABASE_URL:', supabaseUrl ? 'OK' : 'MISSING');
+    console.log('SUPABASE_SERVICE_ROLE_KEY:', supabaseKey ? 'OK' : 'MISSING');
+    console.log('MERCADO_PAGO_ACCESS_TOKEN:', mercadoPagoToken ? 'OK' : 'MISSING');
+
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Configuração do Supabase incompleta');
+    }
 
     if (!mercadoPagoToken) {
       throw new Error('Token do Mercado Pago não configurado');
@@ -39,9 +64,16 @@ serve(async (req) => {
       .eq('id', productId)
       .single();
 
-    if (productError || !product) {
+    if (productError) {
+      console.error('Erro ao buscar produto:', productError);
+      throw new Error(`Produto não encontrado: ${productError.message}`);
+    }
+
+    if (!product) {
       throw new Error('Produto não encontrado');
     }
+
+    console.log('Produto encontrado:', product.name);
 
     // Buscar o usuário
     const { data: user, error: userError } = await supabase
@@ -50,9 +82,16 @@ serve(async (req) => {
       .eq('email', userEmail)
       .single();
 
-    if (userError || !user) {
+    if (userError) {
+      console.error('Erro ao buscar usuário:', userError);
+      throw new Error(`Usuário não encontrado: ${userError.message}`);
+    }
+
+    if (!user) {
       throw new Error('Usuário não encontrado');
     }
+
+    console.log('Usuário encontrado, ID:', user.id);
 
     // Criar registro de pagamento
     const { data: payment, error: paymentError } = await supabase
@@ -68,16 +107,20 @@ serve(async (req) => {
       .select()
       .single();
 
-    if (paymentError || !payment) {
+    if (paymentError) {
       console.error('Erro ao criar pagamento:', paymentError);
+      throw new Error(`Erro ao criar registro de pagamento: ${paymentError.message}`);
+    }
+
+    if (!payment) {
       throw new Error('Erro ao criar registro de pagamento');
     }
 
-    console.log('Pagamento criado:', payment.id);
+    console.log('Pagamento criado com ID:', payment.id);
 
-    // Obter a URL base correta
-    const origin = req.headers.get('origin') || req.headers.get('referer') || 'https://bqixlrinahtauahcnpoc.supabase.co';
-    const baseUrl = new URL(origin).origin;
+    // Obter a URL base para os redirects
+    const origin = req.headers.get('origin') || 'https://hubfit360.com';
+    console.log('Origin para redirects:', origin);
 
     // Criar preferência no Mercado Pago
     const preferenceData = {
@@ -95,9 +138,9 @@ serve(async (req) => {
         email: userEmail
       },
       back_urls: {
-        success: `${baseUrl}/`,
-        failure: `${baseUrl}/`,
-        pending: `${baseUrl}/`
+        success: `${origin}/`,
+        failure: `${origin}/`,
+        pending: `${origin}/`
       },
       auto_return: "approved",
       external_reference: payment.id,
@@ -116,12 +159,20 @@ serve(async (req) => {
       body: JSON.stringify(preferenceData)
     });
 
+    console.log('Status da resposta do Mercado Pago:', mpResponse.status);
+
+    if (!mpResponse.ok) {
+      const errorText = await mpResponse.text();
+      console.error('Erro na API do Mercado Pago:', errorText);
+      throw new Error(`Erro do Mercado Pago (${mpResponse.status}): ${errorText}`);
+    }
+
     const mpData = await mpResponse.json();
     console.log('Resposta do Mercado Pago:', JSON.stringify(mpData, null, 2));
 
-    if (!mpResponse.ok) {
-      console.error('Erro na API do Mercado Pago:', mpData);
-      throw new Error(`Erro do Mercado Pago: ${mpData.message || 'Erro desconhecido'}`);
+    if (!mpData.id || !mpData.init_point) {
+      console.error('Resposta inválida do Mercado Pago:', mpData);
+      throw new Error('Resposta inválida do Mercado Pago');
     }
 
     // Salvar a preferência no banco
@@ -136,23 +187,33 @@ serve(async (req) => {
 
     if (prefError) {
       console.error('Erro ao salvar preferência:', prefError);
+      // Não falhar a operação por causa disso
     }
 
-    return new Response(JSON.stringify({
+    const responseData = {
       preference_id: mpData.id,
       init_point: mpData.init_point,
       sandbox_init_point: mpData.sandbox_init_point,
       payment_id: payment.id
-    }), {
+    };
+
+    console.log('Retornando dados:', JSON.stringify(responseData, null, 2));
+    console.log('=== FIM DA FUNÇÃO CREATE-PAYMENT ===');
+
+    return new Response(JSON.stringify(responseData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
 
   } catch (error) {
-    console.error('Erro na função create-payment:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message || 'Erro interno do servidor' 
-    }), {
+    console.error('ERRO na função create-payment:', error);
+    
+    const errorResponse = {
+      error: error.message || 'Erro interno do servidor',
+      details: error.stack || 'Stack trace não disponível'
+    };
+
+    return new Response(JSON.stringify(errorResponse), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     });
