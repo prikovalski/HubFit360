@@ -26,7 +26,7 @@ serve(async (req) => {
     // Verificar se é um webhook de pagamento
     if (webhook.type === 'payment') {
       const paymentId = webhook.data.id;
-      console.log('Processando pagamento:', paymentId);
+      console.log('Processando pagamento MP:', paymentId);
 
       // Buscar detalhes do pagamento no Mercado Pago
       const paymentResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
@@ -36,23 +36,43 @@ serve(async (req) => {
       });
 
       const paymentData = await paymentResponse.json();
-      console.log('Dados do pagamento:', JSON.stringify(paymentData, null, 2));
+      console.log('Dados do pagamento MP:', JSON.stringify(paymentData, null, 2));
 
       if (paymentData.status === 'approved') {
-        const reportId = paymentData.external_reference;
-        console.log('Pagamento aprovado para report:', reportId);
+        const internalPaymentId = paymentData.external_reference;
+        console.log('Pagamento aprovado para payment ID:', internalPaymentId);
 
-        // Atualizar status do assessment para 'paid'
-        const { data: updateData, error: updateError } = await supabase
-          .from('assessments')
-          .update({ status: 'paid' })
-          .eq('id', reportId)
-          .select();
+        // Atualizar status do pagamento
+        const { data: updatedPayment, error: paymentError } = await supabase
+          .from('payments')
+          .update({ 
+            status: 'paid',
+            payment_method: paymentData.payment_method_id,
+            external_id: paymentData.id.toString(),
+            paid_at: new Date().toISOString()
+          })
+          .eq('id', internalPaymentId)
+          .select('*, products(*)')
+          .single();
 
-        if (updateError) {
-          console.error('Erro ao atualizar assessment:', updateError);
+        if (paymentError) {
+          console.error('Erro ao atualizar pagamento:', paymentError);
         } else {
-          console.log('Assessment atualizado com sucesso:', updateData);
+          console.log('Pagamento atualizado:', updatedPayment);
+
+          // Se for um pagamento de avaliação, atualizar status da avaliação
+          if (updatedPayment.assessment_id && updatedPayment.products.type === 'assessment') {
+            const { error: assessmentError } = await supabase
+              .from('assessments')
+              .update({ status: 'paid' })
+              .eq('id', updatedPayment.assessment_id);
+
+            if (assessmentError) {
+              console.error('Erro ao atualizar assessment:', assessmentError);
+            } else {
+              console.log('Assessment atualizado para paid');
+            }
+          }
         }
       } else {
         console.log('Pagamento não aprovado. Status:', paymentData.status);

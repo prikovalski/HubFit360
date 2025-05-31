@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -12,20 +12,51 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  reportId: string;
+  productId?: string;
+  assessmentId?: string;
   onPaymentSuccess: () => void;
 }
 
-const PaymentModal = ({ isOpen, onClose, reportId, onPaymentSuccess }: PaymentModalProps) => {
+const PaymentModal = ({ isOpen, onClose, productId, assessmentId, onPaymentSuccess }: PaymentModalProps) => {
   const [loading, setLoading] = useState(false);
+  const [product, setProduct] = useState<any>(null);
   const { toast } = useToast();
   const { userProfile } = useUserProfile();
 
+  // Buscar dados do produto
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!productId) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', productId)
+          .single();
+
+        if (error) throw error;
+        setProduct(data);
+      } catch (error) {
+        console.error('Erro ao buscar produto:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao carregar dados do produto",
+          variant: "destructive"
+        });
+      }
+    };
+
+    if (isOpen) {
+      fetchProduct();
+    }
+  }, [isOpen, productId]);
+
   const handlePayment = async () => {
-    if (!userProfile) {
+    if (!userProfile || !productId) {
       toast({
         title: "Erro",
-        description: "Usuário não encontrado",
+        description: "Dados incompletos para processamento",
         variant: "destructive"
       });
       return;
@@ -34,11 +65,12 @@ const PaymentModal = ({ isOpen, onClose, reportId, onPaymentSuccess }: PaymentMo
     setLoading(true);
 
     try {
-      console.log('Iniciando pagamento para report:', reportId);
+      console.log('Iniciando pagamento para produto:', productId);
 
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: {
-          reportId,
+          productId,
+          assessmentId,
           userEmail: userProfile.email,
           userName: userProfile.name
         }
@@ -70,59 +102,66 @@ const PaymentModal = ({ isOpen, onClose, reportId, onPaymentSuccess }: PaymentMo
     }
   };
 
+  if (!product) {
+    return null;
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="text-2xl text-center text-gray-800">
-            Desbloquear Laudo Completo
+            {product.name}
           </DialogTitle>
           <DialogDescription className="text-center text-gray-600">
-            Acesso completo à análise detalhada e recomendações personalizadas
+            {product.description}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Preço e Destaque */}
           <div className="text-center bg-gradient-to-r from-[#019f80]/10 to-green-50 rounded-xl p-6">
-            <div className="text-4xl font-bold text-[#019f80] mb-2">R$ 9,90</div>
+            <div className="text-4xl font-bold text-[#019f80] mb-2">
+              R$ {Number(product.price).toFixed(2).replace('.', ',')}
+            </div>
             <p className="text-gray-600">Pagamento único • Acesso imediato</p>
             <Badge className="mt-3 bg-green-100 text-green-800 hover:bg-green-100">
               🔥 Oferta limitada
             </Badge>
           </div>
 
-          {/* Benefícios Inclusos */}
-          <Card className="border-green-200">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg text-green-800 flex items-center">
-                <CheckCircle className="w-5 h-5 mr-2" />
-                Incluso no Laudo Completo
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-gray-700">Análise detalhada de definição muscular</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-gray-700">Mapeamento da distribuição de gordura</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-gray-700">Programa de treino personalizado</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-gray-700">Plano nutricional específico</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-gray-700">Relatório completo em PDF</span>
-              </div>
-            </CardContent>
-          </Card>
+          {product.type === 'assessment' && (
+            <Card className="border-green-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg text-green-800 flex items-center">
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                  Incluso no Laudo Completo
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm text-gray-700">Análise detalhada de definição muscular</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm text-gray-700">Mapeamento da distribuição de gordura</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm text-gray-700">Programa de treino personalizado</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm text-gray-700">Plano nutricional específico</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-sm text-gray-700">Relatório completo em PDF</span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Métodos de Pagamento */}
           <div className="bg-blue-50 rounded-lg p-4">

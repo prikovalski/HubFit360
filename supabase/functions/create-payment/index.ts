@@ -14,10 +14,10 @@ serve(async (req) => {
   }
 
   try {
-    const { reportId, userEmail, userName } = await req.json();
+    const { productId, assessmentId, userEmail, userName } = await req.json();
 
-    if (!reportId) {
-      throw new Error('Report ID é obrigatório');
+    if (!productId) {
+      throw new Error('Product ID é obrigatório');
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -26,16 +26,58 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    console.log('Criando preferência de pagamento para report:', reportId);
+    console.log('Buscando produto:', productId);
+
+    // Buscar dados do produto
+    const { data: product, error: productError } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', productId)
+      .single();
+
+    if (productError || !product) {
+      throw new Error('Produto não encontrado');
+    }
+
+    // Buscar o usuário
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', userEmail)
+      .single();
+
+    if (userError || !user) {
+      throw new Error('Usuário não encontrado');
+    }
+
+    // Criar registro de pagamento
+    const { data: payment, error: paymentError } = await supabase
+      .from('payments')
+      .insert({
+        user_id: user.id,
+        product_id: productId,
+        assessment_id: assessmentId || null,
+        amount: product.price,
+        currency: 'BRL',
+        status: 'pending'
+      })
+      .select()
+      .single();
+
+    if (paymentError || !payment) {
+      throw new Error('Erro ao criar registro de pagamento');
+    }
+
+    console.log('Pagamento criado:', payment.id);
 
     // Criar preferência no Mercado Pago
     const preferenceData = {
       items: [
         {
-          title: "Laudo Completo - Avaliação Física",
-          description: "Análise detalhada com recomendações personalizadas e relatório em PDF",
+          title: product.name,
+          description: product.description || '',
           quantity: 1,
-          unit_price: 9.90,
+          unit_price: Number(product.price),
           currency_id: "BRL"
         }
       ],
@@ -49,7 +91,7 @@ serve(async (req) => {
         pending: `${req.headers.get('origin') || 'https://bqixlrinahtauahcnpoc.supabase.co'}/`
       },
       auto_return: "approved",
-      external_reference: reportId,
+      external_reference: payment.id,
       notification_url: `${supabaseUrl}/functions/v1/mercadopago-webhook`,
       statement_descriptor: "HUBFIT360"
     };
@@ -73,25 +115,25 @@ serve(async (req) => {
       throw new Error(`Erro do Mercado Pago: ${mpData.message || 'Erro desconhecido'}`);
     }
 
-    // Salvar a preferência no banco para rastreamento
-    const { error: dbError } = await supabase
+    // Salvar a preferência no banco
+    const { error: prefError } = await supabase
       .from('payment_preferences')
       .insert({
-        report_id: reportId,
+        payment_id: payment.id,
         preference_id: mpData.id,
         init_point: mpData.init_point,
         status: 'pending'
       });
 
-    if (dbError) {
-      console.error('Erro ao salvar preferência:', dbError);
-      // Não falhar por causa disso, o pagamento pode prosseguir
+    if (prefError) {
+      console.error('Erro ao salvar preferência:', prefError);
     }
 
     return new Response(JSON.stringify({
       preference_id: mpData.id,
       init_point: mpData.init_point,
-      sandbox_init_point: mpData.sandbox_init_point
+      sandbox_init_point: mpData.sandbox_init_point,
+      payment_id: payment.id
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,

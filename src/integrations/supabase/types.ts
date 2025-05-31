@@ -142,6 +142,144 @@ export type Database = {
           },
         ]
       }
+      payment_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          init_point: string
+          payment_id: string
+          preference_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          init_point: string
+          payment_id: string
+          preference_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          init_point?: string
+          payment_id?: string
+          preference_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_preferences_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          assessment_id: string | null
+          created_at: string
+          currency: string
+          external_id: string | null
+          external_reference: string | null
+          id: string
+          paid_at: string | null
+          payment_method: string | null
+          product_id: string
+          status: string
+          updated_at: string
+          user_id: number
+        }
+        Insert: {
+          amount: number
+          assessment_id?: string | null
+          created_at?: string
+          currency?: string
+          external_id?: string | null
+          external_reference?: string | null
+          id?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          product_id: string
+          status?: string
+          updated_at?: string
+          user_id: number
+        }
+        Update: {
+          amount?: number
+          assessment_id?: string | null
+          created_at?: string
+          currency?: string
+          external_id?: string | null
+          external_reference?: string | null
+          id?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          product_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          price: number
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          price: number
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          price?: number
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           auth_user_id: string

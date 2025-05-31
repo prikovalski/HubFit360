@@ -1,9 +1,12 @@
 
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Lock, Target, AlertCircle } from 'lucide-react';
-import PaymentModal from '../PaymentModal';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Lock, Crown, TrendingUp, Brain, FileText, Zap, CheckCircle } from 'lucide-react';
+import PaymentModal from '@/components/PaymentModal';
+import { supabase } from '@/integrations/supabase/client';
+import { useEffect } from 'react';
 
 interface PremiumSectionProps {
   report: any;
@@ -13,203 +16,246 @@ interface PremiumSectionProps {
 
 const PremiumSection = ({ report, isPaid, onPaymentSuccess }: PremiumSectionProps) => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [assessmentProduct, setAssessmentProduct] = useState<any>(null);
+
+  // Buscar o produto de avaliação
+  useEffect(() => {
+    const fetchAssessmentProduct = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('type', 'assessment')
+          .eq('status', 'active')
+          .single();
+
+        if (!error && data) {
+          setAssessmentProduct(data);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar produto de avaliação:', error);
+      }
+    };
+
+    fetchAssessmentProduct();
+  }, []);
 
   const handlePaymentSuccess = () => {
     setShowPaymentModal(false);
     onPaymentSuccess();
   };
 
-  return (
-    <>
-      <Card className={`border-0 shadow-lg ${isPaid ? 'bg-white' : 'bg-gray-50'} relative overflow-hidden`}>
-        <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b border-blue-100">
-          <CardTitle className="text-2xl text-gray-800 flex items-center font-bold">
-            <TrendingUp className="w-7 h-7 mr-3 text-[#019f80]" />
-            Análise Detalhada
-            {!isPaid && <Lock className="w-6 h-6 ml-3 text-gray-400" />}
-          </CardTitle>
-          <CardDescription className="text-gray-600 text-base mt-2">
-            Avaliação completa com recomendações personalizadas
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent className={`pt-8 ${isPaid ? '' : 'filter blur-sm pointer-events-none'}`}>
-          <div className="space-y-10">
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-8 border border-blue-200">
-              <h3 className="font-bold text-blue-800 mb-6 flex items-center text-xl">
-                <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center mr-4">
-                  <span className="text-2xl">💪</span>
-                </div>
-                Definição Muscular
-              </h3>
-              <p className="text-blue-700 leading-relaxed text-lg font-medium">
-                Apresenta boa definição muscular na região do abdômen e braços. 
-                Músculos do peitoral bem desenvolvidos. Recomenda-se manter o 
-                atual programa de treinos com foco em exercícios compostos.
-              </p>
+  if (isPaid) {
+    return (
+      <div className="space-y-8">
+        {/* Análise Premium Desbloqueada */}
+        <Card className="border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-2xl text-green-800 flex items-center">
+                <Crown className="w-6 h-6 mr-2 text-yellow-500" />
+                Análise Premium Desbloqueada
+              </CardTitle>
+              <Badge className="bg-green-600 text-white">
+                <CheckCircle className="w-4 h-4 mr-1" />
+                Ativo
+              </Badge>
             </div>
-            
-            <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-2xl p-8 border border-orange-200">
-              <h3 className="font-bold text-orange-800 mb-6 flex items-center text-xl">
-                <div className="w-12 h-12 bg-orange-200 rounded-full flex items-center justify-center mr-4">
-                  <span className="text-2xl">📊</span>
-                </div>
-                Distribuição de Gordura
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Análise de Definição Muscular */}
+            <div className="bg-white rounded-lg p-6 border border-green-100">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
+                Análise de Definição Muscular
               </h3>
-              <p className="text-orange-700 leading-relaxed text-lg font-medium">
-                Distribuição homogênea da gordura corporal, com leve concentração 
-                na região abdominal inferior. Padrão típico masculino com 
-                acúmulo central moderado.
-              </p>
-            </div>
-            
-            <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-2xl p-8 border border-green-200">
-              <h3 className="font-bold text-green-800 mb-6 flex items-center text-xl">
-                <div className="w-12 h-12 bg-green-200 rounded-full flex items-center justify-center mr-4">
-                  <span className="text-2xl">⚖️</span>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-semibold text-gray-700 mb-2">Grupos Musculares Desenvolvidos</h4>
+                  <ul className="space-y-2 text-gray-600">
+                    <li className="flex items-center"><span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>Peitoral: Bem desenvolvido</li>
+                    <li className="flex items-center"><span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>Dorsais: Moderadamente desenvolvido</li>
+                    <li className="flex items-center"><span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>Deltoides: Bem desenvolvido</li>
+                    <li className="flex items-center"><span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>Quadríceps: Pouco desenvolvido</li>
+                  </ul>
                 </div>
-                Proporções Corporais
-              </h3>
-              <p className="text-green-700 leading-relaxed text-lg font-medium">
-                Proporções equilibradas entre membros superiores e inferiores. 
-                Ombros proporcionais ao quadril. Estrutura óssea média com 
-                bom potencial para ganho de massa muscular.
-              </p>
-            </div>
-            
-            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-2xl p-8">
-              <h3 className="font-bold text-indigo-800 mb-8 flex items-center text-2xl">
-                <Target className="w-8 h-8 mr-4" />
-                Recomendações Personalizadas
-              </h3>
-              <div className="grid lg:grid-cols-2 gap-8">
-                <div className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100">
-                  <h4 className="font-bold text-blue-700 mb-6 flex items-center text-lg">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-lg">🏋️</span>
-                    </div>
-                    Programa de Treino
-                  </h4>
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
-                      <span className="text-blue-600 font-medium">4-5x por semana de musculação</span>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
-                      <span className="text-blue-600 font-medium">Foco em exercícios compostos</span>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
-                      <span className="text-blue-600 font-medium">2-3x cardio moderado</span>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
-                      <span className="text-blue-600 font-medium">Ênfase em core e estabilização</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white rounded-2xl p-6 shadow-lg border border-green-100">
-                  <h4 className="font-bold text-green-700 mb-6 flex items-center text-lg">
-                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-lg">🥗</span>
-                    </div>
-                    Plano Nutricional
-                  </h4>
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0"></div>
-                      <span className="text-green-600 font-medium">2200-2400 kcal/dia</span>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0"></div>
-                      <span className="text-green-600 font-medium">2.2g proteína/kg peso</span>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0"></div>
-                      <span className="text-green-600 font-medium">40% carbo, 30% prot, 30% gord</span>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0"></div>
-                      <span className="text-green-600 font-medium">6 refeições ao dia</span>
-                    </div>
+                <div>
+                  <h4 className="font-semibold text-gray-700 mb-2">Simetria Corporal</h4>
+                  <div className="space-y-2 text-gray-600">
+                    <p>• Assimetria leve entre membros superiores</p>
+                    <p>• Postura ligeiramente anteriorizada</p>
+                    <p>• Recomendação: exercícios unilaterais</p>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-        
-        {!isPaid && (
-          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center p-4">
-            <Card className="border-0 shadow-2xl bg-white max-w-md w-full">
-              <CardHeader className="text-center pb-4">
-                <div className="w-20 h-20 bg-gradient-to-br from-[#019f80] to-[#4ade80] rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Lock className="w-10 h-10 text-white" />
+
+            {/* Distribuição de Gordura */}
+            <div className="bg-white rounded-lg p-6 border border-green-100">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <Brain className="w-5 h-5 mr-2 text-blue-600" />
+                Mapeamento de Distribuição de Gordura
+              </h3>
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="text-center p-4 bg-blue-50 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">Androide</div>
+                  <p className="text-sm text-gray-600">Concentração abdominal</p>
                 </div>
-                <CardTitle className="text-2xl text-gray-800 mb-2">Laudo Completo</CardTitle>
-                <CardDescription className="text-gray-600">
-                  Desbloqueie a análise detalhada e recomendações personalizadas
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4">
-                  <h4 className="font-semibold text-amber-800 mb-3 flex items-center">
-                    <AlertCircle className="w-5 h-5 mr-2" />
-                    Incluso no Laudo Completo:
-                  </h4>
-                  <div className="grid grid-cols-1 gap-2">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                      <span className="text-amber-700 text-sm">Análise detalhada de definição muscular</span>
+                <div className="text-center p-4 bg-purple-50 rounded-lg">
+                  <div className="text-2xl font-bold text-purple-600">Visceral</div>
+                  <p className="text-sm text-gray-600">Baixo risco</p>
+                </div>
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">Subcutânea</div>
+                  <p className="text-sm text-gray-600">Distribuição normal</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Programa de Treino */}
+            <div className="bg-white rounded-lg p-6 border border-green-100">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <Zap className="w-5 h-5 mr-2 text-orange-600" />
+                Programa de Treino Personalizado
+              </h3>
+              <div className="space-y-4">
+                <div className="border-l-4 border-orange-500 pl-4">
+                  <h4 className="font-semibold text-gray-700">Semana 1-4: Adaptação</h4>
+                  <p className="text-gray-600">Foco em movimento correto e ativação muscular</p>
+                </div>
+                <div className="border-l-4 border-blue-500 pl-4">
+                  <h4 className="font-semibold text-gray-700">Semana 5-8: Hipertrofia</h4>
+                  <p className="text-gray-600">Aumento de volume e intensidade progressiva</p>
+                </div>
+                <div className="border-l-4 border-green-500 pl-4">
+                  <h4 className="font-semibold text-gray-700">Semana 9-12: Definição</h4>
+                  <p className="text-gray-600">Treinos metabólicos e refinamento muscular</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Plano Nutricional */}
+            <div className="bg-white rounded-lg p-6 border border-green-100">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <FileText className="w-5 h-5 mr-2 text-purple-600" />
+                Plano Nutricional Específico
+              </h3>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-semibold text-gray-700 mb-2">Macronutrientes Diários</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span>Proteínas:</span>
+                      <span className="font-semibold">1.8g/kg</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                      <span className="text-amber-700 text-sm">Mapeamento da distribuição de gordura</span>
+                    <div className="flex justify-between">
+                      <span>Carboidratos:</span>
+                      <span className="font-semibold">4g/kg</span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                      <span className="text-amber-700 text-sm">Avaliação das proporções corporais</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                      <span className="text-amber-700 text-sm">Recomendações personalizadas de treino</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                      <span className="text-amber-700 text-sm">Plano nutricional específico</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                      <span className="text-amber-700 text-sm">Relatório completo em PDF</span>
+                    <div className="flex justify-between">
+                      <span>Gorduras:</span>
+                      <span className="font-semibold">1g/kg</span>
                     </div>
                   </div>
                 </div>
-                
-                <div className="text-center bg-gradient-to-r from-[#019f80]/10 to-green-50 rounded-lg p-4">
-                  <div className="text-4xl font-bold text-[#019f80] mb-1">R$ 9,90</div>
-                  <p className="text-gray-600 text-sm">Pagamento único • Acesso imediato</p>
+                <div>
+                  <h4 className="font-semibold text-gray-700 mb-2">Suplementação</h4>
+                  <ul className="space-y-1 text-gray-600">
+                    <li>• Whey Protein: 30g pós-treino</li>
+                    <li>• Creatina: 3g diariamente</li>
+                    <li>• Vitamina D3: 2000 UI</li>
+                    <li>• Ômega 3: 1g diariamente</li>
+                  </ul>
                 </div>
-                
-                <Button 
-                  onClick={() => setShowPaymentModal(true)}
-                  className="w-full bg-gradient-to-r from-[#019f80] to-[#4ade80] hover:from-[#017a63] hover:to-[#3bc473] text-white py-3 text-lg font-semibold"
-                >
-                  Desbloquear Laudo Completo
-                </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* Seção Premium Bloqueada */}
+      <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-2xl text-amber-800 flex items-center">
+              <Lock className="w-6 h-6 mr-2" />
+              Análise Premium
+            </CardTitle>
+            <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+              Bloqueado
+            </Badge>
           </div>
-        )}
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="text-center py-8">
+            <Crown className="w-16 h-16 mx-auto text-amber-500 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              Desbloqueie a Análise Completa
+            </h3>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              Acesse análise detalhada de definição muscular, programa de treino personalizado, 
+              plano nutricional e relatório completo em PDF.
+            </p>
+            
+            {assessmentProduct && (
+              <Button 
+                onClick={() => setShowPaymentModal(true)}
+                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-8 py-3 text-lg font-semibold"
+              >
+                <Crown className="w-5 h-5 mr-2" />
+                Desbloquear por R$ {Number(assessmentProduct.price).toFixed(2).replace('.', ',')}
+              </Button>
+            )}
+          </div>
+
+          {/* Preview do que será desbloqueado */}
+          <div className="grid md:grid-cols-2 gap-4 opacity-60">
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Definição Muscular
+              </h4>
+              <p className="text-sm text-gray-600">Análise detalhada de cada grupo muscular e simetria corporal.</p>
+            </div>
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
+                <Brain className="w-4 h-4 mr-2" />
+                Distribuição de Gordura
+              </h4>
+              <p className="text-sm text-gray-600">Mapeamento completo da distribuição de gordura corporal.</p>
+            </div>
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
+                <Zap className="w-4 h-4 mr-2" />
+                Programa de Treino
+              </h4>
+              <p className="text-sm text-gray-600">Treino personalizado baseado na sua composição corporal.</p>
+            </div>
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
+                <FileText className="w-4 h-4 mr-2" />
+                Plano Nutricional
+              </h4>
+              <p className="text-sm text-gray-600">Dieta específica com macros e suplementação ideal.</p>
+            </div>
+          </div>
+        </CardContent>
       </Card>
 
-      <PaymentModal
-        isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        reportId={report.id}
-        onPaymentSuccess={handlePaymentSuccess}
-      />
-    </>
+      {assessmentProduct && (
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          productId={assessmentProduct.id}
+          assessmentId={report.id}
+          onPaymentSuccess={handlePaymentSuccess}
+        />
+      )}
+    </div>
   );
 };
 
