@@ -122,6 +122,10 @@ serve(async (req) => {
     const origin = req.headers.get('origin') || 'https://hubfit360.com';
     console.log('Origin para redirects:', origin);
 
+    // Construir URL do webhook
+    const webhookUrl = `${supabaseUrl}/functions/v1/mercadopago-webhook`;
+    console.log('URL do webhook que será configurada:', webhookUrl);
+
     // Criar preferência no Mercado Pago
     const preferenceData = {
       items: [
@@ -144,7 +148,7 @@ serve(async (req) => {
       },
       auto_return: "approved",
       external_reference: payment.id,
-      notification_url: `${supabaseUrl}/functions/v1/mercadopago-webhook`,
+      notification_url: webhookUrl,
       statement_descriptor: "HUBFIT360"
     };
 
@@ -169,6 +173,7 @@ serve(async (req) => {
 
     const mpData = await mpResponse.json();
     console.log('Resposta do Mercado Pago:', JSON.stringify(mpData, null, 2));
+    console.log('Webhook URL confirmada na resposta:', mpData.notification_url);
 
     if (!mpData.id || !mpData.init_point) {
       console.error('Resposta inválida do Mercado Pago:', mpData);
