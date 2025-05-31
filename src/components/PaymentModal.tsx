@@ -108,75 +108,75 @@ const PaymentModal = ({ isOpen, onClose, productId, assessmentId, onPaymentSucce
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-center text-gray-800">
+          <DialogTitle className="text-xl text-center text-gray-800">
             {product.name}
           </DialogTitle>
-          <DialogDescription className="text-center text-gray-600">
+          <DialogDescription className="text-center text-gray-600 text-sm">
             {product.description}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Preço e Destaque */}
-          <div className="text-center bg-gradient-to-r from-[#019f80]/10 to-green-50 rounded-xl p-6">
-            <div className="text-4xl font-bold text-[#019f80] mb-2">
+          <div className="text-center bg-gradient-to-r from-[#019f80]/10 to-green-50 rounded-xl p-4">
+            <div className="text-3xl font-bold text-[#019f80] mb-1">
               R$ {Number(product.price).toFixed(2).replace('.', ',')}
             </div>
-            <p className="text-gray-600">Pagamento único • Acesso imediato</p>
-            <Badge className="mt-3 bg-green-100 text-green-800 hover:bg-green-100">
+            <p className="text-gray-600 text-sm">Pagamento único • Acesso imediato</p>
+            <Badge className="mt-2 bg-green-100 text-green-800 hover:bg-green-100">
               🔥 Oferta limitada
             </Badge>
           </div>
 
           {product.type === 'assessment' && (
             <Card className="border-green-200">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg text-green-800 flex items-center">
-                  <CheckCircle className="w-5 h-5 mr-2" />
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base text-green-800 flex items-center">
+                  <CheckCircle className="w-4 h-4 mr-2" />
                   Incluso no Laudo Completo
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-gray-700">Análise detalhada de definição muscular</span>
+              <CardContent className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                  <span className="text-xs text-gray-700">Análise detalhada de definição muscular</span>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-gray-700">Mapeamento da distribuição de gordura</span>
+                <div className="flex items-center space-x-2">
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                  <span className="text-xs text-gray-700">Mapeamento da distribuição de gordura</span>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-gray-700">Programa de treino personalizado</span>
+                <div className="flex items-center space-x-2">
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                  <span className="text-xs text-gray-700">Programa de treino personalizado</span>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-gray-700">Plano nutricional específico</span>
+                <div className="flex items-center space-x-2">
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                  <span className="text-xs text-gray-700">Plano nutricional específico</span>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-gray-700">Relatório completo em PDF</span>
+                <div className="flex items-center space-x-2">
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                  <span className="text-xs text-gray-700">Relatório completo em PDF</span>
                 </div>
               </CardContent>
             </Card>
           )}
 
           {/* Métodos de Pagamento */}
-          <div className="bg-blue-50 rounded-lg p-4">
-            <h4 className="font-semibold text-blue-800 mb-3 flex items-center">
-              <Shield className="w-5 h-5 mr-2" />
+          <div className="bg-blue-50 rounded-lg p-3">
+            <h4 className="font-semibold text-blue-800 mb-2 flex items-center text-sm">
+              <Shield className="w-4 h-4 mr-2" />
               Formas de Pagamento Seguras
             </h4>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center justify-center bg-white rounded-lg p-3 border">
-                <Banknote className="w-6 h-6 text-[#019f80] mr-2" />
-                <span className="text-sm font-medium">PIX</span>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex items-center justify-center bg-white rounded-lg p-2 border">
+                <Banknote className="w-5 h-5 text-[#019f80] mr-2" />
+                <span className="text-xs font-medium">PIX</span>
               </div>
-              <div className="flex items-center justify-center bg-white rounded-lg p-3 border">
-                <CreditCard className="w-6 h-6 text-blue-600 mr-2" />
-                <span className="text-sm font-medium">Cartão</span>
+              <div className="flex items-center justify-center bg-white rounded-lg p-2 border">
+                <CreditCard className="w-5 h-5 text-blue-600 mr-2" />
+                <span className="text-xs font-medium">Cartão</span>
               </div>
             </div>
             <p className="text-xs text-blue-600 text-center mt-2">
@@ -185,12 +185,12 @@ const PaymentModal = ({ isOpen, onClose, productId, assessmentId, onPaymentSucce
           </div>
 
           {/* Garantia */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <div className="flex items-start space-x-3">
-              <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <div className="flex items-start space-x-2">
+              <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5" />
               <div>
-                <h4 className="font-semibold text-amber-800">Garantia de 7 dias</h4>
-                <p className="text-sm text-amber-700">
+                <h4 className="font-semibold text-amber-800 text-sm">Garantia de 7 dias</h4>
+                <p className="text-xs text-amber-700">
                   Não ficou satisfeito? Devolvemos 100% do seu dinheiro
                 </p>
               </div>
@@ -201,16 +201,16 @@ const PaymentModal = ({ isOpen, onClose, productId, assessmentId, onPaymentSucce
           <Button
             onClick={handlePayment}
             disabled={loading}
-            className="w-full bg-gradient-to-r from-[#019f80] to-[#4ade80] hover:from-[#017a63] hover:to-[#3bc473] text-white py-4 text-lg font-semibold rounded-xl"
+            className="w-full bg-gradient-to-r from-[#019f80] to-[#4ade80] hover:from-[#017a63] hover:to-[#3bc473] text-white py-3 text-base font-semibold rounded-xl"
           >
             {loading ? (
               <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Processando...
               </>
             ) : (
               <>
-                <CreditCard className="w-5 h-5 mr-2" />
+                <CreditCard className="w-4 h-4 mr-2" />
                 Pagar com Mercado Pago
               </>
             )}
