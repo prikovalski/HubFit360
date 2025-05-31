@@ -21,6 +21,14 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const mercadoPagoToken = Deno.env.get('MERCADO_PAGO_ACCESS_TOKEN')!;
 
+    if (!mercadoPagoToken) {
+      console.error('Token do Mercado Pago não configurado');
+      return new Response('Token não configurado', {
+        headers: corsHeaders,
+        status: 200,
+      });
+    }
+
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Verificar se é um webhook de pagamento
@@ -35,12 +43,44 @@ serve(async (req) => {
         }
       });
 
+      if (!paymentResponse.ok) {
+        console.error('Erro ao buscar pagamento no MP:', paymentResponse.status);
+        return new Response('Erro ao buscar pagamento', {
+          headers: corsHeaders,
+          status: 200,
+        });
+      }
+
       const paymentData = await paymentResponse.json();
       console.log('Dados do pagamento MP:', JSON.stringify(paymentData, null, 2));
 
       if (paymentData.status === 'approved') {
         const internalPaymentId = paymentData.external_reference;
         console.log('Pagamento aprovado para payment ID:', internalPaymentId);
+
+        // Verificar se o pagamento existe no banco
+        const { data: existingPayment, error: fetchError } = await supabase
+          .from('payments')
+          .select('*, products(*)')
+          .eq('id', internalPaymentId)
+          .single();
+
+        if (fetchError || !existingPayment) {
+          console.error('Pagamento não encontrado no banco:', fetchError);
+          return new Response('Pagamento não encontrado', {
+            headers: corsHeaders,
+            status: 200,
+          });
+        }
+
+        // Verificar se já foi processado
+        if (existingPayment.status === 'paid') {
+          console.log('Pagamento já processado anteriormente');
+          return new Response('OK', {
+            headers: corsHeaders,
+            status: 200,
+          });
+        }
 
         // Atualizar status do pagamento
         const { data: updatedPayment, error: paymentError } = await supabase
@@ -76,6 +116,23 @@ serve(async (req) => {
         }
       } else {
         console.log('Pagamento não aprovado. Status:', paymentData.status);
+        
+        // Atualizar status do pagamento como failed se for rejected
+        if (paymentData.status === 'rejected' || paymentData.status === 'cancelled') {
+          const internalPaymentId = paymentData.external_reference;
+          
+          const { error: updateError } = await supabase
+            .from('payments')
+            .update({ 
+              status: 'failed',
+              external_id: paymentData.id.toString()
+            })
+            .eq('id', internalPaymentId);
+
+          if (updateError) {
+            console.error('Erro ao atualizar pagamento failed:', updateError);
+          }
+        }
       }
     }
 

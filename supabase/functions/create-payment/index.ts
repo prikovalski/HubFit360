@@ -24,6 +24,10 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const mercadoPagoToken = Deno.env.get('MERCADO_PAGO_ACCESS_TOKEN')!;
 
+    if (!mercadoPagoToken) {
+      throw new Error('Token do Mercado Pago não configurado');
+    }
+
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     console.log('Buscando produto:', productId);
@@ -65,10 +69,15 @@ serve(async (req) => {
       .single();
 
     if (paymentError || !payment) {
+      console.error('Erro ao criar pagamento:', paymentError);
       throw new Error('Erro ao criar registro de pagamento');
     }
 
     console.log('Pagamento criado:', payment.id);
+
+    // Obter a URL base correta
+    const origin = req.headers.get('origin') || req.headers.get('referer') || 'https://bqixlrinahtauahcnpoc.supabase.co';
+    const baseUrl = new URL(origin).origin;
 
     // Criar preferência no Mercado Pago
     const preferenceData = {
@@ -86,9 +95,9 @@ serve(async (req) => {
         email: userEmail
       },
       back_urls: {
-        success: `${req.headers.get('origin') || 'https://bqixlrinahtauahcnpoc.supabase.co'}/`,
-        failure: `${req.headers.get('origin') || 'https://bqixlrinahtauahcnpoc.supabase.co'}/`,
-        pending: `${req.headers.get('origin') || 'https://bqixlrinahtauahcnpoc.supabase.co'}/`
+        success: `${baseUrl}/`,
+        failure: `${baseUrl}/`,
+        pending: `${baseUrl}/`
       },
       auto_return: "approved",
       external_reference: payment.id,
