@@ -75,15 +75,8 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
         }
       } else {
         if (step === 1) {
-          console.log('Verificando se email existe:', formData.email);
-          const emailAlreadyExists = await checkEmailExists(formData.email);
-          console.log('Resultado da verificação:', emailAlreadyExists);
-          
-          if (emailAlreadyExists) {
-            setEmailExists(true);
-            return;
-          }
-          
+          // Pular verificação de email e ir direto para o próximo passo
+          console.log('Pulando verificação de email, indo para próximo passo');
           setStep(step + 1);
         } else if (step < 4) {
           setStep(step + 1);
