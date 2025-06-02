@@ -122,9 +122,6 @@ const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
         uploadPhotoToStorage(photos.back, `${userId}/${timestamp}/back.jpg`)
       ]);
 
-      const birthDate = new Date(userProfile?.birth_date || '');
-      const age = new Date().getFullYear() - birthDate.getFullYear();
-
       // Corrigir o mapeamento do gênero
       let genderForAPI = 'male';
       if (userProfile?.gender) {
@@ -148,7 +145,6 @@ const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
           sidePhoto: sideUrl,
           backPhoto: backUrl,
           sex: genderForAPI,
-          age: age,
           height: heightNum,
           weight: weightNum
         }

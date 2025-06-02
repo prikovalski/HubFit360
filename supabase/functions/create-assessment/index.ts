@@ -20,12 +20,42 @@ serve(async (req) => {
       sidePhoto, 
       backPhoto, 
       sex, 
-      age, 
       height, 
       weight 
     } = await req.json();
 
-    console.log('Recebendo dados para avaliação:', { userId, sex, age, height, weight });
+    console.log('Recebendo dados para avaliação:', { userId, sex, height, weight });
+
+    // Criar cliente Supabase para buscar dados do usuário
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Buscar a data de nascimento do usuário para calcular a idade
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('birth_date')
+      .eq('id', userId)
+      .single();
+
+    if (userError) {
+      console.error('Erro ao buscar dados do usuário:', userError);
+      throw new Error(`Erro ao buscar dados do usuário: ${userError.message}`);
+    }
+
+    // Calcular a idade com base na data de nascimento
+    let calculatedAge = 25; // Idade padrão caso não tenha data de nascimento
+    if (userData?.birth_date) {
+      const birthDate = new Date(userData.birth_date);
+      const today = new Date();
+      calculatedAge = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        calculatedAge--;
+      }
+    }
+
+    console.log('Idade calculada:', calculatedAge);
 
     // Calcular estimativas baseadas em fórmulas padrão
     const heightM = height / 100;
@@ -37,9 +67,9 @@ serve(async (req) => {
     // Estimativa simples de gordura corporal baseada em BMI, idade e sexo
     let estimatedBodyFat;
     if (sex === 'male') {
-      estimatedBodyFat = (1.20 * bmi) + (0.23 * age) - 16.2;
+      estimatedBodyFat = (1.20 * bmi) + (0.23 * calculatedAge) - 16.2;
     } else {
-      estimatedBodyFat = (1.20 * bmi) + (0.23 * age) - 5.4;
+      estimatedBodyFat = (1.20 * bmi) + (0.23 * calculatedAge) - 5.4;
     }
     
     // Garantir que a estimativa esteja em uma faixa realista
@@ -53,7 +83,7 @@ serve(async (req) => {
     const prompt = `Você é um avaliador físico experiente. Com base nas seguintes informações:
 
 - Sexo: ${genderForPrompt}
-- Idade: ${age} anos
+- Idade: ${calculatedAge} anos
 - Altura: ${height} cm
 - Peso: ${weight} kg
 - Estimativa de gordura corporal: ${estimatedBodyFat.toFixed(1)}%
@@ -95,12 +125,6 @@ Escreva um laudo técnico realista, profissional e empático, como se você esti
 
     console.log('Avaliação gerada pelo OpenAI');
 
-    // Criar cliente Supabase com service role key para ter permissões completas
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
     console.log('Salvando avaliação no banco de dados...');
 
     const { data: assessmentData, error } = await supabase
@@ -110,7 +134,7 @@ Escreva um laudo técnico realista, profissional e empático, como se você esti
         front_photo: frontPhoto,
         side_photo: sidePhoto,
         back_photo: backPhoto,
-        age: age,
+        age: calculatedAge, // Salvando a idade calculada
         body_fat_percentage: estimatedBodyFat,
         lean_mass: leanMass,
         fat_mass: fatMass,
@@ -134,7 +158,8 @@ Escreva um laudo técnico realista, profissional e empático, como se você esti
       bodyFat: estimatedBodyFat,
       leanMass,
       fatMass,
-      bmi
+      bmi,
+      age: calculatedAge
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
