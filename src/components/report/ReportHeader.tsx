@@ -1,77 +1,85 @@
 
+import { ArrowLeft, Calendar, Loader2, RefreshCw } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Download } from 'lucide-react';
-import { toast } from "@/hooks/use-toast";
-import { generateAssessmentPDF } from '@/utils/pdfGenerator';
 
 interface ReportHeaderProps {
   report: any;
   onBack: () => void;
   isPaid: boolean;
+  onManualPaymentCheck?: () => void;
+  isCheckingPayment?: boolean;
 }
 
-const ReportHeader = ({ report, onBack, isPaid }: ReportHeaderProps) => {
-  const generatePDF = () => {
-    try {
-      const doc = generateAssessmentPDF(report);
-      const fileName = `avaliacao-hubfit360-${new Date(report.date).toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
-      doc.save(fileName);
-      
-      toast({
-        title: "PDF gerado com sucesso!",
-        description: "Seu laudo foi baixado com sucesso",
-      });
-    } catch (error) {
-      console.error('Erro ao gerar PDF:', error);
-      toast({
-        title: "Erro ao gerar PDF",
-        description: "Ocorreu um erro ao gerar o arquivo. Tente novamente.",
-        variant: "destructive"
-      });
+const ReportHeader = ({ 
+  report, 
+  onBack, 
+  isPaid, 
+  onManualPaymentCheck, 
+  isCheckingPayment = false 
+}: ReportHeaderProps) => {
+  const getStatusBadge = () => {
+    if (isPaid) {
+      return <Badge className="bg-green-600 text-white">Completo</Badge>;
     }
+    return <Badge variant="secondary">Básico</Badge>;
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   return (
-    <div className="flex items-center justify-between mb-8">
-      <div className="flex items-center">
+    <div className="mb-8">
+      <div className="flex items-center justify-between mb-6">
         <Button 
-          onClick={onBack}
           variant="ghost" 
-          className="mr-4 text-[#019f80] hover:bg-[#019f80]/10"
+          onClick={onBack}
+          className="flex items-center text-gray-600 hover:text-gray-900"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Voltar
+          Voltar ao Dashboard
         </Button>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800">Laudo de Avaliação Física</h1>
-          <p className="text-gray-600">
-            {new Date(report.date).toLocaleDateString('pt-BR', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
-          </p>
+        
+        <div className="flex items-center gap-3">
+          {!isPaid && onManualPaymentCheck && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onManualPaymentCheck}
+              disabled={isCheckingPayment}
+              className="flex items-center gap-2"
+            >
+              {isCheckingPayment ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4" />
+              )}
+              {isCheckingPayment ? 'Verificando...' : 'Verificar Pagamento'}
+            </Button>
+          )}
+          {getStatusBadge()}
         </div>
       </div>
-      
-      <div className="flex items-center space-x-3">
-        <Badge 
-          variant={isPaid ? 'default' : 'secondary'}
-          className={isPaid ? 'bg-[#019f80] hover:bg-[#017a63]' : ''}
-        >
-          {isPaid ? 'Laudo Completo' : 'Versão Gratuita'}
-        </Badge>
-        
-        <Button 
-          onClick={generatePDF}
-          variant="outline" 
-          className="border-[#019f80] text-[#019f80] hover:bg-[#019f80] hover:text-white"
-        >
-          <Download className="w-4 h-4 mr-2" />
-          Baixar PDF
-        </Button>
+
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Laudo de Avaliação Física
+            </h1>
+            <div className="flex items-center text-gray-600">
+              <Calendar className="w-4 h-4 mr-2" />
+              <span>{formatDate(report.date)}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

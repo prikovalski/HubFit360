@@ -11,6 +11,7 @@ import PremiumSection from './report/PremiumSection';
 const ReportViewer = ({ report, onBack }) => {
   const { userProfile, patientProfile } = useUserProfile();
   const [currentReport, setCurrentReport] = useState(report);
+  const [isCheckingPayment, setIsCheckingPayment] = useState(false);
 
   // Verificar o status atual da avaliação ao carregar o componente
   useEffect(() => {
@@ -59,6 +60,65 @@ const ReportViewer = ({ report, onBack }) => {
     };
   }, [userProfile?.id, report.id, currentReport.status]);
 
+  const handleManualPaymentCheck = async () => {
+    if (!report.id) return;
+    
+    setIsCheckingPayment(true);
+    
+    try {
+      console.log('Verificando pagamento manualmente para assessment:', report.id);
+      
+      const { data, error } = await supabase.functions.invoke('check-payment-status', {
+        body: { assessmentId: report.id }
+      });
+
+      if (error) {
+        console.error('Erro ao verificar pagamento:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao verificar status do pagamento. Tente novamente.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('Resultado da verificação:', data);
+      
+      if (data.status === 'paid') {
+        setCurrentReport({ ...currentReport, status: 'paid' });
+        toast({
+          title: "Pagamento aprovado!",
+          description: "Laudo completo desbloqueado com sucesso",
+        });
+      } else if (data.status === 'failed') {
+        toast({
+          title: "Pagamento rejeitado",
+          description: "Seu pagamento foi rejeitado ou cancelado. Tente novamente.",
+          variant: "destructive"
+        });
+      } else if (data.status === 'pending') {
+        toast({
+          title: "Pagamento em processamento",
+          description: "Seu pagamento ainda está sendo processado. Aguarde alguns minutos.",
+        });
+      } else if (data.status === 'no_payment') {
+        toast({
+          title: "Nenhum pagamento encontrado",
+          description: "Nenhum pagamento pendente foi encontrado para esta avaliação.",
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao verificar pagamento:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao verificar status do pagamento. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCheckingPayment(false);
+    }
+  };
+
   const handlePaymentSuccess = async () => {
     toast({
       title: "Pagamento aprovado!",
@@ -90,7 +150,9 @@ const ReportViewer = ({ report, onBack }) => {
         <ReportHeader 
           report={currentReport} 
           onBack={onBack} 
-          isPaid={isPaid} 
+          isPaid={isPaid}
+          onManualPaymentCheck={handleManualPaymentCheck}
+          isCheckingPayment={isCheckingPayment}
         />
 
         <MetricsOverview report={currentReport} />
