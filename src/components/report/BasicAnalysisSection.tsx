@@ -29,6 +29,9 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
   // Usar a idade salva na avaliação se disponível, senão calcular a partir da data de nascimento
   const displayAge = report.age || calculateAge(userProfile?.birth_date);
 
+  console.log('Dados do report na BasicAnalysisSection:', report);
+  console.log('Texto da avaliação:', report.assessmentText);
+
   return (
     <Card className="border-0 shadow-lg bg-white mb-6">
       <CardHeader className="bg-gradient-to-r from-[#019f80]/5 to-green-50 border-b border-green-100">
@@ -83,6 +86,12 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
               <span className="text-gray-600 font-medium">IMC:</span>
               <div className="text-gray-800 font-semibold text-lg">{report.preview.bmi}</div>
             </div>
+            {report.preview.fatMass && (
+              <div>
+                <span className="text-gray-600 font-medium">Massa de Gordura:</span>
+                <div className="text-gray-800 font-semibold text-lg">{report.preview.fatMass}</div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -107,14 +116,24 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
         </div>
 
         <div className="mb-8">
-          <h3 className="text-xl font-bold text-gray-800 mb-6 border-b border-gray-200 pb-2">Análise Visual e Composição Corporal</h3>
+          <h3 className="text-xl font-bold text-gray-800 mb-6 border-b border-gray-200 pb-2">Análise Personalizada da IA</h3>
           <div className="space-y-6">
-            <p className="text-gray-700 leading-relaxed text-base">
-              A análise visual demonstra uma composição corporal equilibrada, com distribuição homogênea da massa muscular nos principais grupos musculares. O percentual de gordura corporal atual encontra-se dentro da faixa considerada saudável para {userProfile?.gender === 'Masculino' ? 'homens' : 'mulheres'} da faixa etária, apresentando leve acúmulo na região abdominal inferior, padrão típico {userProfile?.gender === 'Masculino' ? 'masculino' : 'feminino'}. A definição muscular é visível especialmente na região do peitoral e braços, indicando bom condicionamento físico e prática regular de exercícios resistidos.
-            </p>
-            <p className="text-gray-700 leading-relaxed text-base">
-              Em relação às proporções corporais, observa-se simetria adequada entre membros superiores e inferiores, com desenvolvimento muscular proporcional. A estrutura óssea média oferece excelente potencial para ganho de massa muscular magra. A composição atual sugere que o indivíduo possui base sólida para progressão em programas de treinamento, seja para redução adicional do percentual de gordura ou para ganho de massa muscular, dependendo dos objetivos estabelecidos.
-            </p>
+            {report.assessmentText ? (
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+                <div className="text-gray-700 leading-relaxed text-base whitespace-pre-wrap">
+                  {report.assessmentText}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-gray-700 leading-relaxed text-base">
+                  A análise visual demonstra uma composição corporal equilibrada, com distribuição homogênea da massa muscular nos principais grupos musculares. O percentual de gordura corporal atual encontra-se dentro da faixa considerada saudável para {userProfile?.gender === 'Masculino' ? 'homens' : 'mulheres'} da faixa etária, apresentando leve acúmulo na região abdominal inferior, padrão típico {userProfile?.gender === 'Masculino' ? 'masculino' : 'feminino'}. A definição muscular é visível especialmente na região do peitoral e braços, indicando bom condicionamento físico e prática regular de exercícios resistidos.
+                </p>
+                <p className="text-gray-700 leading-relaxed text-base">
+                  Em relação às proporções corporais, observa-se simetria adequada entre membros superiores e inferiores, com desenvolvimento muscular proporcional. A estrutura óssea média oferece excelente potencial para ganho de massa muscular magra. A composição atual sugere que o indivíduo possui base sólida para progressão em programas de treinamento, seja para redução adicional do percentual de gordura ou para ganho de massa muscular, dependendo dos objetivos estabelecidos.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -143,7 +162,7 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
               </div>
               <div className="flex items-start space-x-4">
                 <div className="w-3 h-3 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                <span className="text-green-700 font-medium">Análise visual detalhada</span>
+                <span className="text-green-700 font-medium">Análise personalizada gerada por IA</span>
               </div>
             </div>
           </div>

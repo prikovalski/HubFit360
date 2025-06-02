@@ -17,6 +17,8 @@ interface Assessment {
   bmi: number;
   status: string;
   assessment_text: string;
+  age: number;
+  fat_mass: number;
 }
 
 const UserDashboard = ({ user, onLogout }) => {
@@ -37,6 +39,7 @@ const UserDashboard = ({ user, onLogout }) => {
     if (!userProfile?.id) return;
 
     try {
+      console.log('Buscando avaliações para usuário:', userProfile.id);
       const { data, error } = await supabase
         .from('assessments')
         .select('*')
@@ -44,6 +47,7 @@ const UserDashboard = ({ user, onLogout }) => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      console.log('Avaliações encontradas:', data);
       setAssessments(data || []);
     } catch (error) {
       console.error('Erro ao buscar avaliações:', error);
@@ -67,19 +71,27 @@ const UserDashboard = ({ user, onLogout }) => {
   };
 
   const handleReportClick = (assessment) => {
+    console.log('Avaliação selecionada:', assessment);
+    
+    // Criar o objeto report com os dados corretos da avaliação
     const adaptedReport = {
       id: assessment.id,
       date: assessment.created_at,
-      status: assessment.status, // Usar o status real da avaliação
+      status: assessment.status,
+      age: assessment.age, // Incluir a idade salva na avaliação
+      assessmentText: assessment.assessment_text, // Incluir o texto completo da avaliação
       preview: {
         leanMass: `${assessment.lean_mass?.toFixed(1) || 'N/A'}kg`,
         bodyFat: `${assessment.body_fat_percentage?.toFixed(1) || 'N/A'}%`,
         bmi: assessment.bmi?.toFixed(1) || 'N/A',
+        fatMass: `${assessment.fat_mass?.toFixed(1) || 'N/A'}kg`,
         summary: assessment.assessment_text ? 
           assessment.assessment_text.substring(0, 300) + '...' : 
           'Avaliação física completa com análise de composição corporal.'
       }
     };
+    
+    console.log('Report adaptado:', adaptedReport);
     setSelectedReport(adaptedReport);
   };
 
