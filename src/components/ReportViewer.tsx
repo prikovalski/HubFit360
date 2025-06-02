@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { supabase } from '@/integrations/supabase/client';
+import { Report } from '@/types/report';
 import ReportHeader from './report/ReportHeader';
 import MetricsOverview from './report/MetricsOverview';
 import BasicAnalysisSection from './report/BasicAnalysisSection';
