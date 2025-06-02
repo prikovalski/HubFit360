@@ -2,10 +2,42 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText } from 'lucide-react';
 
+interface ReportPreview {
+  leanMass: string;
+  bodyFat: string;
+  bmi: string;
+  fatMass?: string;
+  summary?: string;
+}
+
+interface Report {
+  id: string;
+  date: string;
+  status: string;
+  age?: number;
+  assessmentText?: string;
+  preview: ReportPreview;
+}
+
+interface UserProfile {
+  id?: string;
+  name?: string;
+  gender?: string;
+  birth_date?: string;
+  email?: string;
+}
+
+interface PatientProfile {
+  id?: number;
+  height?: number;
+  weight?: number;
+  user_id?: number;
+}
+
 interface BasicAnalysisSectionProps {
-  report: any;
-  userProfile: any;
-  patientProfile: any;
+  report: Report;
+  userProfile: UserProfile | null;
+  patientProfile: PatientProfile | null;
 }
 
 const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnalysisSectionProps) => {
@@ -21,13 +53,13 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
     return age;
   };
 
-  const formatGender = (gender: string | null) => {
+  const formatGender = (gender: string | null | undefined) => {
     if (!gender) return 'N/A';
     return gender === 'Masculino' ? 'Masculino' : 'Feminino';
   };
 
   // Usar a idade salva na avaliação se disponível, senão calcular a partir da data de nascimento
-  const displayAge = report.age || calculateAge(userProfile?.birth_date);
+  const displayAge = report.age || calculateAge(userProfile?.birth_date || null);
 
   console.log('Dados do report na BasicAnalysisSection:', report);
   console.log('Texto da avaliação:', report.assessmentText);
