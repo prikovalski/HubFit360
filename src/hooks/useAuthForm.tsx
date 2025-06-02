@@ -86,6 +86,8 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
         } else if (step < 4) {
           setStep(step + 1);
         } else {
+          // Final step - create the user with proper metadata mapping
+          console.log('Creating user with form data:', formData);
           const { data, error } = await signUp(formData.email, formData.password, {
             name: formData.name,
             gender: formData.gender,

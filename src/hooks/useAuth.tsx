@@ -1,3 +1,4 @@
+
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -87,9 +88,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return { data: authData, error: authError };
     }
 
-    // If user was created successfully, update the users table with birth_date
+    // If user was created successfully, update the users table with birth_date and gender
     if (authData.user) {
       try {
+        console.log('Updating user profile with metadata:', metadata);
         const { error: updateError } = await supabase
           .from('users')
           .update({
@@ -99,7 +101,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           .eq('auth_user_id', authData.user.id);
 
         if (updateError) {
-          console.error('Error updating user birth_date:', updateError);
+          console.error('Error updating user profile:', updateError);
+        } else {
+          console.log('User profile updated successfully');
         }
       } catch (error) {
         console.error('Error updating user profile:', error);
