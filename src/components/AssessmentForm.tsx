@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from 'lucide-react';
@@ -126,13 +125,29 @@ const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
       const birthDate = new Date(userProfile?.birth_date || '');
       const age = new Date().getFullYear() - birthDate.getFullYear();
 
+      // Corrigir o mapeamento do gênero
+      let genderForAPI = 'male';
+      if (userProfile?.gender) {
+        // Mapear os valores do banco para o formato esperado pela API
+        if (userProfile.gender === 'Feminino' || userProfile.gender === 'FEMALE') {
+          genderForAPI = 'female';
+        } else if (userProfile.gender === 'Masculino' || userProfile.gender === 'MALE') {
+          genderForAPI = 'male';
+        }
+      }
+
+      console.log('Enviando para API:', {
+        gender: userProfile?.gender,
+        mappedGender: genderForAPI
+      });
+
       const { data, error } = await supabase.functions.invoke('create-assessment', {
         body: {
           userId: userProfile?.id,
           frontPhoto: frontUrl,
           sidePhoto: sideUrl,
           backPhoto: backUrl,
-          sex: userProfile?.gender === 'Masculino' ? 'male' : 'female',
+          sex: genderForAPI,
           age: age,
           height: heightNum,
           weight: weightNum

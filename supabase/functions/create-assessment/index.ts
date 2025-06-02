@@ -31,6 +31,9 @@ serve(async (req) => {
     const heightM = height / 100;
     const bmi = weight / (heightM * heightM);
     
+    // Mapear o gênero corretamente
+    const genderForPrompt = sex === 'male' ? 'Masculino' : 'Feminino';
+    
     // Estimativa simples de gordura corporal baseada em BMI, idade e sexo
     let estimatedBodyFat;
     if (sex === 'male') {
@@ -49,7 +52,7 @@ serve(async (req) => {
 
     const prompt = `Você é um avaliador físico experiente. Com base nas seguintes informações:
 
-- Sexo: ${sex}
+- Sexo: ${genderForPrompt}
 - Idade: ${age} anos
 - Altura: ${height} cm
 - Peso: ${weight} kg
