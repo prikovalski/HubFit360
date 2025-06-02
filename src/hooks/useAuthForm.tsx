@@ -109,7 +109,7 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
           if (data.user) {
             toast({
               title: "Cadastro realizado com sucesso!",
-              description: "Bem-vindo ao HubFit360!"
+              description: "Redirecionando para o dashboard..."
             });
             
             // O redirecionamento será automático via useAuth state change
