@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -74,7 +73,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       };
     }
 
-    const { data, error } = await supabase.auth.signUp({
+    // Create the auth user first
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -82,7 +82,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         emailRedirectTo: undefined // Email confirmation disabled for development
       }
     });
-    return { data, error };
+
+    if (authError) {
+      return { data: authData, error: authError };
+    }
+
+    // If user was created successfully, update the users table with birth_date
+    if (authData.user) {
+      try {
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({
+            birth_date: metadata.birth_date,
+            gender: metadata.gender
+          })
+          .eq('auth_user_id', authData.user.id);
+
+        if (updateError) {
+          console.error('Error updating user birth_date:', updateError);
+        }
+      } catch (error) {
+        console.error('Error updating user profile:', error);
+      }
+    }
+
+    return { data: authData, error: authError };
   };
 
   const signIn = async (email: string, password: string) => {
