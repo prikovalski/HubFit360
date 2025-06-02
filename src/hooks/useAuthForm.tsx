@@ -70,9 +70,8 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
             description: "Bem-vindo de volta!"
           });
           
-          // Chamar onLogin imediatamente após login bem-sucedido
-          console.log('Login bem-sucedido, chamando onLogin callback');
-          onLogin(data.user);
+          // O redirecionamento será automático via useAuth state change
+          console.log('Login bem-sucedido, redirecionamento automático para dashboard');
         }
       } else {
         if (step === 1) {
@@ -113,9 +112,8 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
               description: "Bem-vindo ao HubFit360!"
             });
             
-            // Chamar onLogin imediatamente após cadastro bem-sucedido
-            console.log('Cadastro bem-sucedido, chamando onLogin callback');
-            onLogin(data.user);
+            // O redirecionamento será automático via useAuth state change
+            console.log('Cadastro bem-sucedido, redirecionamento automático para dashboard');
           }
         }
       }

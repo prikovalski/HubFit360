@@ -1,4 +1,3 @@
-
 import { EmailExistsOptions } from './auth/EmailExistsOptions';
 import { PasswordResetForm } from './auth/PasswordResetForm';
 import { LoginForm } from './auth/LoginForm';
@@ -13,6 +12,13 @@ interface AuthSectionProps {
 }
 
 const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
+  // Callback que não faz nada - o redirecionamento será automático via estado de autenticação
+  const handleAuthSuccess = (user: any) => {
+    // O usuário já estará logado devido ao estado de autenticação do Supabase
+    // O redirecionamento para o dashboard acontecerá automaticamente via useAuth
+    console.log('Usuário autenticado com sucesso:', user);
+  };
+
   const {
     isLogin,
     setIsLogin,
@@ -30,7 +36,7 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
     handlePasswordReset,
     handleInputChange,
     handleSubmit
-  } = useAuthForm(onLogin);
+  } = useAuthForm(handleAuthSuccess);
 
   const getTitle = () => {
     if (isLogin) return 'Bem-vindo de volta!';
