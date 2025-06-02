@@ -4,6 +4,7 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/useAuth';
 import { usePasswordReset } from '@/hooks/usePasswordReset';
 import { FormData } from '@/types/authForm';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useAuthForm = (onLogin: (user: any) => void) => {
   const { signUp, signIn, checkEmailExists } = useAuth();
@@ -47,6 +48,48 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const createPatientProfile = async (userId: number) => {
+    try {
+      console.log('Criando perfil de paciente para usuário:', userId);
+      console.log('Dados do formulário:', formData);
+
+      const patientData = {
+        user_id: userId,
+        height: formData.height ? parseFloat(formData.height) : null,
+        weight: formData.weight ? parseFloat(formData.weight) : null,
+        city: formData.city || null,
+        goal: formData.goal || null,
+        chronic_disease: formData.chronicDisease || null,
+        medical_restriction: formData.medicalRestriction || null,
+        food_allergy: formData.foodAllergy || null,
+        avoid_food: formData.avoidFood || null,
+        physical_activity: formData.physicalActivity || null,
+        activity_frequency: formData.activityFrequency || null,
+        fixed_meal_times: formData.fixedMealTimes || null,
+        must_have_food: formData.mustHaveFood || null,
+        neck_circumference: formData.neckCircumference ? parseFloat(formData.neckCircumference) : null,
+        waist_circumference: formData.waistCircumference ? parseFloat(formData.waistCircumference) : null,
+        hip_circumference: formData.hipCircumference ? parseFloat(formData.hipCircumference) : null
+      };
+
+      console.log('Dados do paciente a serem inseridos:', patientData);
+
+      const { error } = await supabase
+        .from('patient_profiles')
+        .insert([patientData]);
+
+      if (error) {
+        console.error('Erro ao criar perfil de paciente:', error);
+        throw error;
+      }
+
+      console.log('Perfil de paciente criado com sucesso');
+    } catch (error) {
+      console.error('Erro ao criar perfil de paciente:', error);
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -70,7 +113,6 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
             description: "Bem-vindo de volta!"
           });
           
-          // O redirecionamento será automático via useAuth state change
           console.log('Login bem-sucedido, redirecionamento automático para dashboard');
         }
       } else {
@@ -88,7 +130,7 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
         } else if (step < 4) {
           setStep(step + 1);
         } else {
-          // Final step - create the user with proper metadata mapping
+          // Final step - create the user and patient profile
           console.log('Creating user with form data:', formData);
           const { data, error } = await signUp(formData.email, formData.password, {
             name: formData.name,
@@ -107,12 +149,31 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
           }
 
           if (data.user) {
+            // Get the user profile ID to create patient profile
+            const { data: userProfile, error: userProfileError } = await supabase
+              .from('users')
+              .select('id')
+              .eq('auth_user_id', data.user.id)
+              .single();
+
+            if (userProfileError) {
+              console.error('Erro ao buscar perfil do usuário:', userProfileError);
+              toast({
+                title: "Erro",
+                description: "Erro ao criar perfil completo do usuário",
+                variant: "destructive"
+              });
+              return;
+            }
+
+            // Create patient profile with all form data
+            await createPatientProfile(userProfile.id);
+
             toast({
               title: "Cadastro realizado com sucesso!",
               description: "Redirecionando para o dashboard..."
             });
             
-            // O redirecionamento será automático via useAuth state change
             console.log('Cadastro bem-sucedido, redirecionamento automático para dashboard');
           }
         }
