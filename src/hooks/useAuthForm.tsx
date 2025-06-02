@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/useAuth';
@@ -48,13 +47,49 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const createPatientProfile = async (userId: number) => {
+  const createPatientProfile = async (authUserId: string) => {
     try {
-      console.log('Criando perfil de paciente para usuário:', userId);
+      console.log('Criando perfil de paciente para auth_user_id:', authUserId);
       console.log('Dados do formulário:', formData);
 
+      // Aguardar um pouco para garantir que o trigger criou o registro na tabela users
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Buscar o user_id da tabela users usando o auth_user_id
+      let userProfile = null;
+      let attempts = 0;
+      const maxAttempts = 5;
+
+      while (!userProfile && attempts < maxAttempts) {
+        console.log(`Tentativa ${attempts + 1} de buscar perfil do usuário`);
+        
+        const { data, error } = await supabase
+          .from('users')
+          .select('id')
+          .eq('auth_user_id', authUserId)
+          .single();
+
+        if (error) {
+          console.error('Erro ao buscar perfil do usuário:', error);
+          if (attempts < maxAttempts - 1) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            attempts++;
+            continue;
+          } else {
+            throw error;
+          }
+        }
+
+        userProfile = data;
+        break;
+      }
+
+      if (!userProfile) {
+        throw new Error('Não foi possível encontrar o perfil do usuário');
+      }
+
       const patientData = {
-        user_id: userId,
+        user_id: userProfile.id,
         height: formData.height ? parseFloat(formData.height) : null,
         weight: formData.weight ? parseFloat(formData.weight) : null,
         city: formData.city || null,
@@ -74,13 +109,13 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
 
       console.log('Dados do paciente a serem inseridos:', patientData);
 
-      const { error } = await supabase
+      const { error: insertError } = await supabase
         .from('patient_profiles')
         .insert([patientData]);
 
-      if (error) {
-        console.error('Erro ao criar perfil de paciente:', error);
-        throw error;
+      if (insertError) {
+        console.error('Erro ao criar perfil de paciente:', insertError);
+        throw insertError;
       }
 
       console.log('Perfil de paciente criado com sucesso');
@@ -158,25 +193,8 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
           }
 
           if (data.user) {
-            // Get the user profile ID to create patient profile
-            const { data: userProfile, error: userProfileError } = await supabase
-              .from('users')
-              .select('id')
-              .eq('auth_user_id', data.user.id)
-              .single();
-
-            if (userProfileError) {
-              console.error('Erro ao buscar perfil do usuário:', userProfileError);
-              toast({
-                title: "Erro",
-                description: "Erro ao criar perfil completo do usuário",
-                variant: "destructive"
-              });
-              return;
-            }
-
-            // Create patient profile with all form data
-            await createPatientProfile(userProfile.id);
+            // Create patient profile using the auth user id directly
+            await createPatientProfile(data.user.id);
 
             toast({
               title: "Cadastro realizado com sucesso!",
