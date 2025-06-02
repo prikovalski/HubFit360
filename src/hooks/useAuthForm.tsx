@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/useAuth';
@@ -53,25 +54,27 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
       console.log('Dados do formulário:', formData);
 
       // Aguardar um pouco para garantir que o trigger criou o registro na tabela users
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 3000));
 
-      // Buscar o user_id da tabela users usando o auth_user_id
+      // Buscar o user_id da tabela users usando o auth_user_id com melhor tratamento
       let userProfile = null;
       let attempts = 0;
-      const maxAttempts = 5;
+      const maxAttempts = 6;
 
       while (!userProfile && attempts < maxAttempts) {
         console.log(`Tentativa ${attempts + 1} de buscar perfil do usuário`);
         
         try {
-          const { data, error } = await supabase
+          // Usar uma abordagem diferente para a consulta
+          const { data, error, count } = await supabase
             .from('users')
-            .select('id')
-            .eq('auth_user_id', authUserId)
-            .maybeSingle();
+            .select('id', { count: 'exact' })
+            .eq('auth_user_id', authUserId);
+
+          console.log('Resultado da consulta users:', { data, error, count });
 
           if (error) {
-            console.error('Erro ao buscar perfil do usuário:', error);
+            console.error('Erro na consulta users:', error);
             if (attempts < maxAttempts - 1) {
               await new Promise(resolve => setTimeout(resolve, 2000));
               attempts++;
@@ -81,8 +84,9 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
             }
           }
 
-          if (data) {
-            userProfile = data;
+          if (data && data.length > 0) {
+            userProfile = data[0];
+            console.log('Perfil do usuário encontrado:', userProfile);
             break;
           } else {
             console.log('Usuário ainda não encontrado, tentando novamente...');
@@ -108,6 +112,7 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
         throw new Error('Não foi possível encontrar o perfil do usuário após várias tentativas');
       }
 
+      // Criar o objeto de dados do paciente com validação
       const patientData = {
         user_id: userProfile.id,
         height: formData.height ? parseFloat(formData.height) : null,
@@ -129,19 +134,45 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
 
       console.log('Dados do paciente a serem inseridos:', patientData);
 
-      const { error: insertError } = await supabase
+      // Verificar se já existe um perfil de paciente para este usuário
+      const { data: existingProfile } = await supabase
         .from('patient_profiles')
-        .insert([patientData]);
+        .select('id')
+        .eq('user_id', userProfile.id);
 
-      if (insertError) {
-        console.error('Erro ao criar perfil de paciente:', insertError);
-        throw insertError;
+      if (existingProfile && existingProfile.length > 0) {
+        console.log('Perfil de paciente já existe, atualizando...');
+        const { error: updateError } = await supabase
+          .from('patient_profiles')
+          .update(patientData)
+          .eq('user_id', userProfile.id);
+
+        if (updateError) {
+          console.error('Erro ao atualizar perfil de paciente:', updateError);
+          throw updateError;
+        }
+      } else {
+        console.log('Criando novo perfil de paciente...');
+        const { error: insertError } = await supabase
+          .from('patient_profiles')
+          .insert([patientData]);
+
+        if (insertError) {
+          console.error('Erro ao criar perfil de paciente:', insertError);
+          throw insertError;
+        }
       }
 
-      console.log('Perfil de paciente criado com sucesso');
+      console.log('Perfil de paciente criado/atualizado com sucesso');
     } catch (error) {
       console.error('Erro ao criar perfil de paciente:', error);
-      throw error;
+      // Não vamos fazer throw aqui para não bloquear o login
+      // O usuário consegue fazer login mesmo sem o patient_profile
+      toast({
+        title: "Aviso",
+        description: "Seu cadastro foi criado, mas alguns dados adicionais não foram salvos. Você pode completá-los mais tarde no seu perfil.",
+        variant: "default"
+      });
     }
   };
 
