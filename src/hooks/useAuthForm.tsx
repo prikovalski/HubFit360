@@ -140,11 +140,20 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
           });
 
           if (error) {
-            toast({
-              title: "Erro no cadastro",
-              description: error.message,
-              variant: "destructive"
-            });
+            // Handle rate limiting specifically
+            if (error.message?.includes('429') || error.message?.includes('Too Many Requests') || error.message?.includes('rate')) {
+              toast({
+                title: "Muitas tentativas",
+                description: "Você fez muitas tentativas de cadastro. Aguarde alguns minutos antes de tentar novamente.",
+                variant: "destructive"
+              });
+            } else {
+              toast({
+                title: "Erro no cadastro",
+                description: error.message,
+                variant: "destructive"
+              });
+            }
             return;
           }
 
@@ -180,11 +189,21 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
       }
     } catch (error) {
       console.error('Erro no handleSubmit:', error);
-      toast({
-        title: "Erro",
-        description: "Ocorreu um erro inesperado",
-        variant: "destructive"
-      });
+      
+      // Check if it's a rate limiting error
+      if (error?.message?.includes('429') || error?.message?.includes('Too Many Requests')) {
+        toast({
+          title: "Limite de tentativas excedido",
+          description: "Aguarde alguns minutos antes de tentar se cadastrar novamente.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Erro",
+          description: "Ocorreu um erro inesperado",
+          variant: "destructive"
+        });
+      }
     } finally {
       setLoading(false);
     }
