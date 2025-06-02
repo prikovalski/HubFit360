@@ -53,7 +53,7 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
       console.log('Dados do formulário:', formData);
 
       // Aguardar um pouco para garantir que o trigger criou o registro na tabela users
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Buscar o user_id da tabela users usando o auth_user_id
       let userProfile = null;
@@ -63,29 +63,49 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
       while (!userProfile && attempts < maxAttempts) {
         console.log(`Tentativa ${attempts + 1} de buscar perfil do usuário`);
         
-        const { data, error } = await supabase
-          .from('users')
-          .select('id')
-          .eq('auth_user_id', authUserId)
-          .single();
+        try {
+          const { data, error } = await supabase
+            .from('users')
+            .select('id')
+            .eq('auth_user_id', authUserId)
+            .maybeSingle();
 
-        if (error) {
-          console.error('Erro ao buscar perfil do usuário:', error);
+          if (error) {
+            console.error('Erro ao buscar perfil do usuário:', error);
+            if (attempts < maxAttempts - 1) {
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              attempts++;
+              continue;
+            } else {
+              throw error;
+            }
+          }
+
+          if (data) {
+            userProfile = data;
+            break;
+          } else {
+            console.log('Usuário ainda não encontrado, tentando novamente...');
+            if (attempts < maxAttempts - 1) {
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              attempts++;
+              continue;
+            }
+          }
+        } catch (err) {
+          console.error('Erro na consulta:', err);
           if (attempts < maxAttempts - 1) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 2000));
             attempts++;
             continue;
           } else {
-            throw error;
+            throw err;
           }
         }
-
-        userProfile = data;
-        break;
       }
 
       if (!userProfile) {
-        throw new Error('Não foi possível encontrar o perfil do usuário');
+        throw new Error('Não foi possível encontrar o perfil do usuário após várias tentativas');
       }
 
       const patientData = {

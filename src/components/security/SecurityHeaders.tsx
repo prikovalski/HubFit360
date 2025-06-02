@@ -10,12 +10,6 @@ const SecurityHeaders = () => {
     cspMeta.content = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://api.openai.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://bqixlrinahtauahcnpoc.supabase.co https://api.openai.com wss://bqixlrinahtauahcnpoc.supabase.co; font-src 'self' https: data:;";
     document.head.appendChild(cspMeta);
 
-    // X-Frame-Options
-    const frameMeta = document.createElement('meta');
-    frameMeta.httpEquiv = 'X-Frame-Options';
-    frameMeta.content = 'DENY';
-    document.head.appendChild(frameMeta);
-
     // X-Content-Type-Options
     const contentTypeMeta = document.createElement('meta');
     contentTypeMeta.httpEquiv = 'X-Content-Type-Options';
@@ -31,7 +25,6 @@ const SecurityHeaders = () => {
     return () => {
       // Cleanup on unmount
       document.head.removeChild(cspMeta);
-      document.head.removeChild(frameMeta);
       document.head.removeChild(contentTypeMeta);
       document.head.removeChild(referrerMeta);
     };
