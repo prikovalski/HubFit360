@@ -2,13 +2,11 @@
 import { useState } from 'react';
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/useAuth';
-import { useEmailCheck } from '@/hooks/useEmailCheck';
 import { usePasswordReset } from '@/hooks/usePasswordReset';
 import { FormData } from '@/types/authForm';
 
 export const useAuthForm = (onLogin: (user: any) => void) => {
-  const { signUp, signIn } = useAuth();
-  const { checkEmailExists } = useEmailCheck();
+  const { signUp, signIn, checkEmailExists } = useAuth();
   const { showPasswordReset, setShowPasswordReset, handleForgotPassword, handlePasswordReset } = usePasswordReset();
   
   const [isLogin, setIsLogin] = useState(true);
@@ -75,7 +73,9 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
         }
       } else {
         if (step === 1) {
+          console.log('Verificando se email existe:', formData.email);
           const emailAlreadyExists = await checkEmailExists(formData.email);
+          console.log('Resultado da verificação:', emailAlreadyExists);
           
           if (emailAlreadyExists) {
             setEmailExists(true);
@@ -113,6 +113,7 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
         }
       }
     } catch (error) {
+      console.error('Erro no handleSubmit:', error);
       toast({
         title: "Erro",
         description: "Ocorreu um erro inesperado",

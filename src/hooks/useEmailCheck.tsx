@@ -2,23 +2,20 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export const useEmailCheck = () => {
-  const checkEmailExists = async (email: string) => {
+  const checkEmailExists = async (email: string): Promise<boolean> => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password: 'dummy-password'
+      const { data, error } = await supabase.functions.invoke('check-email-exists', {
+        body: { email }
       });
-      
+
       if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          return true;
-        }
+        console.error('Error checking email:', error);
         return false;
       }
-      
-      return false;
+
+      return data?.exists || false;
     } catch (error) {
-      console.error('Erro ao verificar email:', error);
+      console.error('Error checking email:', error);
       return false;
     }
   };
