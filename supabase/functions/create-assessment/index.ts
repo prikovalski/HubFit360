@@ -1,6 +1,8 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'https://deno.land/x/supabase@2.34.0/mod.ts';
+
+
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -26,15 +28,24 @@ serve(async (req) => {
     console.log('Recebendo dados para avaliação:', { userId, sex, height, weight });
 
     // Criar cliente Supabase para buscar dados do usuário
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Buscar a data de nascimento do usuário para calcular a idade
     const { data: userData, error: userError } = await supabase
       .from('users')
-      .select('birth_date')
+      .select(`
+        birth_date,
+        patient_profiles.neck_circumference,
+        patient_profiles.waist_circumference,
+        patient_profiles.hip_circumference,
+        patient_profiles.physical_activity,
+        patient_profiles.chronic_disease,
+        patient_profiles.goal
+      `)
       .eq('id', userId)
+      .join('patient_profiles', 'users.id', 'patient_profiles.user_id')
       .single();
 
     if (userError) {
@@ -79,15 +90,37 @@ serve(async (req) => {
     
     const photoInfo = "Fotos frontais, laterais e posteriores analisadas";
 
-    const prompt = `Você é um avaliador físico experiente. Com base nas seguintes informações:
+    const prompt = `Você é um nutricionista esportivo especializado em composição corporal ${genderForPrompt}. 
+    Quero que analise minhas fotos e dados pessoais atualizados e gere um laudo técnico e empático, incluindo:
+1. Avaliação corporal
+Estimativa do percentual de gordura corporal com base nas fotos e circunferências
+Massa magra e massa gorda estimadas
 
-- Sexo: ${genderForPrompt}
+2. Gasto energético
+Cálculo da TMB (Katch-McArdle, se possível)
+Estimativa do GET com base no meu nível de atividade física e estilo de vida
+
+3. Planejamento nutricional completo
+Quantas kcal devo ingerir para:
+
+Manutenção com foco em definição ou performance
+Emagrecimento com preservação de massa magra (cutting leve)
+Ganho de massa muscular com mínimo de gordura (bulking leve)
+
+Divisão ideal de macronutrientes (proteínas, carboidratos e gorduras) para cada cenário
+
+🧠 4. Simulação
+Explique o que deve acontecer com meu corpo se eu seguir a dieta sugerida por 30 dias, considerando meus dados.
+
+Dados Pessoais
+- Gênero: ${genderForPrompt}
 - Idade: ${calculatedAge} anos
 - Altura: ${height} cm
 - Peso: ${weight} kg
-- Estimativa de gordura corporal: ${estimatedBodyFat.toFixed(1)}%
-- Massa magra: ${leanMass.toFixed(1)} kg
-- Massa gorda: ${fatMass.toFixed(1)} kg
+- Circunferencias: pescoço: ${userData.neck_circumference}, cintura: ${userData.waist_circumference}, quadril: ${userData.hip_circumference}
+- Atividade física: ${userData.physical_activity}
+- Doenças crônicas: ${userData.chronic_disease}
+- Objetivo: ${userData.goal}
 - Fotos analisadas: ${photoInfo}
 
 Escreva um laudo técnico realista, profissional e empático, como se você estivesse avaliando visualmente um paciente. Inclua observações sobre definição muscular, distribuição de gordura, proporções corporais, e uma breve recomendação.`;
@@ -97,7 +130,7 @@ Escreva um laudo técnico realista, profissional e empático, como se você esti
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY') || ''}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
