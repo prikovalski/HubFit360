@@ -50,7 +50,10 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
 
         <EstimatesSection preview={report.preview} />
 
-        <IdealRangesSection userProfile={userProfile} />
+        <IdealRangesSection 
+          userProfile={userProfile} 
+          patientProfile={patientProfile}
+        />
 
         <AIAnalysisSection report={report} userProfile={userProfile} />
 
