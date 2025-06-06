@@ -1,7 +1,8 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
 interface FormData {
   email: string;
@@ -32,7 +33,6 @@ interface SignupFormStepsProps {
   loading: boolean;
   onInputChange: (field: string, value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
-  onPrevStep: () => void;
   onSwitchToLogin: () => void;
 }
 
@@ -42,11 +42,23 @@ export const SignupFormSteps = ({
   loading, 
   onInputChange, 
   onSubmit, 
-  onPrevStep, 
   onSwitchToLogin 
 }: SignupFormStepsProps) => {
+  const navigate = useNavigate();
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await onSubmit(e);
+      // Only navigate if onSubmit doesn't throw an error
+      navigate('/assessment');
+    } catch (error) {
+      // Error handling is done in the parent component
+      console.error('Signup failed:', error);
+    }
+  };
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       {step === 1 && (
         <>
           <div>
@@ -86,55 +98,7 @@ export const SignupFormSteps = ({
               disabled={loading}
             />
           </div>
-        </>
-      )}
 
-      {step === 2 && (
-        <>
-          <div>
-            <Label htmlFor="gender">Gênero</Label>
-            <select
-              id="gender"
-              value={formData.gender}
-              onChange={(e) => onInputChange('gender', e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              required
-              disabled={loading}
-            >
-              <option value="">Selecione</option>
-              <option value="MALE">Masculino</option>
-              <option value="FEMALE">Feminino</option>
-              <option value="OTHER">Outro</option>
-            </select>
-          </div>
-
-          <div>
-            <Label htmlFor="birthDate">Data de Nascimento</Label>
-            <Input
-              id="birthDate"
-              type="date"
-              value={formData.birthDate}
-              onChange={(e) => onInputChange('birthDate', e.target.value)}
-              required
-              disabled={loading}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="city">Cidade</Label>
-            <Input
-              id="city"
-              value={formData.city}
-              onChange={(e) => onInputChange('city', e.target.value)}
-              placeholder="Sua cidade"
-              disabled={loading}
-            />
-          </div>
-        </>
-      )}
-
-      {step === 3 && (
-        <>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="weight">Peso (kg)</Label>
@@ -161,28 +125,6 @@ export const SignupFormSteps = ({
                 disabled={loading}
               />
             </div>
-          </div>
-
-          <div>
-            <Label htmlFor="goal">Objetivo</Label>
-            <Input
-              id="goal"
-              value={formData.goal}
-              onChange={(e) => onInputChange('goal', e.target.value)}
-              placeholder="Ex: Perder peso, ganhar massa muscular..."
-              disabled={loading}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="physicalActivity">Atividade Física</Label>
-            <Input
-              id="physicalActivity"
-              value={formData.physicalActivity}
-              onChange={(e) => onInputChange('physicalActivity', e.target.value)}
-              placeholder="Que exercícios você pratica?"
-              disabled={loading}
-            />
           </div>
         </>
       )}
@@ -270,7 +212,7 @@ export const SignupFormSteps = ({
         className="w-full bg-[#019f80] hover:bg-[#017a63] text-white"
         disabled={loading}
       >
-        {loading ? 'Processando...' : step === 4 ? 'Finalizar Cadastro' : 'Próximo'}
+        {loading ? 'Processando...' : 'Finalizar Cadastro'}
       </Button>
 
       {step === 1 && (
@@ -285,18 +227,7 @@ export const SignupFormSteps = ({
         </div>
       )}
 
-      {step > 1 && (
-        <div className="text-center">
-          <button 
-            type="button"
-            onClick={onPrevStep}
-            className="text-gray-500 hover:underline"
-            disabled={loading}
-          >
-            Voltar
-          </button>
-        </div>
-      )}
+
     </form>
   );
 };
