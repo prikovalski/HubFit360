@@ -1,9 +1,8 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 interface FormData {
   email: string;
@@ -34,7 +33,6 @@ interface SignupFormStepsProps {
   loading: boolean;
   onInputChange: (field: string, value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
-  onPrevStep: () => void;
   onSwitchToLogin: () => void;
 }
 
@@ -44,11 +42,23 @@ export const SignupFormSteps = ({
   loading, 
   onInputChange, 
   onSubmit, 
-  onPrevStep,
   onSwitchToLogin 
 }: SignupFormStepsProps) => {
+  const navigate = useNavigate();
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await onSubmit(e);
+      // Only navigate if onSubmit doesn't throw an error
+      navigate('/assessment');
+    } catch (error) {
+      // Error handling is done in the parent component
+      console.error('Signup failed:', error);
+    }
+  };
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       {step === 1 && (
         <>
           <div>
@@ -217,18 +227,7 @@ export const SignupFormSteps = ({
         </div>
       )}
 
-      {step > 1 && (
-        <div className="text-center">
-          <button 
-            type="button"
-            onClick={onPrevStep}
-            className="text-gray-500 hover:underline"
-            disabled={loading}
-          >
-            Voltar
-          </button>
-        </div>
-      )}
+
     </form>
   );
 };
