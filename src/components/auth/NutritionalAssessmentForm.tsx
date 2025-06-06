@@ -42,7 +42,7 @@ const AssessmentForm = () => {
     // Aqui seria enviado para o backend
     
     // Redireciona para o dashboard após o envio
-    navigate('/DashboardStats');
+    navigate('/');
   };
 
   return (
