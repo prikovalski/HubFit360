@@ -34,6 +34,7 @@ interface SignupFormStepsProps {
   loading: boolean;
   onInputChange: (field: string, value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
+  onPrevStep: () => void;
   onSwitchToLogin: () => void;
 }
 
@@ -43,6 +44,7 @@ export const SignupFormSteps = ({
   loading, 
   onInputChange, 
   onSubmit, 
+  onPrevStep,
   onSwitchToLogin 
 }: SignupFormStepsProps) => {
   return (
@@ -211,6 +213,19 @@ export const SignupFormSteps = ({
             disabled={loading}
           >
             Já tem conta? Fazer login
+          </button>
+        </div>
+      )}
+
+      {step > 1 && (
+        <div className="text-center">
+          <button 
+            type="button"
+            onClick={onPrevStep}
+            className="text-gray-500 hover:underline"
+            disabled={loading}
+          >
+            Voltar
           </button>
         </div>
       )}
