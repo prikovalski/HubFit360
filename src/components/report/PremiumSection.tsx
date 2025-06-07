@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -221,7 +220,15 @@ const PremiumSection = ({ report, isPaid, onPaymentSuccess }: PremiumSectionProp
                       </p>
                     </div>
                   )}
-                </div
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-700 mb-2">Suplementação Recomendada</h4>
+                  <ul className="space-y-1 text-gray-600">
+                    {personalizedContent?.nutritionPlan.supplements.map((supplement, index) => (
+                      <li key={index} className="text-sm">• {supplement}</li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
           </CardContent>
