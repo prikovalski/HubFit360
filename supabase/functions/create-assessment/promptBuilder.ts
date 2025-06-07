@@ -1,5 +1,6 @@
 
 import type { UserData, PatientProfile } from './types.ts';
+import { calculateBodyFatPercentage, calculateLeanMass, calculateFatMass } from './deurenbergFormula.ts';
 
 export function buildAssessmentPrompt(
   userData: UserData,
@@ -14,6 +15,11 @@ export function buildAssessmentPrompt(
   const patientProfile = userData.patient_profiles?.[0] || {};
 
   console.log('Dados do perfil do paciente para o prompt:', JSON.stringify(patientProfile, null, 2));
+
+  // Calcular valores usando a fórmula de Deurenberg
+  const bodyFatPercentage = calculateBodyFatPercentage(weight, height, calculatedAge, sex);
+  const leanMass = calculateLeanMass(weight, bodyFatPercentage);
+  const fatMass = calculateFatMass(weight, bodyFatPercentage);
 
   // Função para formatar circunferências com valores seguros
   const formatCircumference = (value: number | null | undefined): string => {
@@ -33,6 +39,11 @@ export function buildAssessmentPrompt(
     quadril: hipCirc
   });
 
+  console.log('Valores calculados pela fórmula de Deurenberg:');
+  console.log('Percentual de gordura:', bodyFatPercentage.toFixed(2) + '%');
+  console.log('Massa magra:', leanMass.toFixed(2) + 'kg');
+  console.log('Massa gorda:', fatMass.toFixed(2) + 'kg');
+
   return `Você é um avaliador físico profissional especializado em análise de composição corporal.
 
 Analise os dados fornecidos, gere um laudo técnico completo incluindo:
@@ -41,6 +52,11 @@ Analise os dados fornecidos, gere um laudo técnico completo incluindo:
 - Estimativa do percentual de gordura corporal utilizando a fórmula de Deurenberg baseada nos dados antropométricos
 - Massa magra e massa gorda estimadas
 - Análise da distribuição de gordura corporal
+
+DADOS CALCULADOS PELA FÓRMULA DE DEURENBERG:
+- Percentual de gordura corporal: ${bodyFatPercentage.toFixed(1)}%
+- Massa magra: ${leanMass.toFixed(1)}kg
+- Massa gorda: ${fatMass.toFixed(1)}kg
 
 2. GASTO ENERGÉTICO
 - Cálculo da Taxa Metabólica Basal (TMB)
@@ -71,5 +87,5 @@ DADOS PESSOAIS:
 - Doenças crônicas: ${patientProfile.chronic_disease || 'Nenhuma'}
 - Objetivo: ${patientProfile.goal || 'Não informado'}
 
-Forneça um laudo técnico, realista e profissional. Inclua valores numéricos específicos nas estimativas.`;
+IMPORTANTE: Use os valores calculados pela fórmula de Deurenberg fornecidos acima como base para sua análise. Forneça um laudo técnico, realista e profissional baseado nesses cálculos precisos.`;
 }
