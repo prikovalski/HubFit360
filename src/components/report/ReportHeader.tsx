@@ -1,87 +1,89 @@
 
-import { ArrowLeft, Calendar, Loader2, RefreshCw } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileDown, Calendar, User } from 'lucide-react';
+import { generateAssessmentPDF } from '@/utils/pdfGenerator';
+import { UserProfile, PatientProfile } from '@/types/report';
 
 interface ReportHeaderProps {
   report: any;
-  onBack: () => void;
+  userProfile: UserProfile | null;
+  patientProfile: PatientProfile | null;
   isPaid: boolean;
-  onManualPaymentCheck?: () => void;
-  isCheckingPayment?: boolean;
 }
 
-const ReportHeader = ({ 
-  report, 
-  onBack, 
-  isPaid, 
-  onManualPaymentCheck, 
-  isCheckingPayment = false 
-}: ReportHeaderProps) => {
-  const getStatusBadge = () => {
-    if (isPaid) {
-      return <Badge className="bg-green-600 text-white">Completo</Badge>;
-    }
-    return <Badge variant="secondary">Básico</Badge>;
-  };
+const ReportHeader = ({ report, userProfile, patientProfile, isPaid }: ReportHeaderProps) => {
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const handleDownloadPDF = async () => {
+    setIsGeneratingPDF(true);
+    try {
+      const doc = generateAssessmentPDF({ 
+        report, 
+        userProfile, 
+        patientProfile 
+      });
+      
+      const fileName = `laudo-avaliacao-${userProfile?.name?.replace(/\s+/g, '-').toLowerCase() || 'usuario'}-${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(fileName);
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+    } finally {
+      setIsGeneratingPDF(false);
+    }
   };
 
   return (
-    <div className="mb-8">
-      <div className="flex items-center justify-between mb-6">
-        <Button 
-          variant="ghost" 
-          onClick={onBack}
-          className="flex items-center text-gray-600 hover:text-gray-900"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Voltar ao Dashboard
-        </Button>
-        
-        <div className="flex items-center gap-3">
-          {!isPaid && onManualPaymentCheck && (
+    <Card className="border-0 shadow-xl bg-gradient-to-r from-[#019f80] to-green-600 text-white mb-8">
+      <CardHeader className="pb-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <CardTitle className="text-3xl font-bold mb-2 flex items-center">
+              <User className="w-8 h-8 mr-3" />
+              Relatório de Avaliação
+            </CardTitle>
+            <div className="flex items-center text-green-100 mb-2">
+              <Calendar className="w-4 h-4 mr-2" />
+              <span>Gerado em {new Date(report.date).toLocaleDateString('pt-BR')}</span>
+            </div>
+            {userProfile?.name && (
+              <p className="text-lg font-medium text-green-100">
+                {userProfile.name}
+              </p>
+            )}
+          </div>
+          
+          {isPaid && (
             <Button
-              variant="outline"
-              size="sm"
-              onClick={onManualPaymentCheck}
-              disabled={isCheckingPayment}
-              className="flex items-center gap-2"
+              onClick={handleDownloadPDF}
+              disabled={isGeneratingPDF}
+              className="bg-white text-[#019f80] hover:bg-green-50 font-semibold px-6 py-3 text-lg"
             >
-              {isCheckingPayment ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <RefreshCw className="w-4 h-4" />
-              )}
-              {isCheckingPayment ? 'Verificando...' : 'Verificar Pagamento'}
+              <FileDown className="w-5 h-5 mr-2" />
+              {isGeneratingPDF ? 'Gerando PDF...' : 'Baixar PDF'}
             </Button>
           )}
-          {getStatusBadge()}
         </div>
-      </div>
-
-      <div className="bg-white rounded-lg shadow-sm border p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Laudo de Avaliação Física
-            </h1>
-            <div className="flex items-center text-gray-600">
-              <Calendar className="w-4 h-4 mr-2" />
-              <span>{formatDate(report.date)}</span>
-            </div>
+      </CardHeader>
+      
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+          <div className="bg-white/10 rounded-lg p-4">
+            <div className="text-2xl font-bold">{report.preview.leanMass}</div>
+            <div className="text-green-100">Massa Magra</div>
+          </div>
+          <div className="bg-white/10 rounded-lg p-4">
+            <div className="text-2xl font-bold">{report.preview.bodyFat}</div>
+            <div className="text-green-100">Gordura Corporal</div>
+          </div>
+          <div className="bg-white/10 rounded-lg p-4">
+            <div className="text-2xl font-bold">{report.preview.bmi}</div>
+            <div className="text-green-100">IMC</div>
           </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -1,7 +1,14 @@
 
 import jsPDF from 'jspdf';
+import { UserProfile, PatientProfile } from '@/types/report';
 
-export const generateAssessmentPDF = (report: any) => {
+interface GeneratePDFProps {
+  report: any;
+  userProfile: UserProfile | null;
+  patientProfile: PatientProfile | null;
+}
+
+export const generateAssessmentPDF = ({ report, userProfile, patientProfile }: GeneratePDFProps) => {
   const doc = new jsPDF();
   
   // Configurações básicas
@@ -32,58 +39,136 @@ export const generateAssessmentPDF = (report: any) => {
     currentY += 3; // Espaço extra após o texto
   };
 
+  // Função para calcular idade
+  const calculateAge = (birthDate: string | null) => {
+    if (!birthDate) return 'N/A';
+    const birth = new Date(birthDate);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
   // Cabeçalho
   addText('HUBFIT360', 20, true);
   addText('Laudo de Avaliação Física', 16, true);
   addText(`Data: ${new Date(report.date).toLocaleDateString('pt-BR')}`, 12);
   currentY += 10;
 
-  // Dados Pessoais
+  // Dados Pessoais (dados reais do banco)
   addText('DADOS PESSOAIS', 14, true);
-  addText('Nome: João Silva Santos');
-  addText('Idade: 32 anos');
-  addText('Gênero: Masculino');
-  addText('Altura: 1,78m');
-  addText('Peso: 82kg');
+  addText(`Nome: ${userProfile?.name || 'Não informado'}`);
+  
+  const displayAge = report.age || calculateAge(userProfile?.birth_date || null);
+  addText(`Idade: ${displayAge} anos`);
+  
+  addText(`Gênero: ${userProfile?.gender || 'Não informado'}`);
+  addText(`Altura: ${patientProfile?.height ? `${(patientProfile.height / 100).toFixed(2)}m` : 'Não informado'}`);
+  addText(`Peso: ${patientProfile?.weight ? `${patientProfile.weight}kg` : 'Não informado'}`);
+  
+  if (patientProfile?.city) {
+    addText(`Cidade: ${patientProfile.city}`);
+  }
+  
+  if (patientProfile?.goal) {
+    addText(`Objetivo: ${patientProfile.goal}`);
+  }
+  
   currentY += 10;
 
-  // Resultados
+  // Resultados (dados reais da avaliação)
   addText('RESULTADOS DA AVALIAÇÃO', 14, true);
   addText(`Massa Magra: ${report.preview.leanMass}`);
   addText(`Gordura Corporal: ${report.preview.bodyFat}`);
   addText(`IMC: ${report.preview.bmi}`);
-  currentY += 10;
-
-  // Análise Visual
-  addText('ANÁLISE VISUAL E COMPOSIÇÃO CORPORAL', 14, true);
-  addText('A análise visual demonstra uma composição corporal equilibrada, com distribuição homogênea da massa muscular nos principais grupos musculares. O percentual de gordura corporal atual encontra-se dentro da faixa considerada saudável para homens da faixa etária, apresentando leve acúmulo na região abdominal inferior, padrão típico masculino.');
   
-  addText('A definição muscular é visível especialmente na região do peitoral e braços, indicando bom condicionamento físico e prática regular de exercícios resistidos. Em relação às proporções corporais, observa-se simetria adequada entre membros superiores e inferiores, com desenvolvimento muscular proporcional.');
+  if (report.preview.fatMass) {
+    addText(`Massa de Gordura: ${report.preview.fatMass}`);
+  }
+  
   currentY += 10;
 
-  // Valores Ideais
+  // Análise Visual (usando dados reais se disponível)
+  addText('ANÁLISE VISUAL E COMPOSIÇÃO CORPORAL', 14, true);
+  
+  if (report.assessmentText) {
+    addText(report.assessmentText);
+  } else {
+    // Fallback para texto genérico baseado nos dados do usuário
+    const genderText = userProfile?.gender === 'Masculino' ? 'masculino' : 'feminino';
+    const defaultAnalysis = `A análise visual demonstra uma composição corporal adequada para o perfil ${genderText}. O percentual de gordura corporal atual encontra-se dentro de uma faixa considerada para a faixa etária. A avaliação foi realizada com base nas medidas corporais fornecidas e nas fotografias submetidas.`;
+    addText(defaultAnalysis);
+  }
+  
+  currentY += 10;
+
+  // Valores Ideais (baseados no gênero do usuário)
   addText('VALORES IDEAIS', 14, true);
-  addText('Massa Gorda Ideal: 12-15%');
-  addText('Massa Magra Ideal: 68-72kg');
-  addText('IMC Ideal: 22-25');
+  
+  if (userProfile?.gender === 'Masculino') {
+    addText('Massa Gorda Ideal: 10-18%');
+    addText('IMC Ideal: 22-25');
+  } else {
+    addText('Massa Gorda Ideal: 16-24%');
+    addText('IMC Ideal: 21-24');
+  }
+  
   currentY += 10;
 
   // Recomendações (apenas se for versão paga)
   if (report.status === 'paid') {
     addText('RECOMENDAÇÕES PERSONALIZADAS', 14, true);
     
+    // Recomendações baseadas no objetivo do usuário
+    if (patientProfile?.goal) {
+      addText(`Programa personalizado para: ${patientProfile.goal}`, 12, true);
+    }
+    
     addText('Programa de Treino:', 12, true);
-    addText('• 4-5x por semana de musculação');
-    addText('• Foco em exercícios compostos');
-    addText('• 2-3x cardio moderado');
-    addText('• Ênfase em core e estabilização');
+    
+    if (patientProfile?.goal?.toLowerCase().includes('perda')) {
+      addText('• 4-5x por semana de exercícios');
+      addText('• Foco em exercícios aeróbicos');
+      addText('• 3-4x cardio moderado a intenso');
+      addText('• Treino funcional e HIIT');
+    } else {
+      addText('• 4-5x por semana de musculação');
+      addText('• Foco em exercícios compostos');
+      addText('• 2-3x cardio moderado');
+      addText('• Ênfase em hipertrofia');
+    }
+    
     currentY += 5;
     
     addText('Plano Nutricional:', 12, true);
-    addText('• 2200-2400 kcal/dia');
-    addText('• 2.2g proteína/kg peso');
-    addText('• 40% carbo, 30% prot, 30% gord');
-    addText('• 6 refeições ao dia');
+    
+    if (patientProfile?.weight) {
+      const calories = patientProfile.goal?.toLowerCase().includes('perda') ? 
+        Math.round(patientProfile.weight * 24) : 
+        Math.round(patientProfile.weight * 32);
+      addText(`• ${calories}-${calories + 200} kcal/dia`);
+      addText(`• ${(patientProfile.weight * 1.8).toFixed(1)}g proteína/dia`);
+    }
+    
+    addText('• Distribuição balanceada de macronutrientes');
+    addText('• 5-6 refeições ao dia');
+    
+    // Considerações especiais baseadas no perfil
+    if (patientProfile?.food_allergy) {
+      currentY += 5;
+      addText('Restrições Alimentares:', 12, true);
+      addText(`• ${patientProfile.food_allergy}`);
+    }
+    
+    if (patientProfile?.medical_restriction) {
+      currentY += 5;
+      addText('Restrições Médicas:', 12, true);
+      addText(`• ${patientProfile.medical_restriction}`);
+    }
+    
     currentY += 10;
   }
 
