@@ -1,4 +1,5 @@
-import { createClient } from 'https://deno.land/x/supabase@2.39.0/mod.ts';
+
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import type { UserData } from './types.ts';
 
 export async function fetchUserData(userId: string): Promise<UserData> {
