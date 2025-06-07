@@ -2,6 +2,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import React, { useEffect, useState } from 'react';
+import { getEstados, Estado } from '@/services/stateService';
 
 interface FormData {
   email: string;
@@ -12,6 +14,7 @@ interface FormData {
   weight: string;
   height: string;
   city: string;
+  state: string; // UF do estado brasileiro
   goal: string;
   chronicDisease: string;
   medicalRestriction: string;
@@ -37,266 +40,293 @@ interface SignupFormStepsProps {
 }
 
 export const SignupFormSteps = ({ 
-  step, 
   formData, 
   loading, 
   onInputChange, 
   onSubmit, 
-  onPrevStep, 
   onSwitchToLogin 
-}: SignupFormStepsProps) => {
+}: Omit<SignupFormStepsProps, 'step' | 'onPrevStep'>) => {
+  const [estados, setEstados] = useState<Estado[]>([]);
+  const [estadosLoading, setEstadosLoading] = useState(false);
+
+  useEffect(() => {
+    setEstadosLoading(true);
+    getEstados()
+      .then(data => setEstados(data))
+      .catch(() => setEstados([]))
+      .finally(() => setEstadosLoading(false));
+  }, []);
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      {step === 1 && (
-        <>
-          <div>
+    <form onSubmit={onSubmit} className="space-y-8">
+      {/* Dados Pessoais */}
+      <div className="bg-green-50 rounded-xl shadow-md p-6 mb-6">
+        <div className="flex items-center mb-6">
+          <svg className="w-7 h-7 text-green-600 mr-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+          <h2 className="text-2xl font-bold text-gray-800">Dados Pessoais</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-3">
             <Label htmlFor="name">Nome Completo</Label>
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => onInputChange('name', e.target.value)}
+              onChange={e => onInputChange('name', e.target.value)}
               placeholder="Seu nome completo"
               required
               disabled={loading}
             />
           </div>
-          
-          <div>
+          <div className="md:col-span-3">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
               value={formData.email}
-              onChange={(e) => onInputChange('email', e.target.value)}
+              onChange={e => onInputChange('email', e.target.value)}
               placeholder="seu@email.com"
               required
               disabled={loading}
             />
           </div>
-          
-          <div>
+          <div className="md:col-span-3 md:col-span-2">
             <Label htmlFor="password">Senha</Label>
             <Input
               id="password"
               type="password"
               value={formData.password}
-              onChange={(e) => onInputChange('password', e.target.value)}
-              placeholder="••••••••"
+              onChange={e => onInputChange('password', e.target.value)}
+              placeholder="Crie uma senha segura"
               required
               disabled={loading}
             />
           </div>
-        </>
-      )}
-
-      {step === 2 && (
-        <>
-          <div>
-            <Label htmlFor="gender">Gênero</Label>
-            <select
-              id="gender"
-              value={formData.gender}
-              onChange={(e) => onInputChange('gender', e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              required
-              disabled={loading}
-            >
-              <option value="">Selecione</option>
-              <option value="MALE">Masculino</option>
-              <option value="FEMALE">Feminino</option>
-              <option value="OTHER">Outro</option>
-            </select>
-          </div>
-
           <div>
             <Label htmlFor="birthDate">Data de Nascimento</Label>
             <Input
               id="birthDate"
               type="date"
               value={formData.birthDate}
-              onChange={(e) => onInputChange('birthDate', e.target.value)}
+              onChange={e => onInputChange('birthDate', e.target.value)}
               required
               disabled={loading}
             />
           </div>
-
           <div>
-            <Label htmlFor="city">Cidade</Label>
+            <Label htmlFor="gender">Gênero</Label>
+            <select
+              id="gender"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={formData.gender}
+              onChange={e => onInputChange('gender', e.target.value)}
+              disabled={loading}
+              required
+            >
+              <option value="">Selecione</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Feminino">Feminino</option>
+              <option value="Outro">Outro</option>
+            </select>
+          </div>
+          <div>
+            <Label htmlFor="weight">Peso (kg)</Label>
             <Input
-              id="city"
-              value={formData.city}
-              onChange={(e) => onInputChange('city', e.target.value)}
-              placeholder="Sua cidade"
+              id="weight"
+              value={formData.weight}
+              onChange={e => onInputChange('weight', e.target.value)}
+              placeholder="Ex: 75"
               disabled={loading}
             />
           </div>
-        </>
-      )}
+          <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="city">Cidade</Label>
+              <Input
+                id="city"
+                value={formData.city}
+                onChange={e => onInputChange('city', e.target.value)}
+                placeholder="Sua cidade"
+                disabled={loading}
+              />
+            </div>
+            <div>
+  <Label htmlFor="state">Estado</Label>
+  <select
+    id="state"
+    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    value={formData.state}
+    onChange={e => onInputChange('state', e.target.value)}
+    disabled={loading || estadosLoading}
+    required
+  >
+    <option value="">Selecione</option>
+    {estados.map((estado) => (
+      <option key={estado.id} value={estado.sigla}>
+        {estado.nome} ({estado.sigla})
+      </option>
+    ))}
+  </select>
+</div>
 
-      {step === 3 && (
-        <>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="weight">Peso (kg)</Label>
-              <Input
-                id="weight"
-                type="number"
-                step="0.1"
-                value={formData.weight}
-                onChange={(e) => onInputChange('weight', e.target.value)}
-                placeholder="70.5"
-                disabled={loading}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="height">Altura (cm)</Label>
-              <Input
-                id="height"
-                type="number"
-                step="0.1"
-                value={formData.height}
-                onChange={(e) => onInputChange('height', e.target.value)}
-                placeholder="175.0"
-                disabled={loading}
-              />
-            </div>
           </div>
-
           <div>
-            <Label htmlFor="goal">Objetivo</Label>
+            <Label htmlFor="height">Altura (cm)</Label>
             <Input
-              id="goal"
-              value={formData.goal}
-              onChange={(e) => onInputChange('goal', e.target.value)}
-              placeholder="Ex: Perder peso, ganhar massa muscular..."
+              id="height"
+              value={formData.height}
+              onChange={e => onInputChange('height', e.target.value)}
+              placeholder="Ex: 175"
               disabled={loading}
             />
           </div>
 
           <div>
-            <Label htmlFor="physicalActivity">Atividade Física</Label>
+            <Label htmlFor="neckCircumference">Circunferência do Pescoço (cm)</Label>
+            <Input
+              id="neckCircumference"
+              value={formData.neckCircumference}
+              onChange={e => onInputChange('neckCircumference', e.target.value)}
+              placeholder="Ex: 38"
+              disabled={loading}
+            />
+          </div>
+          <div>
+            <Label htmlFor="waistCircumference">Circunferência da Cintura (cm)</Label>
+            <Input
+              id="waistCircumference"
+              value={formData.waistCircumference}
+              onChange={e => onInputChange('waistCircumference', e.target.value)}
+              placeholder="Ex: 85"
+              disabled={loading}
+            />
+          </div>
+          <div>
+        <Label htmlFor="goal">Objetivo</Label>
+        <Input
+          id="goal"
+          value={formData.goal}
+          onChange={(e) => onInputChange('goal', e.target.value)}
+          placeholder="Ex: Perder peso, ganhar massa muscular..."
+          disabled={loading}
+        />
+      </div>
+        </div>
+      </div>
+
+      {/* Atividade Física */}
+      <div className="bg-blue-50 rounded-xl shadow-md p-6 mb-6">
+        <div className="flex items-center mb-6">
+          <svg className="w-7 h-7 text-blue-600 mr-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 00-3-3.87M4 21v-2a4 4 0 013-3.87m9-7.13a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+          <h2 className="text-2xl font-bold text-gray-800">Atividade Física</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex flex-col">
+            <Label htmlFor="physicalActivity">Tipo de Exercício</Label>
             <Input
               id="physicalActivity"
               value={formData.physicalActivity}
-              onChange={(e) => onInputChange('physicalActivity', e.target.value)}
-              placeholder="Que exercícios você pratica?"
+              onChange={e => onInputChange('physicalActivity', e.target.value)}
+              placeholder="Ex: Musculação"
               disabled={loading}
             />
           </div>
-        </>
-      )}
-
-      {step === 4 && (
-        <>
-          <div>
-            <Label htmlFor="foodAllergy">Alergias Alimentares</Label>
+          <div className="flex flex-col">
+            <Label htmlFor="activityFrequency">Frequência de Exercícios (dias/semana)</Label>
             <Input
-              id="foodAllergy"
-              value={formData.foodAllergy}
-              onChange={(e) => onInputChange('foodAllergy', e.target.value)}
-              placeholder="Ex: Lactose, glúten..."
+              id="activityFrequency"
+              value={formData.activityFrequency}
+              onChange={e => onInputChange('activityFrequency', e.target.value)}
+              placeholder="Ex: 3-4 dias"
               disabled={loading}
             />
           </div>
+          <div className="flex flex-col">
+            <Label htmlFor="goal">Intensidade</Label>
+            <Input
+              id="goal"
+              value={formData.goal}
+              onChange={e => onInputChange('goal', e.target.value)}
+              placeholder="Ex: Moderada"
+              disabled={loading}
+            />
+          </div>
+        </div>
+      </div>
 
+      {/* Saúde e Restrições */}
+      <div className="bg-red-50 rounded-xl shadow-md p-6 mb-6">
+        <div className="flex items-center mb-6">
+          <svg className="w-7 h-7 text-red-600 mr-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
+          <h2 className="text-2xl font-bold text-gray-800">Saúde e Restrições</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="chronicDisease">Doenças Crônicas</Label>
             <Input
               id="chronicDisease"
               value={formData.chronicDisease}
-              onChange={(e) => onInputChange('chronicDisease', e.target.value)}
+              onChange={e => onInputChange('chronicDisease', e.target.value)}
               placeholder="Ex: Diabetes, hipertensão..."
               disabled={loading}
             />
           </div>
-
           <div>
             <Label htmlFor="medicalRestriction">Restrições Médicas</Label>
             <Input
               id="medicalRestriction"
               value={formData.medicalRestriction}
-              onChange={(e) => onInputChange('medicalRestriction', e.target.value)}
-              placeholder="Alguma restrição médica?"
+              onChange={e => onInputChange('medicalRestriction', e.target.value)}
+              placeholder="Ex: Cirurgia, lesão..."
               disabled={loading}
             />
           </div>
-
-          <div className="grid grid-cols-3 gap-2">
-            <div>
-              <Label htmlFor="neckCircumference">Pescoço (cm)</Label>
-              <Input
-                id="neckCircumference"
-                type="number"
-                step="0.1"
-                value={formData.neckCircumference}
-                onChange={(e) => onInputChange('neckCircumference', e.target.value)}
-                placeholder="35.0"
-                disabled={loading}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="waistCircumference">Cintura (cm)</Label>
-              <Input
-                id="waistCircumference"
-                type="number"
-                step="0.1"
-                value={formData.waistCircumference}
-                onChange={(e) => onInputChange('waistCircumference', e.target.value)}
-                placeholder="80.0"
-                disabled={loading}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="hipCircumference">Quadril (cm)</Label>
-              <Input
-                id="hipCircumference"
-                type="number"
-                step="0.1"
-                value={formData.hipCircumference}
-                onChange={(e) => onInputChange('hipCircumference', e.target.value)}
-                placeholder="95.0"
-                disabled={loading}
-              />
-            </div>
+          <div>
+            <Label htmlFor="foodAllergy">Alergias Alimentares</Label>
+            <Input
+              id="foodAllergy"
+              value={formData.foodAllergy}
+              onChange={e => onInputChange('foodAllergy', e.target.value)}
+              placeholder="Ex: Glúten, lactose..."
+              disabled={loading}
+            />
           </div>
-        </>
-      )}
-
-      <Button 
-        type="submit"
-        className="w-full bg-[#019f80] hover:bg-[#017a63] text-white"
-        disabled={loading}
-      >
-        {loading ? 'Processando...' : step === 4 ? 'Finalizar Cadastro' : 'Próximo'}
-      </Button>
-
-      {step === 1 && (
-        <div className="text-center">
-          <button 
-            onClick={onSwitchToLogin}
-            className="text-[#019f80] hover:underline"
-            disabled={loading}
-          >
-            Já tem conta? Fazer login
-          </button>
+          <div>
+            <Label htmlFor="avoidFood">Alimentos a Evitar</Label>
+            <Input
+              id="avoidFood"
+              value={formData.avoidFood}
+              onChange={e => onInputChange('avoidFood', e.target.value)}
+              placeholder="Ex: Frituras, açúcar..."
+              disabled={loading}
+            />
+          </div>
         </div>
-      )}
+      </div>
 
-      {step > 1 && (
-        <div className="text-center">
+      {/* Botão de submit */}
+      <div className="pt-2">
+        <Button 
+          type="submit"
+          className="w-full bg-[#019f80] hover:bg-[#017a63] text-white text-lg py-3"
+          disabled={loading}
+        >
+          {loading ? 'Processando...' : 'Finalizar Cadastro'}
+        </Button>
+       
+       
+        <div className="text-center mt-4">
           <button 
             type="button"
-            onClick={onPrevStep}
-            className="text-gray-500 hover:underline"
+            onClick={onSwitchToLogin}
+            className="text-[#019f80] hover:underline text-sm"
             disabled={loading}
           >
-            Voltar
+            Já possui conta? Entrar
           </button>
         </div>
-      )}
+      </div>
+
+
     </form>
   );
 };

@@ -10,14 +10,12 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
   const { formData, setFormData, handleInputChange } = useFormData();
   
   const [isLogin, setIsLogin] = useState(true);
-  const [step, setStep] = useState(1);
+
   const [loading, setLoading] = useState(false);
   const [emailExists, setEmailExists] = useState(false);
 
   const { handleSubmit } = useAuthSubmit({
     isLogin,
-    step,
-    setStep,
     formData,
     emailExists,
     setEmailExists,
@@ -34,8 +32,6 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
   return {
     isLogin,
     setIsLogin,
-    step,
-    setStep,
     loading,
     showPasswordReset,
     setShowPasswordReset,

@@ -22,8 +22,8 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
   const {
     isLogin,
     setIsLogin,
-    step,
-    setStep,
+
+
     loading,
     showPasswordReset,
     setShowPasswordReset,
@@ -40,23 +40,19 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
 
   const getTitle = () => {
     if (isLogin) return 'Bem-vindo de volta!';
-    if (step === 1) return 'Criar sua conta';
-    if (step === 2) return 'Seus dados pessoais';
-    if (step === 3) return 'Seus dados físicos';
+    return 'Criar sua conta';
     return 'Informações adicionais';
   };
 
   const getDescription = () => {
     if (isLogin) return 'Entre para acessar suas avaliações';
-    if (step === 1) return 'Preencha seus dados básicos';
-    if (step === 2) return 'Informações pessoais';
-    if (step === 3) return 'Dados para sua avaliação';
+    return 'Preencha seus dados';
     return 'Complete seu perfil';
   };
 
   return (
     <div className="py-12 px-4">
-      <div className="container mx-auto max-w-md">
+      <div className="container mx-auto max-w-2xl py-8">
         <AuthHeader onBack={onBack} isLogin={isLogin} />
 
         <AuthCard title={getTitle()} description={getDescription()}>
@@ -99,12 +95,10 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
                 />
               ) : (
                 <SignupFormSteps
-                  step={step}
                   formData={formData}
                   loading={loading}
                   onInputChange={handleInputChange}
                   onSubmit={handleSubmit}
-                  onPrevStep={() => setStep(step - 1)}
                   onSwitchToLogin={() => setIsLogin(true)}
                 />
               )}
