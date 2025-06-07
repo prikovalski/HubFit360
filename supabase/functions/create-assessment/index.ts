@@ -4,7 +4,6 @@ import type { AssessmentRequest, AssessmentResult } from './types.ts';
 import { fetchUserData, calculateAge } from './userDataService.ts';
 import { buildAssessmentPrompt } from './promptBuilder.ts';
 import { callOpenAI } from './openaiService.ts';
-import { extractAssessmentData } from './dataExtractor.ts';
 import { saveAssessment } from './assessmentService.ts';
 import { calculateBodyFatPercentage, calculateLeanMass, calculateFatMass } from './deurenbergFormula.ts';
 
@@ -54,19 +53,12 @@ serve(async (req) => {
     console.log('Massa gorda calculada:', fatMass.toFixed(2) + 'kg');
     
     // Construir o prompt
-    const prompt = buildAssessmentPrompt(userData, calculatedAge, height, weight, sex);
+    const prompt = buildAssessmentPrompt(userData, calculatedAge, height, weight, sex, bodyFatPercentage, leanMass, fatMass);
 
     // Chamar API do OpenAI
     const assessment = await callOpenAI(prompt);
 
-    // Usar os valores calculados pela fórmula de Deurenberg como base
-    // Mas ainda extrair dados do texto da IA para comparação/validação
-    const { estimatedBodyFat: aiBodyFat, leanMass: aiLeanMass, fatMass: aiFatMass } = extractAssessmentData(assessment);
-    
-    console.log('Comparação - IA vs Deurenberg:');
-    console.log('Gordura corporal - IA:', aiBodyFat, '% / Deurenberg:', bodyFatPercentage.toFixed(2), '%');
-    console.log('Massa magra - IA:', aiLeanMass, 'kg / Deurenberg:', leanMass.toFixed(2), 'kg');
-    console.log('Massa gorda - IA:', aiFatMass, 'kg / Deurenberg:', fatMass.toFixed(2), 'kg');
+    console.log('Usando valores da fórmula de Deurenberg para a avaliação final');
 
     // Salvar avaliação no banco usando os valores calculados pela fórmula de Deurenberg
     const assessmentData = await saveAssessment(

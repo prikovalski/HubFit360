@@ -6,7 +6,10 @@ export function buildAssessmentPrompt(
   calculatedAge: number,
   height: number,
   weight: number,
-  sex: string
+  sex: string,
+  bodyFatPercentage: number,
+  leanMass: number,
+  fatMass: number
 ): string {
   const heightM = height / 100;
   const bmi = weight / (heightM * heightM);
@@ -33,12 +36,19 @@ export function buildAssessmentPrompt(
     quadril: hipCirc
   });
 
+  console.log('Valores calculados pela fórmula de Deurenberg:', {
+    bodyFatPercentage: bodyFatPercentage.toFixed(2) + '%',
+    leanMass: leanMass.toFixed(2) + 'kg',
+    fatMass: fatMass.toFixed(2) + 'kg'
+  });
+
   return `Você é um avaliador físico profissional especializado em análise de composição corporal.
 
 Analise os dados fornecidos, gere um laudo completo incluindo:
 
 1. AVALIAÇÃO CORPORAL
 - Análise da distribuição de gordura corporal
+- Use como referência os valores já calculados: ${bodyFatPercentage.toFixed(1)}% de gordura corporal
 
 2. GASTO ENERGÉTICO
 - Cálculo da Taxa Metabólica Basal (TMB)
@@ -61,6 +71,10 @@ DADOS PESSOAIS:
 - Altura: ${height} cm
 - Peso: ${weight} kg
 - IMC: ${bmi.toFixed(1)}
+- Composição Corporal (Fórmula de Deurenberg):
+  * Gordura Corporal: ${bodyFatPercentage.toFixed(1)}%
+  * Massa Magra: ${leanMass.toFixed(1)} kg
+  * Massa Gorda: ${fatMass.toFixed(1)} kg
 - Circunferências: 
   * Pescoço: ${neckCirc} cm
   * Cintura: ${waistCirc} cm
