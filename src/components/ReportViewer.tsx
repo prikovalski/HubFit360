@@ -149,6 +149,8 @@ const ReportViewer = ({ report, onBack }) => {
       <div className="container mx-auto max-w-5xl">
         <ReportHeader 
           report={currentReport} 
+          userProfile={userProfile}
+          patientProfile={patientProfile}
           onBack={onBack} 
           isPaid={isPaid}
           onManualPaymentCheck={handleManualPaymentCheck}
