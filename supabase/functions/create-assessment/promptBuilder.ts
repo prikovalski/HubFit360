@@ -35,10 +35,10 @@ export function buildAssessmentPrompt(
 
   return `Você é um avaliador físico profissional especializado em análise de composição corporal.
 
-Analise os dados fornecidos e gere um laudo técnico completo incluindo:
+Analise os dados fornecidos, gere um laudo técnico completo incluindo:
 
 1. AVALIAÇÃO CORPORAL
-- Estimativa do percentual de gordura corporal baseada nos dados antropométricos
+- Estimativa do percentual de gordura corporal utilizando a fórmula de Deurenberg baseada nos dados antropométricos
 - Massa magra e massa gorda estimadas
 - Análise da distribuição de gordura corporal
 
