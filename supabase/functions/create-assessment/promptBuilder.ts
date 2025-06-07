@@ -13,6 +13,26 @@ export function buildAssessmentPrompt(
   const genderForPrompt = sex === 'male' ? 'Masculino' : 'Feminino';
   const patientProfile = userData.patient_profiles?.[0] || {};
 
+  console.log('Dados do perfil do paciente para o prompt:', JSON.stringify(patientProfile, null, 2));
+
+  // Função para formatar circunferências com valores seguros
+  const formatCircumference = (value: number | null | undefined): string => {
+    if (value === null || value === undefined) {
+      return 'N/A';
+    }
+    return `${value}`;
+  };
+
+  const neckCirc = formatCircumference(patientProfile.neck_circumference);
+  const waistCirc = formatCircumference(patientProfile.waist_circumference);
+  const hipCirc = formatCircumference(patientProfile.hip_circumference);
+
+  console.log('Circunferências formatadas:', {
+    pescoço: neckCirc,
+    cintura: waistCirc,
+    quadril: hipCirc
+  });
+
   return `Você é um avaliador físico profissional especializado em análise de composição corporal.
 
 Analise os dados fornecidos e gere um laudo técnico completo incluindo:
@@ -44,9 +64,9 @@ DADOS PESSOAIS:
 - Peso: ${weight} kg
 - IMC: ${bmi.toFixed(1)}
 - Circunferências: 
-  * Pescoço: ${patientProfile.neck_circumference || 'N/A'} cm
-  * Cintura: ${patientProfile.waist_circumference || 'N/A'} cm
-  * Quadril: ${patientProfile.hip_circumference || 'N/A'} cm
+  * Pescoço: ${neckCirc} cm
+  * Cintura: ${waistCirc} cm
+  * Quadril: ${hipCirc} cm
 - Atividade física: ${patientProfile.physical_activity || 'Não informado'}
 - Doenças crônicas: ${patientProfile.chronic_disease || 'Nenhuma'}
 - Objetivo: ${patientProfile.goal || 'Não informado'}
