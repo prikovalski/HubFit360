@@ -1,5 +1,5 @@
 
-import { createClient } from 'https://deno.land/x/supabase@2.38.0/mod.ts';
+import { createClient } from 'https://deno.land/x/supabase@2.45.0/mod.ts';
 import type { UserData } from './types.ts';
 
 export async function fetchUserData(userId: string): Promise<UserData> {
