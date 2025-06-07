@@ -28,7 +28,7 @@ const AssessmentsList = ({ assessments, loading, onReportClick, onNewAssessment 
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'PAID':
+      case 'paid':
         return <Badge className="bg-[#019f80] hover:bg-[#017a63]">Completo</Badge>;
       case 'processing':
         return <Badge variant="secondary">Processando</Badge>;
@@ -44,7 +44,7 @@ const AssessmentsList = ({ assessments, loading, onReportClick, onNewAssessment 
       const adaptedReport = {
         id: assessment.id,
         date: assessment.created_at,
-        status: 'PAID',
+        status: 'completed',
         preview: {
           leanMass: `${assessment.lean_mass?.toFixed(1) || 'N/A'}kg`,
           bodyFat: `${assessment.body_fat_percentage?.toFixed(1) || 'N/A'}%`,
