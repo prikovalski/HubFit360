@@ -221,22 +221,7 @@ const PremiumSection = ({ report, isPaid, onPaymentSuccess }: PremiumSectionProp
                       </p>
                     </div>
                   )}
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-700 mb-2">Suplementação Personalizada</h4>
-                  <ul className="space-y-1 text-gray-600">
-                    {personalizedContent?.nutritionPlan.supplements.map((supplement, index) => (
-                      <li key={index}>• {supplement}</li>
-                    ))}
-                  </ul>
-                  {patientProfile?.medical_restriction && (
-                    <div className="mt-4 p-3 bg-red-50 rounded-lg">
-                      <p className="text-sm text-red-800">
-                        <strong>Restrições médicas:</strong> {patientProfile.medical_restriction}
-                      </p>
-                    </div>
-                  )}
-                </div>
+                </div
               </div>
             </div>
           </CardContent>
