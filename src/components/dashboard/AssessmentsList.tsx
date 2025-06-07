@@ -44,7 +44,7 @@ const AssessmentsList = ({ assessments, loading, onReportClick, onNewAssessment 
       const adaptedReport = {
         id: assessment.id,
         date: assessment.created_at,
-        status: 'completed',
+        status: 'PAID',
         preview: {
           leanMass: `${assessment.lean_mass?.toFixed(1) || 'N/A'}kg`,
           bodyFat: `${assessment.body_fat_percentage?.toFixed(1) || 'N/A'}%`,
