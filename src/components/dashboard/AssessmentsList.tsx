@@ -134,7 +134,7 @@ const AssessmentsList = ({ assessments, loading, onReportClick, onNewAssessment 
                   </div>
                   
                   <div className="flex items-center space-x-2">
-                    {assessment.status === 'completed' && (
+                    {assessment.status === 'paid' && (
                       <Button 
                         variant="outline" 
                         size="sm"
