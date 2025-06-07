@@ -9,20 +9,10 @@ export async function fetchUserData(userId: string): Promise<UserData> {
 
   console.log('Buscando dados do usuário ID:', userId);
 
+  // Primeiro buscar dados do usuário
   const { data: userData, error: userError } = await supabase
     .from('users')
-    .select(`
-      birth_date,
-      gender,
-      patient_profiles (
-        neck_circumference,
-        waist_circumference,
-        hip_circumference,
-        physical_activity,
-        chronic_disease,
-        goal
-      )
-    `)
+    .select('birth_date, gender')
     .eq('id', userId)
     .single();
 
@@ -31,15 +21,37 @@ export async function fetchUserData(userId: string): Promise<UserData> {
     throw new Error(`Erro ao buscar dados do usuário: ${userError.message}`);
   }
 
-  console.log('Dados do usuário encontrados:', JSON.stringify(userData, null, 2));
-  
-  if (userData.patient_profiles && userData.patient_profiles.length > 0) {
-    console.log('Perfil do paciente encontrado:', JSON.stringify(userData.patient_profiles[0], null, 2));
-  } else {
-    console.log('Nenhum perfil de paciente encontrado');
+  console.log('Dados básicos do usuário encontrados:', JSON.stringify(userData, null, 2));
+
+  // Depois buscar perfil do paciente separadamente
+  const { data: patientProfile, error: profileError } = await supabase
+    .from('patient_profiles')
+    .select(`
+      neck_circumference,
+      waist_circumference,
+      hip_circumference,
+      physical_activity,
+      chronic_disease,
+      goal
+    `)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (profileError) {
+    console.error('Erro ao buscar perfil do paciente:', profileError);
   }
 
-  return userData;
+  console.log('Perfil do paciente encontrado:', JSON.stringify(patientProfile, null, 2));
+
+  // Combinar os dados
+  const combinedData: UserData = {
+    ...userData,
+    patient_profiles: patientProfile ? [patientProfile] : []
+  };
+
+  console.log('Dados combinados finais:', JSON.stringify(combinedData, null, 2));
+
+  return combinedData;
 }
 
 export function calculateAge(birthDate?: string): number {
