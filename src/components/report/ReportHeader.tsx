@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileDown, Calendar, User } from 'lucide-react';
+import { FileDown, Calendar, User, ArrowLeft } from 'lucide-react';
 import { generateAssessmentPDF } from '@/utils/pdfGenerator';
 import { UserProfile, PatientProfile } from '@/types/report';
 
@@ -11,9 +11,20 @@ interface ReportHeaderProps {
   userProfile: UserProfile | null;
   patientProfile: PatientProfile | null;
   isPaid: boolean;
+  onBack?: () => void;
+  onManualPaymentCheck?: () => Promise<void>;
+  isCheckingPayment?: boolean;
 }
 
-const ReportHeader = ({ report, userProfile, patientProfile, isPaid }: ReportHeaderProps) => {
+const ReportHeader = ({ 
+  report, 
+  userProfile, 
+  patientProfile, 
+  isPaid, 
+  onBack,
+  onManualPaymentCheck,
+  isCheckingPayment 
+}: ReportHeaderProps) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const handleDownloadPDF = async () => {
@@ -38,11 +49,23 @@ const ReportHeader = ({ report, userProfile, patientProfile, isPaid }: ReportHea
     <Card className="border-0 shadow-xl bg-gradient-to-r from-[#019f80] to-green-600 text-white mb-8">
       <CardHeader className="pb-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <CardTitle className="text-3xl font-bold mb-2 flex items-center">
-              <User className="w-8 h-8 mr-3" />
-              Relatório de Avaliação
-            </CardTitle>
+          <div className="flex-1">
+            <div className="flex items-center mb-2">
+              {onBack && (
+                <Button
+                  onClick={onBack}
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/20 mr-3 p-2"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
+              )}
+              <CardTitle className="text-3xl font-bold flex items-center">
+                <User className="w-8 h-8 mr-3" />
+                Relatório de Avaliação
+              </CardTitle>
+            </div>
             <div className="flex items-center text-green-100 mb-2">
               <Calendar className="w-4 h-4 mr-2" />
               <span>Gerado em {new Date(report.date).toLocaleDateString('pt-BR')}</span>
@@ -54,16 +77,28 @@ const ReportHeader = ({ report, userProfile, patientProfile, isPaid }: ReportHea
             )}
           </div>
           
-          {isPaid && (
-            <Button
-              onClick={handleDownloadPDF}
-              disabled={isGeneratingPDF}
-              className="bg-white text-[#019f80] hover:bg-green-50 font-semibold px-6 py-3 text-lg"
-            >
-              <FileDown className="w-5 h-5 mr-2" />
-              {isGeneratingPDF ? 'Gerando PDF...' : 'Baixar PDF'}
-            </Button>
-          )}
+          <div className="flex gap-2">
+            {onManualPaymentCheck && !isPaid && (
+              <Button
+                onClick={onManualPaymentCheck}
+                disabled={isCheckingPayment}
+                className="bg-white/20 text-white hover:bg-white/30 font-semibold px-4 py-2"
+              >
+                {isCheckingPayment ? 'Verificando...' : 'Verificar Pagamento'}
+              </Button>
+            )}
+            
+            {isPaid && (
+              <Button
+                onClick={handleDownloadPDF}
+                disabled={isGeneratingPDF}
+                className="bg-white text-[#019f80] hover:bg-green-50 font-semibold px-6 py-3 text-lg"
+              >
+                <FileDown className="w-5 h-5 mr-2" />
+                {isGeneratingPDF ? 'Gerando PDF...' : 'Baixar PDF'}
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       

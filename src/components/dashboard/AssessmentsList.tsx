@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, FileText, Download, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { generateAssessmentPDF } from '@/utils/pdfGenerator';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 interface Assessment {
   id: string;
@@ -25,6 +26,7 @@ interface AssessmentsListProps {
 
 const AssessmentsList = ({ assessments, loading, onReportClick, onNewAssessment }: AssessmentsListProps) => {
   const { toast } = useToast();
+  const { userProfile, patientProfile } = useUserProfile();
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -45,6 +47,7 @@ const AssessmentsList = ({ assessments, loading, onReportClick, onNewAssessment 
         id: assessment.id,
         date: assessment.created_at,
         status: 'completed',
+        assessmentText: assessment.assessment_text,
         preview: {
           leanMass: `${assessment.lean_mass?.toFixed(1) || 'N/A'}kg`,
           bodyFat: `${assessment.body_fat_percentage?.toFixed(1) || 'N/A'}%`,
@@ -52,7 +55,11 @@ const AssessmentsList = ({ assessments, loading, onReportClick, onNewAssessment 
         }
       };
       
-      const doc = generateAssessmentPDF(adaptedReport);
+      const doc = generateAssessmentPDF({ 
+        report: adaptedReport, 
+        userProfile, 
+        patientProfile 
+      });
       const fileName = `avaliacao-hubfit360-${new Date(assessment.created_at).toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
       doc.save(fileName);
       
