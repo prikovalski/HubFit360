@@ -76,7 +76,7 @@ serve(async (req) => {
     
     const photoInfo = "Fotos frontais, laterais e posteriores analisadas";
 
-    const prompt = `Você é um nutricionista esportivo especializado em composição corporal ${genderForPrompt}. 
+    const prompt = `Você é um avaliador físico profissional especializado em análise de composição corporal. ${genderForPrompt}. 
     Quero que analise minhas fotos e dados pessoais atualizados e gere um laudo técnico e empático, incluindo:
 1. Avaliação corporal
 Estimativa do percentual de gordura corporal com base nas fotos e circunferências
@@ -111,8 +111,10 @@ Dados Pessoais
 
 Escreva um laudo técnico realista, profissional e empático, como se você estivesse avaliando visualmente um paciente. Inclua observações sobre definição muscular, distribuição de gordura, proporções corporais, e uma breve recomendação.`;
 
-    console.log('Chamando OpenAI API...');
+    console.log('Chamando OpenAI APIs...');
+    console.log('Passou!!');
 
+    console.log('Prompt enviado ao GPT-4:', prompt);
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {

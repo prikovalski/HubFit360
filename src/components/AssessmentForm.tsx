@@ -11,6 +11,9 @@ interface AssessmentFormProps {
   onSuccess: (assessment: any) => void;
 }
 
+import PromptPreview from './PromptPreview';
+import { useState } from 'react';
+
 const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
   const {
     loading,
@@ -28,11 +31,23 @@ const AssessmentForm = ({ onBack, onSuccess }: AssessmentFormProps) => {
     setHipCircumference,
     handlePhotoUpload,
     handleSubmit
-  } = useAssessmentForm(onSuccess);
+  } = useAssessmentForm(handleAssessmentSuccess);
+
+  const [prompt, setPrompt] = useState<string | null>(null);
+
+  function handleAssessmentSuccess(assessment: any) {
+    if (assessment && assessment.prompt) {
+      setPrompt(assessment.prompt);
+    }
+    if (onSuccess) onSuccess(assessment);
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-12 px-4">
       <div className="container mx-auto max-w-6xl">
+        {prompt && (
+          <PromptPreview prompt={prompt} onClose={() => setPrompt(null)} />
+        )}
         <AssessmentHeader onBack={onBack} />
 
         <PersonalDataSection
