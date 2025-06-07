@@ -68,6 +68,53 @@ export type Database = {
           },
         ]
       }
+      cidades: {
+        Row: {
+          estado_id: string
+          estado_sigla: string | null
+          id: string
+          nome: string
+        }
+        Insert: {
+          estado_id: string
+          estado_sigla?: string | null
+          id?: string
+          nome: string
+        }
+        Update: {
+          estado_id?: string
+          estado_sigla?: string | null
+          id?: string
+          nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cidades_estado_id_fkey"
+            columns: ["estado_id"]
+            isOneToOne: false
+            referencedRelation: "estados"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estados: {
+        Row: {
+          id: string
+          nome: string
+          sigla: string
+        }
+        Insert: {
+          id?: string
+          nome: string
+          sigla: string
+        }
+        Update: {
+          id?: string
+          nome?: string
+          sigla?: string
+        }
+        Relationships: []
+      }
       patient_profiles: {
         Row: {
           activity_frequency: string | null

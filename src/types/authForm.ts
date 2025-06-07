@@ -8,6 +8,7 @@ export interface FormData {
   weight: string;
   height: string;
   city: string;
+  state: string;
   goal: string;
   chronicDisease: string;
   medicalRestriction: string;
