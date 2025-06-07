@@ -1,5 +1,9 @@
 
 export async function callOpenAI(prompt: string): Promise<string> {
+  console.log('=== PROMPT ENVIADO PARA OPENAI ===');
+  console.log(prompt);
+  console.log('=== FIM DO PROMPT ===');
+  
   console.log('Enviando prompt para OpenAI...');
 
   const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
