@@ -74,20 +74,6 @@ serve(async (req) => {
     // Mapear o gênero corretamente
     const genderForPrompt = sex === 'male' ? 'Masculino' : 'Feminino';
     
-    // Estimativa simples de gordura corporal baseada em BMI, idade e sexo
-    let estimatedBodyFat;
-    if (sex === 'male') {
-      estimatedBodyFat = (1.20 * bmi) + (0.23 * calculatedAge) - 16.2;
-    } else {
-      estimatedBodyFat = (1.20 * bmi) + (0.23 * calculatedAge) - 5.4;
-    }
-    
-    // Garantir que a estimativa esteja em uma faixa realista
-    estimatedBodyFat = Math.max(5, Math.min(50, estimatedBodyFat));
-    
-    const fatMass = (weight * estimatedBodyFat) / 100;
-    const leanMass = weight - fatMass;
-    
     const photoInfo = "Fotos frontais, laterais e posteriores analisadas";
 
     const prompt = `Você é um nutricionista esportivo especializado em composição corporal ${genderForPrompt}. 
@@ -155,6 +141,15 @@ Escreva um laudo técnico realista, profissional e empático, como se você esti
     const openAIData = await openAIResponse.json();
     const assessment = openAIData.choices[0].message.content;
 
+    // Supondo que 'assessment' é o texto retornado pela API (openAIData.choices[0].message.content)
+const bodyFatMatch = assessment.match(/Estimativa de Gordura Corporal:\s*([\d.,]+)/i);
+const estimatedBodyFat = bodyFatMatch ? parseFloat(bodyFatMatch[1].replace(',', '.')) : null;
+
+const leanMassMatch = assessment.match(/Massa magra estimada:\s*([\d.,]+)/i);
+const leanMass = leanMassMatch ? parseFloat(leanMassMatch[1].replace(',', '.')) : null;
+
+const fatMassMatch = assessment.match(/Massa gorda estimada:\s*([\d.,]+)/i);
+const fatMass = fatMassMatch ? parseFloat(fatMassMatch[1].replace(',', '.')) : null;
     console.log('Avaliação gerada pelo OpenAI');
 
     console.log('Salvando avaliação no banco de dados...');
