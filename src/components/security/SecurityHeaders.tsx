@@ -7,7 +7,7 @@ const SecurityHeaders = () => {
     // Content Security Policy
     const cspMeta = document.createElement('meta');
     cspMeta.httpEquiv = 'Content-Security-Policy';
-    cspMeta.content = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://api.openai.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://bqixlrinahtauahcnpoc.supabase.co https://api.openai.com wss://bqixlrinahtauahcnpoc.supabase.co; font-src 'self' https: data:;";
+    cspMeta.content = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://api.openai.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; connect-src 'self' https://bqixlrinahtauahcnpoc.supabase.co https://api.openai.com wss://bqixlrinahtauahcnpoc.supabase.co; font-src 'self' https: data:;";
     document.head.appendChild(cspMeta);
 
     // X-Content-Type-Options
