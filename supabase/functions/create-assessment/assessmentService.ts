@@ -1,5 +1,5 @@
 
-import { createClient } from 'https://deno.land/x/supabase@2.39.7/mod.ts';
+import { createClient } from 'https://deno.land/x/supabase@2.38.0/mod.ts';
 
 export async function saveAssessment(
   userId: string,
