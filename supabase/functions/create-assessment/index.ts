@@ -2,8 +2,6 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from 'https://deno.land/x/supabase@2.34.0/mod.ts';
 
-
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -27,25 +25,27 @@ serve(async (req) => {
 
     console.log('Recebendo dados para avaliação:', { userId, sex, height, weight });
 
-    // Criar cliente Supabase para buscar dados do usuário
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
+    // Criar cliente Supabase
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Buscar a data de nascimento do usuário para calcular a idade
+    // Buscar dados do usuário e perfil do paciente em uma única query
     const { data: userData, error: userError } = await supabase
       .from('users')
       .select(`
         birth_date,
-        patient_profiles.neck_circumference,
-        patient_profiles.waist_circumference,
-        patient_profiles.hip_circumference,
-        patient_profiles.physical_activity,
-        patient_profiles.chronic_disease,
-        patient_profiles.goal
+        gender,
+        patient_profiles (
+          neck_circumference,
+          waist_circumference,
+          hip_circumference,
+          physical_activity,
+          chronic_disease,
+          goal
+        )
       `)
       .eq('id', userId)
-      .join('patient_profiles', 'users.id', 'patient_profiles.user_id')
       .single();
 
     if (userError) {
@@ -53,8 +53,8 @@ serve(async (req) => {
       throw new Error(`Erro ao buscar dados do usuário: ${userError.message}`);
     }
 
-    // Calcular a idade com base na data de nascimento
-    let calculatedAge = 25; // Idade padrão caso não tenha data de nascimento
+    // Calcular a idade
+    let calculatedAge = 25;
     if (userData?.birth_date) {
       const birthDate = new Date(userData.birth_date);
       const today = new Date();
@@ -67,54 +67,60 @@ serve(async (req) => {
 
     console.log('Idade calculada:', calculatedAge);
 
-    // Calcular estimativas baseadas em fórmulas padrão
+    // Calcular IMC
     const heightM = height / 100;
     const bmi = weight / (heightM * heightM);
     
-    // Mapear o gênero corretamente
+    // Mapear o gênero
     const genderForPrompt = sex === 'male' ? 'Masculino' : 'Feminino';
     
-    const photoInfo = "Fotos frontais, laterais e posteriores analisadas";
+    // Extrair dados do perfil do paciente
+    const patientProfile = userData.patient_profiles?.[0] || {};
+    
+    // Construir o prompt
+    const prompt = `Você é um avaliador físico profissional especializado em análise de composição corporal.
 
-    const prompt = `Você é um avaliador físico profissional especializado em análise de composição corporal. ${genderForPrompt}. 
-    Quero que analise minhas fotos e dados pessoais atualizados e gere um laudo técnico e empático, incluindo:
-1. Avaliação corporal
-Estimativa do percentual de gordura corporal com base nas fotos e circunferências
-Massa magra e massa gorda estimadas
+Analise os dados fornecidos e gere um laudo técnico completo incluindo:
 
-2. Gasto energético
-Cálculo da TMB (Katch-McArdle, se possível)
-Estimativa do GET com base no meu nível de atividade física e estilo de vida
+1. AVALIAÇÃO CORPORAL
+- Estimativa do percentual de gordura corporal baseada nos dados antropométricos
+- Massa magra e massa gorda estimadas
+- Análise da distribuição de gordura corporal
 
-3. Planejamento nutricional completo
-Quantas kcal devo ingerir para:
+2. GASTO ENERGÉTICO
+- Cálculo da Taxa Metabólica Basal (TMB)
+- Estimativa do Gasto Energético Total (GET)
 
-Manutenção com foco em definição ou performance
-Emagrecimento com preservação de massa magra (cutting leve)
-Ganho de massa muscular com mínimo de gordura (bulking leve)
+3. PLANEJAMENTO NUTRICIONAL
+Forneça recomendações de calorias para:
+- Manutenção com foco em definição
+- Emagrecimento saudável (cutting)
+- Ganho de massa muscular (bulking)
 
-Divisão ideal de macronutrientes (proteínas, carboidratos e gorduras) para cada cenário
+Divisão de macronutrientes para cada cenário (proteínas, carboidratos, gorduras)
 
-🧠 4. Simulação
-Explique o que deve acontecer com meu corpo se eu seguir a dieta sugerida por 30 dias, considerando meus dados.
+4. PROJEÇÃO DE RESULTADOS
+Explique o que pode acontecer seguindo as recomendações por 30 dias
 
-Dados Pessoais
+DADOS PESSOAIS:
 - Gênero: ${genderForPrompt}
 - Idade: ${calculatedAge} anos
 - Altura: ${height} cm
 - Peso: ${weight} kg
-- Circunferencias: pescoço: ${userData.neck_circumference}, cintura: ${userData.waist_circumference}, quadril: ${userData.hip_circumference}
-- Atividade física: ${userData.physical_activity}
-- Doenças crônicas: ${userData.chronic_disease}
-- Objetivo: ${userData.goal}
-- Fotos analisadas: ${photoInfo}
+- IMC: ${bmi.toFixed(1)}
+- Circunferências: 
+  * Pescoço: ${patientProfile.neck_circumference || 'N/A'} cm
+  * Cintura: ${patientProfile.waist_circumference || 'N/A'} cm
+  * Quadril: ${patientProfile.hip_circumference || 'N/A'} cm
+- Atividade física: ${patientProfile.physical_activity || 'Não informado'}
+- Doenças crônicas: ${patientProfile.chronic_disease || 'Nenhuma'}
+- Objetivo: ${patientProfile.goal || 'Não informado'}
 
-Escreva um laudo técnico realista, profissional e empático, como se você estivesse avaliando visualmente um paciente. Inclua observações sobre definição muscular, distribuição de gordura, proporções corporais, e uma breve recomendação.`;
+Forneça um laudo técnico, realista e profissional. Inclua valores numéricos específicos nas estimativas.`;
 
-    console.log('Chamando OpenAI APIs...');
-    console.log('Passou!!');
+    console.log('Enviando prompt para OpenAI...');
 
-    console.log('Prompt enviado ao GPT-4:', prompt);
+    // Chamar API do OpenAI
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -122,40 +128,41 @@ Escreva um laudo técnico realista, profissional e empático, como se você esti
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4.1-2025-04-14',
         messages: [
           { 
             role: 'system', 
-            content: 'Você é um avaliador físico profissional especializado em análise de composição corporal.' 
+            content: 'Você é um avaliador físico profissional especializado em análise de composição corporal. Forneça sempre valores numéricos específicos nas suas estimativas.' 
           },
           { role: 'user', content: prompt }
         ],
         temperature: 0.7,
-        max_tokens: 1000,
+        max_tokens: 2000,
       }),
     });
 
     if (!openAIResponse.ok) {
-      console.error('Erro na API do OpenAI:', await openAIResponse.text());
+      const errorText = await openAIResponse.text();
+      console.error('Erro na API do OpenAI:', errorText);
       throw new Error('Erro na API do OpenAI');
     }
 
     const openAIData = await openAIResponse.json();
     const assessment = openAIData.choices[0].message.content;
 
-    // Supondo que 'assessment' é o texto retornado pela API (openAIData.choices[0].message.content)
-const bodyFatMatch = assessment.match(/Estimativa de Gordura Corporal:\s*([\d.,]+)/i);
-const estimatedBodyFat = bodyFatMatch ? parseFloat(bodyFatMatch[1].replace(',', '.')) : null;
+    // Extrair dados numéricos do texto da avaliação
+    const extractNumericValue = (text: string, pattern: RegExp): number | null => {
+      const match = text.match(pattern);
+      return match ? parseFloat(match[1].replace(',', '.')) : null;
+    };
 
-const leanMassMatch = assessment.match(/Massa magra estimada:\s*([\d.,]+)/i);
-const leanMass = leanMassMatch ? parseFloat(leanMassMatch[1].replace(',', '.')) : null;
+    const estimatedBodyFat = extractNumericValue(assessment, /(?:gordura corporal|body fat).*?(\d+(?:[.,]\d+)?)\s*%/i);
+    const leanMass = extractNumericValue(assessment, /massa magra.*?(\d+(?:[.,]\d+)?)\s*kg/i);
+    const fatMass = extractNumericValue(assessment, /massa gorda.*?(\d+(?:[.,]\d+)?)\s*kg/i);
 
-const fatMassMatch = assessment.match(/Massa gorda estimada:\s*([\d.,]+)/i);
-const fatMass = fatMassMatch ? parseFloat(fatMassMatch[1].replace(',', '.')) : null;
-    console.log('Avaliação gerada pelo OpenAI');
+    console.log('Valores extraídos:', { estimatedBodyFat, leanMass, fatMass });
 
-    console.log('Salvando avaliação no banco de dados...');
-
+    // Salvar avaliação no banco
     const { data: assessmentData, error } = await supabase
       .from('assessments')
       .insert([{
@@ -163,11 +170,11 @@ const fatMass = fatMassMatch ? parseFloat(fatMassMatch[1].replace(',', '.')) : n
         front_photo: frontPhoto,
         side_photo: sidePhoto,
         back_photo: backPhoto,
-        age: calculatedAge, // Salvando a idade calculada
+        age: calculatedAge,
         body_fat_percentage: estimatedBodyFat,
         lean_mass: leanMass,
         fat_mass: fatMass,
-        bmi: bmi,
+        bmi: parseFloat(bmi.toFixed(2)),
         assessment_text: assessment,
         status: 'completed'
       }])
@@ -187,7 +194,7 @@ const fatMass = fatMassMatch ? parseFloat(fatMassMatch[1].replace(',', '.')) : n
       bodyFat: estimatedBodyFat,
       leanMass,
       fatMass,
-      bmi,
+      bmi: parseFloat(bmi.toFixed(2)),
       age: calculatedAge
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
