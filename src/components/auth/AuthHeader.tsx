@@ -19,7 +19,7 @@ export const AuthHeader = ({ onBack, isLogin }: AuthHeaderProps) => {
         Voltar
       </Button>
       <h1 className="text-2xl font-bold text-gray-800">
-        {isLogin ? 'Entrar' : 'Criar Conta'}
+        {isLogin ? 'Entrar' : ' '}
       </h1>
     </div>
   );

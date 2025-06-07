@@ -48,3 +48,15 @@ export interface PatientProfile {
   created_at: string;
   updated_at: string;
 }
+
+export interface Estado {
+  id: number;
+  nome: string;
+  sigla: string;
+}
+
+export interface Cidade {
+  id: number;
+  nome: string;
+  estado_sigla: string;
+}

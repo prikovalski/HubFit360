@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import React, { useEffect, useState } from 'react';
 import { getEstados, Estado } from '@/services/stateService';
+import { getCidadesByEstado, Cidade } from '@/services/cityService';
 
 interface FormData {
   email: string;
@@ -48,6 +49,8 @@ export const SignupFormSteps = ({
 }: Omit<SignupFormStepsProps, 'step' | 'onPrevStep'>) => {
   const [estados, setEstados] = useState<Estado[]>([]);
   const [estadosLoading, setEstadosLoading] = useState(false);
+  const [cidades, setCidades] = useState<Cidade[]>([]);
+  const [cidadesLoading, setCidadesLoading] = useState(false);
 
   useEffect(() => {
     setEstadosLoading(true);
@@ -57,15 +60,28 @@ export const SignupFormSteps = ({
       .finally(() => setEstadosLoading(false));
   }, []);
 
+  // Buscar cidades quando o estado mudar
+  useEffect(() => {
+    if (!formData.state) {
+      setCidades([]);
+      return;
+    }
+    setCidadesLoading(true);
+    getCidadesByEstado(formData.state)
+      .then(data => setCidades(data))
+      .catch(() => setCidades([]))
+      .finally(() => setCidadesLoading(false));
+  }, [formData.state]);
+
   return (
-    <form onSubmit={onSubmit} className="space-y-8">
+    <form onSubmit={onSubmit} className="space-y-8 max-w-2xl mx-auto">
       {/* Dados Pessoais */}
       <div className="bg-green-50 rounded-xl shadow-md p-6 mb-6">
         <div className="flex items-center mb-6">
           <svg className="w-7 h-7 text-green-600 mr-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
           <h2 className="text-2xl font-bold text-gray-800">Dados Pessoais</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-3">
             <Label htmlFor="name">Nome Completo</Label>
             <Input
@@ -101,7 +117,47 @@ export const SignupFormSteps = ({
               disabled={loading}
             />
           </div>
-          <div>
+
+
+          <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-2 gap-4">
+
+            <div>
+              <Label htmlFor="state">Estado</Label>
+              <select
+                id="state"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={formData.state}
+                onChange={e => onInputChange('state', e.target.value)}
+                disabled={loading || estadosLoading}
+                required
+              >
+                <option value="">Selecione</option>
+                {estados.map((estado) => (
+                  <option key={estado.id} value={estado.sigla}>
+                    {estado.nome} ({estado.sigla})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label htmlFor="city">Cidade</Label>
+              <select
+                id="city"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={formData.city}
+                onChange={e => onInputChange('city', e.target.value)}
+                disabled={loading || cidadesLoading || !formData.state}
+                required
+              >
+                <option value="">{cidadesLoading ? 'Carregando...' : 'Selecione'}</option>
+                {cidades.map((cidade) => (
+                  <option key={cidade.id} value={cidade.nome}>
+                    {cidade.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
             <Label htmlFor="birthDate">Data de Nascimento</Label>
             <Input
               id="birthDate"
@@ -128,89 +184,72 @@ export const SignupFormSteps = ({
               <option value="Outro">Outro</option>
             </select>
           </div>
-          <div>
-            <Label htmlFor="weight">Peso (kg)</Label>
-            <Input
-              id="weight"
-              value={formData.weight}
-              onChange={e => onInputChange('weight', e.target.value)}
-              placeholder="Ex: 75"
-              disabled={loading}
-            />
           </div>
-          <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="w-full max-w-4xl mx-auto md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="city">Cidade</Label>
+              <Label htmlFor="weight">Peso (kg)</Label>
               <Input
-                id="city"
-                value={formData.city}
-                onChange={e => onInputChange('city', e.target.value)}
-                placeholder="Sua cidade"
+                id="weight"
+                value={formData.weight}
+                onChange={e => onInputChange('weight', e.target.value)}
+                placeholder="Ex: 75"
                 disabled={loading}
               />
             </div>
             <div>
-  <Label htmlFor="state">Estado</Label>
-  <select
-    id="state"
-    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-    value={formData.state}
-    onChange={e => onInputChange('state', e.target.value)}
-    disabled={loading || estadosLoading}
-    required
-  >
-    <option value="">Selecione</option>
-    {estados.map((estado) => (
-      <option key={estado.id} value={estado.sigla}>
-        {estado.nome} ({estado.sigla})
-      </option>
-    ))}
-  </select>
-</div>
-
+              <Label htmlFor="height">Altura (cm)</Label>
+              <Input
+                id="height"
+                value={formData.height}
+                onChange={e => onInputChange('height', e.target.value)}
+                placeholder="Ex: 175"
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <Label htmlFor="neckCircumference">Circunferência do Pescoço (cm)</Label>
+              <Input
+                id="neckCircumference"
+                value={formData.neckCircumference}
+                onChange={e => onInputChange('neckCircumference', e.target.value)}
+                placeholder="Ex: 38"
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <Label htmlFor="waistCircumference">Circunferência da Cintura (cm)</Label>
+              <Input
+                id="waistCircumference"
+                value={formData.waistCircumference}
+                onChange={e => onInputChange('waistCircumference', e.target.value)}
+                placeholder="Ex: 85"
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <Label htmlFor="hipCircumference">Quadril (cm)</Label>
+              <Input
+                id="hipCircumference"
+                type="number"
+                step="0.1"
+                value={formData.hipCircumference}
+                onChange={(e) => onInputChange('hipCircumference', e.target.value)}
+                placeholder="95.0"
+                disabled={loading}
+              />
+            </div>
           </div>
-          <div>
-            <Label htmlFor="height">Altura (cm)</Label>
-            <Input
-              id="height"
-              value={formData.height}
-              onChange={e => onInputChange('height', e.target.value)}
-              placeholder="Ex: 175"
-              disabled={loading}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="neckCircumference">Circunferência do Pescoço (cm)</Label>
-            <Input
-              id="neckCircumference"
-              value={formData.neckCircumference}
-              onChange={e => onInputChange('neckCircumference', e.target.value)}
-              placeholder="Ex: 38"
-              disabled={loading}
-            />
-          </div>
-          <div>
-            <Label htmlFor="waistCircumference">Circunferência da Cintura (cm)</Label>
-            <Input
-              id="waistCircumference"
-              value={formData.waistCircumference}
-              onChange={e => onInputChange('waistCircumference', e.target.value)}
-              placeholder="Ex: 85"
-              disabled={loading}
-            />
-          </div>
-          <div>
-        <Label htmlFor="goal">Objetivo</Label>
-        <Input
-          id="goal"
-          value={formData.goal}
-          onChange={(e) => onInputChange('goal', e.target.value)}
-          placeholder="Ex: Perder peso, ganhar massa muscular..."
-          disabled={loading}
-        />
-      </div>
         </div>
+        <div>
+            <Label htmlFor="goal">Objetivo</Label>
+            <Input
+              id="goal"
+              value={formData.goal}
+              onChange={(e) => onInputChange('goal', e.target.value)}
+              placeholder="Ex: Perder peso, ganhar massa muscular..."
+              disabled={loading}
+            />
+          </div>
       </div>
 
       {/* Atividade Física */}
@@ -219,8 +258,8 @@ export const SignupFormSteps = ({
           <svg className="w-7 h-7 text-blue-600 mr-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 00-3-3.87M4 21v-2a4 4 0 013-3.87m9-7.13a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
           <h2 className="text-2xl font-bold text-gray-800">Atividade Física</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex flex-col">
+        <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
+          <div>
             <Label htmlFor="physicalActivity">Tipo de Exercício</Label>
             <Input
               id="physicalActivity"
@@ -230,8 +269,8 @@ export const SignupFormSteps = ({
               disabled={loading}
             />
           </div>
-          <div className="flex flex-col">
-            <Label htmlFor="activityFrequency">Frequência de Exercícios (dias/semana)</Label>
+          <div>
+            <Label htmlFor="activityFrequency">Frequência (dias/semana)</Label>
             <Input
               id="activityFrequency"
               value={formData.activityFrequency}
@@ -240,7 +279,7 @@ export const SignupFormSteps = ({
               disabled={loading}
             />
           </div>
-          <div className="flex flex-col">
+          <div>
             <Label htmlFor="goal">Intensidade</Label>
             <Input
               id="goal"

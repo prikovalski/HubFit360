@@ -57,9 +57,14 @@ export const useAuthSubmit = ({
         }
 
         console.log('Creating user with form data:', formData);
+        // Map gender to backend format
+        let backendGender: 'MALE' | 'FEMALE' | null = null;
+        if (formData.gender === 'Masculino') backendGender = 'MALE';
+        else if (formData.gender === 'Feminino') backendGender = 'FEMALE';
+        // If 'Outro' or empty, keep as null
         const { data, error } = await signUp(formData.email, formData.password, {
           name: formData.name,
-          gender: formData.gender,
+          gender: backendGender,
           birth_date: formData.birthDate,
           email_confirm: false
         });

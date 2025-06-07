@@ -8,7 +8,7 @@ export interface Estado {
 }
 
 export async function getEstados(): Promise<Estado[]> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('estados')
     .select('*')
     .order('nome', { ascending: true });
