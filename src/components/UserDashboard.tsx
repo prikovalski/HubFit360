@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { supabase } from '@/integrations/supabase/client';
 import ReportViewer from '@/components/ReportViewer';
 import AssessmentForm from '@/components/AssessmentForm';
+import UserProfile from '@/components/UserProfile';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import AssessmentsList from '@/components/dashboard/AssessmentsList';
@@ -26,6 +26,7 @@ const UserDashboard = ({ user, onLogout }) => {
   const { userProfile } = useUserProfile();
   const [selectedReport, setSelectedReport] = useState(null);
   const [showAssessmentForm, setShowAssessmentForm] = useState(false);
+  const [showUserProfile, setShowUserProfile] = useState(false);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -108,12 +109,17 @@ const UserDashboard = ({ user, onLogout }) => {
     );
   }
 
+  if (showUserProfile) {
+    return <UserProfile onBack={() => setShowUserProfile(false)} />;
+  }
+
   return (
     <div className="py-12 px-4">
       <div className="container mx-auto max-w-6xl">
         <DashboardHeader
           userName={user.name}
           onNewAssessment={() => setShowAssessmentForm(true)}
+          onUserProfile={() => setShowUserProfile(true)}
           onLogout={onLogout}
         />
 
