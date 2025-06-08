@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -188,17 +187,20 @@ const UserProfile = ({ onBack }: UserProfileProps) => {
               <CardTitle className="text-xl text-gray-800">Dados Pessoais</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Primeira linha: Nome completo */}
+              <div>
+                <Label htmlFor="name">Nome Completo</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={e => handleInputChange('name', e.target.value)}
+                  placeholder="Seu nome completo"
+                  disabled={loading}
+                />
+              </div>
+              
+              {/* Segunda linha: Gênero e Data de Nascimento */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="name">Nome Completo</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={e => handleInputChange('name', e.target.value)}
-                    placeholder="Seu nome completo"
-                    disabled={loading}
-                  />
-                </div>
                 <div>
                   <Label htmlFor="gender">Gênero</Label>
                   <select
@@ -224,23 +226,10 @@ const UserProfile = ({ onBack }: UserProfileProps) => {
                     disabled={loading}
                   />
                 </div>
-                <div>
-                  <Label htmlFor="state">Estado</Label>
-                  <select
-                    id="state"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    value={formData.state}
-                    onChange={e => handleInputChange('state', e.target.value)}
-                    disabled={loading || estadosLoading}
-                  >
-                    <option value="">Selecione</option>
-                    {estados.map((estado) => (
-                      <option key={estado.id} value={estado.sigla}>
-                        {estado.nome} ({estado.sigla})
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              </div>
+
+              {/* Terceira linha: Cidade e Estado */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="city">Cidade</Label>
                   <select
@@ -258,6 +247,23 @@ const UserProfile = ({ onBack }: UserProfileProps) => {
                     ))}
                   </select>
                 </div>
+                <div>
+                  <Label htmlFor="state">Estado</Label>
+                  <select
+                    id="state"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={formData.state}
+                    onChange={e => handleInputChange('state', e.target.value)}
+                    disabled={loading || estadosLoading}
+                  >
+                    <option value="">Selecione</option>
+                    {estados.map((estado) => (
+                      <option key={estado.id} value={estado.sigla}>
+                        {estado.nome} ({estado.sigla})
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -268,7 +274,8 @@ const UserProfile = ({ onBack }: UserProfileProps) => {
               <CardTitle className="text-xl text-gray-800">Dados Físicos</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Primeira linha: Peso e Altura */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="weight">Peso (kg)</Label>
                   <Input
@@ -289,16 +296,10 @@ const UserProfile = ({ onBack }: UserProfileProps) => {
                     disabled={loading}
                   />
                 </div>
-                <div>
-                  <Label htmlFor="goal">Objetivo</Label>
-                  <Input
-                    id="goal"
-                    value={formData.goal}
-                    onChange={e => handleInputChange('goal', e.target.value)}
-                    placeholder="Ex: Perder peso, ganhar massa..."
-                    disabled={loading}
-                  />
-                </div>
+              </div>
+
+              {/* Segunda linha: Circunferências */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="neckCircumference">Circunferência do Pescoço (cm)</Label>
                   <Input
@@ -329,6 +330,18 @@ const UserProfile = ({ onBack }: UserProfileProps) => {
                     disabled={loading}
                   />
                 </div>
+              </div>
+
+              {/* Terceira linha: Objetivo */}
+              <div>
+                <Label htmlFor="goal">Objetivo</Label>
+                <Input
+                  id="goal"
+                  value={formData.goal}
+                  onChange={e => handleInputChange('goal', e.target.value)}
+                  placeholder="Ex: Perder peso, ganhar massa muscular..."
+                  disabled={loading}
+                />
               </div>
             </CardContent>
           </Card>
