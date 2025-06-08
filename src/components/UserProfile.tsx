@@ -162,8 +162,8 @@ const UserProfile = ({ onBack }: UserProfileProps) => {
         <div className="mb-8">
           <Button
             onClick={onBack}
-            variant="outline"
-            className="mb-4"
+            variant="ghost"
+            className="mb-4 text-[#019f80] hover:text-[#017a63] hover:bg-transparent p-0 h-auto font-normal"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar
