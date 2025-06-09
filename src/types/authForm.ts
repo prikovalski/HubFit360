@@ -10,6 +10,7 @@ export interface FormData {
   city: string;
   state: string;
   goal: string;
+  intensity: string;
   chronicDisease: string;
   medicalRestriction: string;
   foodAllergy: string;

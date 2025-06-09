@@ -74,6 +74,7 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
       weight: formData.weight ? parseFloat(formData.weight) : null,
       city: formData.city || null,
       goal: formData.goal || null,
+      intensity: formData.intensity || null,
       chronic_disease: formData.chronicDisease || null,
       medical_restriction: formData.medicalRestriction || null,
       food_allergy: formData.foodAllergy || null,

@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +16,7 @@ interface FormData {
   city: string;
   state: string; // UF do estado brasileiro
   goal: string;
+  intensity: string;
   chronicDisease: string;
   medicalRestriction: string;
   foodAllergy: string;
@@ -118,9 +118,7 @@ export const SignupFormSteps = ({
             />
           </div>
 
-
           <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-2 gap-4">
-
             <div>
               <Label htmlFor="state">Estado</Label>
               <select
@@ -280,11 +278,11 @@ export const SignupFormSteps = ({
             />
           </div>
           <div>
-            <Label htmlFor="goal">Intensidade</Label>
+            <Label htmlFor="intensity">Intensidade</Label>
             <Input
-              id="goal"
-              value={formData.goal}
-              onChange={e => onInputChange('goal', e.target.value)}
+              id="intensity"
+              value={formData.intensity}
+              onChange={e => onInputChange('intensity', e.target.value)}
               placeholder="Ex: Moderada"
               disabled={loading}
             />
@@ -364,8 +362,6 @@ export const SignupFormSteps = ({
           </button>
         </div>
       </div>
-
-
     </form>
   );
 };
