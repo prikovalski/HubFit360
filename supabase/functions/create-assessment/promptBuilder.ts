@@ -83,5 +83,5 @@ DADOS PESSOAIS:
 - Doenças crônicas: ${patientProfile.chronic_disease || 'Nenhuma'}
 - Objetivo: ${patientProfile.goal || 'Não informado'}
 
-Forneça um laudo técnico, realista e profissional utilizando uma linguagem de facil entendimento para que um adolescente seja capaz de entender. Inclua valores numéricos específicos nas estimativas, mas não precisa detalhar os cálculos.`;
+Forneça um laudo técnico em formato .csv, realista e profissional utilizando uma linguagem de facil entendimento para que um adolescente seja capaz de entender. Inclua valores numéricos específicos nas estimativas, mas não detalhe os cálculos. Ao final inclua uma sessão com o nome dos métodos utilizados`;
 }
