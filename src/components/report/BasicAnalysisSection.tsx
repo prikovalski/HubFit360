@@ -5,7 +5,6 @@ import { Report, UserProfile, PatientProfile } from "@/types/report";
 import PersonalInfoSection from "./sections/PersonalInfoSection";
 import EstimatesSection from "./sections/EstimatesSection";
 import IdealRangesSection from "./sections/IdealRangesSection";
-import AIAnalysisSection from "./sections/AIAnalysisSection";
 import StructuredReportSection from "./sections/StructuredReportSection";
 import AnalysisIncludedSection from "./sections/AnalysisIncludedSection";
 
@@ -59,8 +58,6 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
         {report.assessmentText && (
           <StructuredReportSection assessmentText={report.assessmentText} />
         )}
-
-        <AIAnalysisSection report={report} userProfile={userProfile} />
 
         <AnalysisIncludedSection />
       </CardContent>
