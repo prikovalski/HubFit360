@@ -91,7 +91,7 @@ AVALIAÇÃO CORPORAL
  - Distribuição de Gordura,"Descrição detalhada","Valores específicos"
 GASTO ENERGÉTICO
  - Taxa Metabólica Basal (TMB): XXXX kcal/dia - "Descrição detalhada"
-GASTO ENERGÉTICO,Gasto Energético Total (GET),"Descrição detalhada",XXXX kcal/dia
+ - Gasto Energético Total (GET),XXXX kcal/dia - "Descrição detalhada"
 PLANEJAMENTO NUTRICIONAL
  - Manutenção com foco em definição: XXXX kcal/dia, "Descrição detalhada"
  - Emagrecimento saudável (cutting): XXXX kcal/dia, "Descrição detalhada"
