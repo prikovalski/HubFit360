@@ -1,9 +1,12 @@
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { getEstados, Estado } from '@/services/stateService';
 import { getCidadesByEstado, Cidade } from '@/services/cityService';
+import { validatePassword } from "@/utils/inputValidation";
+import { Check, X } from "lucide-react";
 
 interface FormData {
   email: string;
@@ -51,6 +54,11 @@ export const SignupFormSteps = ({
   const [estadosLoading, setEstadosLoading] = useState(false);
   const [cidades, setCidades] = useState<Cidade[]>([]);
   const [cidadesLoading, setCidadesLoading] = useState(false);
+
+  const passwordValidation = useMemo(() => {
+    if (!formData.password) return null;
+    return validatePassword(formData.password);
+  }, [formData.password]);
 
   useEffect(() => {
     setEstadosLoading(true);
@@ -107,15 +115,39 @@ export const SignupFormSteps = ({
           </div>
           <div className="md:col-span-3 md:col-span-2">
             <Label htmlFor="password">Senha</Label>
-            <Input
-              id="password"
-              type="password"
-              value={formData.password}
-              onChange={e => onInputChange('password', e.target.value)}
-              placeholder="Crie uma senha segura"
-              required
-              disabled={loading}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type="password"
+                value={formData.password}
+                onChange={e => onInputChange('password', e.target.value)}
+                placeholder="Crie uma senha segura"
+                required
+                disabled={loading}
+                className={passwordValidation && formData.password ? 
+                  (passwordValidation.isValid ? 'border-green-500' : 'border-red-500') : ''
+                }
+              />
+              {passwordValidation && formData.password && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  {passwordValidation.isValid ? (
+                    <Check className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <X className="w-4 h-4 text-red-500" />
+                  )}
+                </div>
+              )}
+            </div>
+            {passwordValidation && !passwordValidation.isValid && formData.password && (
+              <div className="mt-2 space-y-1">
+                {passwordValidation.errors.map((error, index) => (
+                  <p key={index} className="text-xs text-red-500 flex items-center">
+                    <X className="w-3 h-3 mr-1" />
+                    {error}
+                  </p>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-2 gap-4">
@@ -349,7 +381,6 @@ export const SignupFormSteps = ({
         >
           {loading ? 'Processando...' : 'Finalizar Cadastro'}
         </Button>
-       
        
         <div className="text-center mt-4">
           <button 

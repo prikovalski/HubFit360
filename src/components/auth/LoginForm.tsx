@@ -2,6 +2,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { validatePassword } from "@/utils/inputValidation";
+import { Check, X } from "lucide-react";
+import { useMemo } from "react";
 
 interface LoginFormProps {
   formData: {
@@ -25,6 +28,11 @@ export const LoginForm = ({
   onSwitchToSignup,
   onForgotPassword
 }: LoginFormProps) => {
+  const passwordValidation = useMemo(() => {
+    if (!formData.password) return null;
+    return validatePassword(formData.password);
+  }, [formData.password]);
+
   return (
     <div className="space-y-4">
       <form onSubmit={onSubmit} className="space-y-4">
@@ -53,15 +61,39 @@ export const LoginForm = ({
               Esqueci minha senha
             </button>
           </div>
-          <Input
-            id="password"
-            type="password"
-            value={formData.password}
-            onChange={(e) => onInputChange('password', e.target.value)}
-            placeholder="••••••••"
-            required
-            disabled={loading}
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              type="password"
+              value={formData.password}
+              onChange={(e) => onInputChange('password', e.target.value)}
+              placeholder="••••••••"
+              required
+              disabled={loading}
+              className={passwordValidation && formData.password ? 
+                (passwordValidation.isValid ? 'border-green-500' : 'border-red-500') : ''
+              }
+            />
+            {passwordValidation && formData.password && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                {passwordValidation.isValid ? (
+                  <Check className="w-4 h-4 text-green-500" />
+                ) : (
+                  <X className="w-4 h-4 text-red-500" />
+                )}
+              </div>
+            )}
+          </div>
+          {passwordValidation && !passwordValidation.isValid && formData.password && (
+            <div className="mt-2 space-y-1">
+              {passwordValidation.errors.map((error, index) => (
+                <p key={index} className="text-xs text-red-500 flex items-center">
+                  <X className="w-3 h-3 mr-1" />
+                  {error}
+                </p>
+              ))}
+            </div>
+          )}
         </div>
 
         <Button 
