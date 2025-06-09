@@ -89,10 +89,10 @@ IMPORTANTE: Forneça o laudo em formato CSV estruturado exatamente como o exempl
 SEÇÃO,TÓPICO,DESCRIÇÃO,VALOR/OBSERVAÇÃO
 AVALIAÇÃO CORPORAL
  - Distribuição de Gordura,"Descrição detalhada","Valores específicos"
-GASTO ENERGÉTICO
+GASTO ENERGÉTICO:
  - Taxa Metabólica Basal (TMB): XXXX kcal/dia - "Descrição detalhada"
  - Gasto Energético Total (GET),XXXX kcal/dia - "Descrição detalhada"
-PLANEJAMENTO NUTRICIONAL
+PLANEJAMENTO NUTRICIONAL:\
  - Manutenção com foco em definição: XXXX kcal/dia, "Descrição detalhada"
  - Emagrecimento saudável (cutting): XXXX kcal/dia, "Descrição detalhada"
  - Ganho de massa muscular (bulking): XXXX kcal/dia, "Descrição detalhada"
@@ -108,11 +108,12 @@ PLANEJAMENTO NUTRICIONAL
    Proteínas: "XXXg" 
    Carboidratos: "XXXg" 
    Gorduras: "XXXg"
-PROJEÇÃO DE RESULTADOS,
-  Emagrecimento saudável,"Descrição das expectativas em 30 dias","Valor esperado"
-  Manutenção com definição,"Descrição das expectativas em 30 dias","Valor esperado"
-  Bulking,"Descrição das expectativas em 30 dias","Valor esperado"
-MÉTODOS UTILIZADOS,
+PROJEÇÃO DE RESULTADOS\
+  "Seguindo o consumo de nutrientes, a quantidade de Kcal indicados e os exercicios diários os resultados projetados são:
+  Dieta para Emagrecimento saudável,"Descrição das expectativas em 30 dias","Valor esperado"
+  Dieta para Manutenção com definição,"Descrição das expectativas em 30 dias","Valor esperado"
+  Dieta para Bulking,"Descrição das expectativas em 30 dias","Valor esperado"
+MÉTODOS UTILIZADOS\
   Composição Corporal:"Fórmula de Deurenberg para estimar percentual de gordura e massa magra",-
   Gasto Energético:"Equação utilizada para TMB e GET",-
   Planejamento Nutricional: "Metodologia para divisão de macronutrientes",-
