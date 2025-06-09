@@ -6,6 +6,7 @@ import PersonalInfoSection from "./sections/PersonalInfoSection";
 import EstimatesSection from "./sections/EstimatesSection";
 import IdealRangesSection from "./sections/IdealRangesSection";
 import AIAnalysisSection from "./sections/AIAnalysisSection";
+import StructuredReportSection from "./sections/StructuredReportSection";
 import AnalysisIncludedSection from "./sections/AnalysisIncludedSection";
 
 interface BasicAnalysisSectionProps {
@@ -54,6 +55,10 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
           userProfile={userProfile} 
           patientProfile={patientProfile}
         />
+
+        {report.assessmentText && (
+          <StructuredReportSection assessmentText={report.assessmentText} />
+        )}
 
         <AIAnalysisSection report={report} userProfile={userProfile} />
 

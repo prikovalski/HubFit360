@@ -83,5 +83,30 @@ DADOS PESSOAIS:
 - Doenças crônicas: ${patientProfile.chronic_disease || 'Nenhuma'}
 - Objetivo: ${patientProfile.goal || 'Não informado'}
 
-Forneça um laudo técnico em formato .json, realista e profissional utilizando uma linguagem de facil entendimento para que um adolescente seja capaz de entender. Inclua valores numéricos específicos nas estimativas, mas não detalhe os cálculos. Ao final inclua uma sessão com o nome dos métodos utilizados`;
+IMPORTANTE: Forneça o laudo em formato CSV estruturado exatamente como o exemplo abaixo. Use aspas duplas para valores que contenham vírgulas e mantenha a estrutura rigorosa:
+
+\`\`\`csv
+SEÇÃO,TÓPICO,DESCRIÇÃO,VALOR/OBSERVAÇÃO
+AVALIAÇÃO CORPORAL,IMC,"Análise do índice de massa corporal",XX.X kg/m²
+AVALIAÇÃO CORPORAL,Percentual de Gordura,"Descrição detalhada",XX.X%
+AVALIAÇÃO CORPORAL,Massa Magra,"Descrição detalhada",XX.X kg
+AVALIAÇÃO CORPORAL,Massa Gorda,"Descrição detalhada",XX.X kg
+AVALIAÇÃO CORPORAL,Distribuição de Gordura,"Descrição detalhada","Valores específicos"
+GASTO ENERGÉTICO,Taxa Metabólica Basal (TMB),"Descrição detalhada",XXXX kcal/dia
+GASTO ENERGÉTICO,Gasto Energético Total (GET),"Descrição detalhada",XXXX kcal/dia
+PLANEJAMENTO NUTRICIONAL,Manutenção com foco em definição,"Descrição detalhada",XXXX kcal/dia
+PLANEJAMENTO NUTRICIONAL,Emagrecimento saudável (cutting),"Descrição detalhada",XXXX kcal/dia
+PLANEJAMENTO NUTRICIONAL,Ganho de massa muscular (bulking),"Descrição detalhada",XXXX kcal/dia
+PLANEJAMENTO NUTRICIONAL,Divisão de Macronutrientes para Manutenção,"Descrição com percentuais","Proteínas: XXXg | Carboidratos: XXXg | Gorduras: XXXg"
+PLANEJAMENTO NUTRICIONAL,Divisão de Macronutrientes para Cutting,"Descrição com percentuais","Proteínas: XXXg | Carboidratos: XXXg | Gorduras: XXXg"
+PLANEJAMENTO NUTRICIONAL,Divisão de Macronutrientes para Bulking,"Descrição com percentuais","Proteínas: XXXg | Carboidratos: XXXg | Gorduras: XXXg"
+PROJEÇÃO DE RESULTADOS,Emagrecimento saudável,"Descrição das expectativas em 30 dias","Valor esperado"
+PROJEÇÃO DE RESULTADOS,Manutenção com definição,"Descrição das expectativas em 30 dias","Valor esperado"
+PROJEÇÃO DE RESULTADOS,Bulking,"Descrição das expectativas em 30 dias","Valor esperado"
+MÉTODOS UTILIZADOS,Composição Corporal,"Fórmula de Deurenberg para estimar percentual de gordura e massa magra",-
+MÉTODOS UTILIZADOS,Gasto Energético,"Equação utilizada para TMB e GET",-
+MÉTODOS UTILIZADOS,Planejamento Nutricional,"Metodologia para divisão de macronutrientes",-
+\`\`\`
+
+Forneça um laudo técnico realista e profissional utilizando uma linguagem de fácil entendimento. Inclua valores numéricos específicos nas estimativas, mas não detalhe os cálculos. Use o formato CSV rigorosamente como mostrado no exemplo.`;
 }

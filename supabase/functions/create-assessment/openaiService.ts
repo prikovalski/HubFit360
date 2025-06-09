@@ -33,5 +33,13 @@ export async function callOpenAI(prompt: string): Promise<string> {
   }
 
   const openAIData = await openAIResponse.json();
-  return openAIData.choices[0].message.content;
+  const responseContent = openAIData.choices[0].message.content;
+  
+  console.log('=== RESPOSTA COMPLETA DO OPENAI ===');
+  console.log('Resposta bruta:', JSON.stringify(openAIData, null, 2));
+  console.log('=== CONTEÚDO DA RESPOSTA ===');
+  console.log(responseContent);
+  console.log('=== FIM DA RESPOSTA ===');
+  
+  return responseContent;
 }
