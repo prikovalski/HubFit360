@@ -110,7 +110,12 @@ const UserDashboard = ({ user, onLogout }) => {
   }
 
   if (showUserProfile) {
-    return <UserProfile onBack={() => setShowUserProfile(false)} />;
+    return (
+      <UserProfile 
+        onBack={() => setShowUserProfile(false)} 
+        onLogout={onLogout}
+      />
+    );
   }
 
   return (

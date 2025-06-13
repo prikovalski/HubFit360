@@ -3,20 +3,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Save, User } from 'lucide-react';
+import { ArrowLeft, Save, User, Trash2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { useDeleteProfile } from '@/hooks/useDeleteProfile';
+import { DeleteProfileDialog } from '@/components/profile/DeleteProfileDialog';
 import { getEstados, Estado } from '@/services/stateService';
 import { getCidadesByEstado, Cidade } from '@/services/cityService';
 
 interface UserProfileProps {
   onBack: () => void;
+  onLogout?: () => void;
 }
 
-const UserProfile = ({ onBack }: UserProfileProps) => {
+const UserProfile = ({ onBack, onLogout }: UserProfileProps) => {
   const { toast } = useToast();
   const { userProfile, patientProfile, updateUserProfile, createOrUpdatePatientProfile, refetch } = useUserProfile();
+  const { deleteProfile, loading: deleteLoading } = useDeleteProfile();
   const [loading, setLoading] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [estados, setEstados] = useState<Estado[]>([]);
   const [cidades, setCidades] = useState<Cidade[]>([]);
   const [estadosLoading, setEstadosLoading] = useState(false);
@@ -156,6 +161,19 @@ const UserProfile = ({ onBack }: UserProfileProps) => {
     }
   };
 
+  const handleDeleteProfile = async () => {
+    const success = await deleteProfile();
+    if (success) {
+      setShowDeleteDialog(false);
+      // Redirect to logout if available, otherwise just close
+      if (onLogout) {
+        onLogout();
+      } else {
+        onBack();
+      }
+    }
+  };
+
   return (
     <div className="py-12 px-4">
       <div className="container mx-auto max-w-4xl">
@@ -169,14 +187,25 @@ const UserProfile = ({ onBack }: UserProfileProps) => {
             Voltar
           </Button>
           
-          <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#019f80] to-[#4ade80] rounded-2xl flex items-center justify-center">
-              <User className="w-8 h-8 text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#019f80] to-[#4ade80] rounded-2xl flex items-center justify-center">
+                <User className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-800">Meu Perfil</h1>
+                <p className="text-gray-600">Visualize e edite suas informações pessoais</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800">Meu Perfil</h1>
-              <p className="text-gray-600">Visualize e edite suas informações pessoais</p>
-            </div>
+            
+            <Button
+              onClick={() => setShowDeleteDialog(true)}
+              variant="outline"
+              className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Excluir Perfil
+            </Button>
           </div>
         </div>
 
@@ -440,6 +469,13 @@ const UserProfile = ({ onBack }: UserProfileProps) => {
           </div>
         </div>
       </div>
+
+      <DeleteProfileDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={handleDeleteProfile}
+        loading={deleteLoading}
+      />
     </div>
   );
 };
