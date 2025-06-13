@@ -63,21 +63,27 @@ Deno.serve(async (req) => {
 
     // Delete in correct order of dependencies (deepest children first)
     
-    // 1. Delete payment_preferences first (they reference payments)
-    const { error: paymentPreferencesError } = await supabase
-      .from('payment_preferences')
-      .delete()
-      .in('payment_id', 
-        supabase
-          .from('payments')
-          .select('id')
-          .eq('user_id', userProfile.id)
-      )
+    // 1. First get all payment IDs for this user
+    const { data: userPayments, error: getUserPaymentsError } = await supabase
+      .from('payments')
+      .select('id')
+      .eq('user_id', userProfile.id)
     
-    if (paymentPreferencesError) {
-      console.error('Error deleting payment preferences:', paymentPreferencesError)
-    } else {
-      console.log('Deleted payment preferences for user')
+    if (getUserPaymentsError) {
+      console.error('Error getting user payments:', getUserPaymentsError)
+    } else if (userPayments && userPayments.length > 0) {
+      // Delete payment_preferences for these payments
+      const paymentIds = userPayments.map(p => p.id)
+      const { error: paymentPreferencesError } = await supabase
+        .from('payment_preferences')
+        .delete()
+        .in('payment_id', paymentIds)
+      
+      if (paymentPreferencesError) {
+        console.error('Error deleting payment preferences:', paymentPreferencesError)
+      } else {
+        console.log('Deleted payment preferences for user')
+      }
     }
 
     // 2. Delete payments (they reference assessments and users)
