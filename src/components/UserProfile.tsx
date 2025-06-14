@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -55,7 +56,7 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
   // Patient profile fields
   const [weight, setWeight] = useState(patientProfile?.weight?.toString() || '');
   const [height, setHeight] = useState(patientProfile?.height?.toString() || '');
-  const [city, setCity] = useState(patientProfile?.city || '');
+  const [cityId, setCityId] = useState(patientProfile?.city_id || '');
   const [estadoId, setEstadoId] = useState(patientProfile?.estado_id || '');
   const [goal, setGoal] = useState(patientProfile?.goal || '');
   const [chronicDisease, setChronicDisease] = useState(patientProfile?.chronic_disease || '');
@@ -92,7 +93,7 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
     if (patientProfile) {
       setWeight(patientProfile.weight?.toString() || '');
       setHeight(patientProfile.height?.toString() || '');
-      setCity(patientProfile.city || '');
+      setCityId(patientProfile.city_id || '');
       setEstadoId(patientProfile.estado_id || '');
       setGoal(patientProfile.goal || '');
       setChronicDisease(patientProfile.chronic_disease || '');
@@ -114,7 +115,7 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
       fetchCidades(estadoId);
     } else {
       setCidades([]);
-      setCity('');
+      setCityId('');
     }
   }, [estadoId]);
 
@@ -156,7 +157,7 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
 
   const handleEstadoChange = (value: string) => {
     setEstadoId(value);
-    setCity(''); // Reset city when state changes
+    setCityId(''); // Reset city when state changes
   };
 
   const handleSaveProfile = async () => {
@@ -176,7 +177,7 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
     const patientUpdates = {
       weight: weight ? parseFloat(weight) : null,
       height: height ? parseFloat(height) : null,
-      city: city || null,
+      city_id: cityId || null,
       estado_id: estadoId || null,
       goal: goal || null,
       chronic_disease: chronicDisease || null,
@@ -326,7 +327,7 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
                 </div>
                 <div>
                   <Label htmlFor="city">Cidade</Label>
-                  <Select value={city} onValueChange={setCity} disabled={!estadoId || loadingCidades}>
+                  <Select value={cityId} onValueChange={setCityId} disabled={!estadoId || loadingCidades}>
                     <SelectTrigger className="w-full">
                       <SelectValue 
                         placeholder={
@@ -340,7 +341,7 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
                     </SelectTrigger>
                     <SelectContent>
                       {cidades.map((cidade) => (
-                        <SelectItem key={cidade.id} value={cidade.nome}>
+                        <SelectItem key={cidade.id} value={cidade.id.toString()}>
                           {cidade.nome}
                         </SelectItem>
                       ))}

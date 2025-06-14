@@ -120,7 +120,7 @@ export type Database = {
           activity_frequency: string | null
           avoid_food: string | null
           chronic_disease: string | null
-          city: string | null
+          city_id: string | null
           created_at: string
           estado_id: string | null
           fixed_meal_times: string | null
@@ -142,7 +142,7 @@ export type Database = {
           activity_frequency?: string | null
           avoid_food?: string | null
           chronic_disease?: string | null
-          city?: string | null
+          city_id?: string | null
           created_at?: string
           estado_id?: string | null
           fixed_meal_times?: string | null
@@ -164,7 +164,7 @@ export type Database = {
           activity_frequency?: string | null
           avoid_food?: string | null
           chronic_disease?: string | null
-          city?: string | null
+          city_id?: string | null
           created_at?: string
           estado_id?: string | null
           fixed_meal_times?: string | null
@@ -183,6 +183,13 @@ export type Database = {
           weight?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "patient_profiles_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cidades"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "patient_profiles_estado_id_fkey"
             columns: ["estado_id"]
