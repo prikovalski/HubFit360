@@ -16,9 +16,20 @@
     <link rel="icon" href="/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.webp" type="image/webp">
     <link rel="manifest" href="/manifest.json">
 
-    <!-- Preconnect for performance -->
+    <!-- Resource Hints for Performance -->
+    <link rel="dns-prefetch" href="https://bqixlrinahtauahcnpoc.supabase.co">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.webp" as="image" type="image/webp">
+
+    <!-- Critical CSS inline -->
+    <style>
+      body{margin:0;padding:0;min-height:100vh;background:linear-gradient(135deg,#f0fdf4 0%,#eff6ff 100%);font-family:system-ui,-apple-system,sans-serif}
+      #root{min-height:100vh}
+      .loading-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#f0fdf4 0%,#eff6ff 100%)}
+      .loading-spinner{width:2rem;height:2rem;border:3px solid #e5e7eb;border-top:3px solid #019f80;border-radius:50%;animation:spin 1s linear infinite}
+      @keyframes spin{to{transform:rotate(360deg)}}
+    </style>
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
@@ -46,30 +57,14 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="HubFit360" />
     <link rel="apple-touch-icon" href="/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.webp" />
-    
-    <!-- Structured Data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "HubFit360",
-      "description": "Avaliação física completa com IA para direcionamento personalizado de treinos e dieta",
-      "url": "https://hubfit360.com",
-      "applicationCategory": "HealthApplication",
-      "operatingSystem": "Any",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "BRL"
-      }
-    }
-    </script>
   </head>
 
   <body>
-    <div id="root"></div>
-    <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <div id="root">
+      <div class="loading-screen">
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

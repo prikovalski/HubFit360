@@ -1,13 +1,13 @@
 
 import { useState } from 'react';
 import { Activity } from 'lucide-react';
-import AuthSection from '@/components/AuthSection';
 import AboutSection from '@/components/AboutSection';
-import UserDashboard from '@/components/UserDashboard';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import Header from '@/components/home/Header';
 import HomePage from '@/components/home/HomePage';
+import LazyUserDashboard from '@/components/lazy/LazyUserDashboard';
+import LazyAuthSection from '@/components/lazy/LazyAuthSection';
 
 const AppContent = () => {
   const [currentSection, setCurrentSection] = useState('home');
@@ -36,7 +36,7 @@ const AppContent = () => {
       }
 
       // Se o usuário está logado e o perfil foi carregado (ou falhou ao carregar), mostrar dashboard
-      return <UserDashboard user={userProfile || { name: user.email, id: user.id }} onLogout={handleLogout} />;
+      return <LazyUserDashboard user={userProfile || { name: user.email, id: user.id }} onLogout={handleLogout} />;
     }
 
     // Se não está logado, mostrar as seções normais
@@ -44,7 +44,7 @@ const AppContent = () => {
       case 'about':
         return <AboutSection onBack={() => setCurrentSection('home')} />;
       case 'auth':
-        return <AuthSection onBack={() => setCurrentSection('home')} onLogin={() => setCurrentSection('home')} />;
+        return <LazyAuthSection onBack={() => setCurrentSection('home')} onLogin={() => setCurrentSection('home')} />;
       default:
         return <HomePage setCurrentSection={setCurrentSection} />;
     }

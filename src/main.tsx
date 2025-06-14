@@ -1,12 +1,25 @@
 
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
-import PWARegister from './components/pwa/PWARegister.tsx'
+import { createRoot } from 'react-dom/client';
+import './index.css';
 
-createRoot(document.getElementById("root")!).render(
-  <>
+// Lazy load dos componentes principais
+const App = lazy(() => import('./App.tsx'));
+const PWARegister = lazy(() => import('./components/pwa/PWARegister.tsx'));
+
+import { lazy, Suspense } from 'react';
+
+// Loading inicial crítico
+const InitialLoader = () => (
+  <div className="loading-screen">
+    <div className="loading-spinner"></div>
+  </div>
+);
+
+const root = createRoot(document.getElementById("root")!);
+
+root.render(
+  <Suspense fallback={<InitialLoader />}>
     <App />
     <PWARegister />
-  </>
+  </Suspense>
 );
