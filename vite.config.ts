@@ -22,14 +22,7 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     target: 'esnext',
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info'],
-      },
-    },
+    minify: 'esbuild', // Changed from 'terser' to 'esbuild'
     rollupOptions: {
       output: {
         manualChunks: {
