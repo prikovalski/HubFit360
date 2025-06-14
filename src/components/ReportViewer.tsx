@@ -1,13 +1,12 @@
+
 import { useEffect, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Copy, CheckCircle2 } from 'lucide-react';
 import ReportHeader from './report/ReportHeader';
-import PersonalInfoSection from './report/PersonalInfoSection';
-import EstimatesSection from './report/EstimatesSection';
-import BodyMeasurementsSection from './report/BodyMeasurementsSection';
 import BasicAnalysisSection from './report/BasicAnalysisSection';
 import PremiumSection from './report/PremiumSection';
 import LoggedPageLayout from '@/components/layout/LoggedPageLayout';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 interface Report {
   id: string;
@@ -35,6 +34,7 @@ interface ReportViewerProps {
 const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }: ReportViewerProps) => {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
+  const { userProfile, patientProfile } = useUserProfile();
 
   useEffect(() => {
     if (copied) {
@@ -64,7 +64,13 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
     }
   };
 
-  const userName = report.age ? `Usuário` : undefined;
+  const handlePaymentSuccess = () => {
+    // Refresh the page or update the report status
+    window.location.reload();
+  };
+
+  const userName = userProfile?.name || 'Usuário';
+  const isPaid = report.status === 'paid';
 
   return (
     <LoggedPageLayout
@@ -75,13 +81,21 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
     >
       <div className="py-8 px-4">
         <div className="container mx-auto max-w-4xl">
-          <ReportHeader report={report} onBack={onBack} />
+          <ReportHeader
+            report={report}
+            userProfile={userProfile}
+            patientProfile={patientProfile}
+            isPaid={isPaid}
+            onBack={onBack}
+          />
           
-          {report.status === 'paid' ? (
+          {isPaid ? (
             <div className="space-y-8">
-              <PersonalInfoSection report={report} />
-              <EstimatesSection report={report} />
-              <BodyMeasurementsSection report={report} />
+              <BasicAnalysisSection 
+                report={report}
+                userProfile={userProfile}
+                patientProfile={patientProfile}
+              />
 
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">
@@ -113,8 +127,16 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
             </div>
           ) : (
             <div className="space-y-8">
-              <BasicAnalysisSection report={report} />
-              <PremiumSection />
+              <BasicAnalysisSection 
+                report={report}
+                userProfile={userProfile}
+                patientProfile={patientProfile}
+              />
+              <PremiumSection 
+                report={report}
+                isPaid={isPaid}
+                onPaymentSuccess={handlePaymentSuccess}
+              />
             </div>
           )}
         </div>
