@@ -47,9 +47,9 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
     return 'Preencha seus dados';
   };
 
-  // Wrapper function to handle form submission without event parameter
-  const handleFormSubmit = () => {
-    handleSubmit();
+  // Wrapper function to handle form submission with proper event parameter
+  const handleFormSubmit = (e: React.FormEvent) => {
+    handleSubmit(e);
   };
 
   return (

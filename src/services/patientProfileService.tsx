@@ -124,7 +124,7 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
       avoid_food: formData.avoidFood || null,
       physical_activity: formData.physicalActivity || null,
       activity_frequency: formData.activityFrequency || null,
-      physical_activities: formData.physicalActivities || [],
+      physical_activities: formData.physicalActivities || [] as any,
       fixed_meal_times: formData.fixedMealTimes || null,
       must_have_food: formData.mustHaveFood || null,
       neck_circumference: formData.neckCircumference ? parseFloat(formData.neckCircumference) : null,

@@ -82,7 +82,7 @@ export const useUserProfile = () => {
           const processedPatientData: PatientProfile = {
             ...patientData,
             physical_activities: Array.isArray(patientData.physical_activities) 
-              ? patientData.physical_activities as PhysicalActivity[]
+              ? (patientData.physical_activities as unknown) as PhysicalActivity[]
               : []
           };
           setPatientProfile(processedPatientData);
@@ -122,7 +122,11 @@ export const useUserProfile = () => {
       // Update existing profile
       const { error } = await supabase
         .from('patient_profiles')
-        .update({ ...supabaseProfileData, updated_at: new Date().toISOString() })
+        .update({ 
+          ...supabaseProfileData, 
+          updated_at: new Date().toISOString(),
+          physical_activities: supabaseProfileData.physical_activities as any
+        })
         .eq('user_id', userProfile.id);
 
       if (!error) {
@@ -134,7 +138,11 @@ export const useUserProfile = () => {
       // Create new profile
       const { data, error } = await supabase
         .from('patient_profiles')
-        .insert([{ ...supabaseProfileData, user_id: userProfile.id }])
+        .insert([{ 
+          ...supabaseProfileData, 
+          user_id: userProfile.id,
+          physical_activities: supabaseProfileData.physical_activities as any
+        }])
         .select()
         .single();
 
@@ -142,7 +150,7 @@ export const useUserProfile = () => {
         const processedData: PatientProfile = {
           ...data,
           physical_activities: Array.isArray(data.physical_activities) 
-            ? data.physical_activities as PhysicalActivity[]
+            ? (data.physical_activities as unknown) as PhysicalActivity[]
             : []
         };
         setPatientProfile(processedData);
