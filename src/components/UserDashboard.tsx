@@ -10,6 +10,7 @@ import DashboardStats from '@/components/dashboard/DashboardStats';
 import AssessmentsList from '@/components/dashboard/AssessmentsList';
 import LoggedPageLayout from '@/components/layout/LoggedPageLayout';
 import { useNavigation } from '@/hooks/useNavigation';
+import { DashboardStatsSkeleton, DashboardHeaderSkeleton } from '@/components/ui/dashboard-skeleton';
 
 interface Assessment {
   id: string;
@@ -147,16 +148,24 @@ const UserDashboard = ({ user, onLogout }) => {
           >
             <div className="py-12 px-4">
               <div className="container mx-auto max-w-6xl">
-                <div className="mb-8">
-                  <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                    Dashboard
-                  </h1>
-                  <p className="text-gray-600">
-                    Acompanhe suas avaliações e progresso físico
-                  </p>
-                </div>
+                {loading ? (
+                  <DashboardHeaderSkeleton />
+                ) : (
+                  <div className="mb-8">
+                    <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                      Dashboard
+                    </h1>
+                    <p className="text-gray-600">
+                      Acompanhe suas avaliações e progresso físico
+                    </p>
+                  </div>
+                )}
 
-                <DashboardStats assessments={assessments} />
+                {loading ? (
+                  <DashboardStatsSkeleton />
+                ) : (
+                  <DashboardStats assessments={assessments} />
+                )}
 
                 <AssessmentsList
                   assessments={assessments}

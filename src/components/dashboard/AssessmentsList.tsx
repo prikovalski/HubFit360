@@ -2,10 +2,12 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, FileText, Download, Loader2 } from 'lucide-react';
+import { Plus, FileText, Download } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { generateAssessmentPDF } from '@/utils/pdfGenerator';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { AssessmentsListSkeleton } from "@/components/ui/assessment-skeleton";
 
 interface Assessment {
   id: string;
@@ -91,10 +93,7 @@ const AssessmentsList = ({ assessments, loading, onReportClick, onNewAssessment 
       
       <CardContent>
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-[#019f80]" />
-            <span className="ml-2 text-gray-600">Carregando avaliações...</span>
-          </div>
+          <AssessmentsListSkeleton count={3} />
         ) : (
           <div className="space-y-4">
             {assessments.map((assessment) => (
@@ -141,17 +140,15 @@ const AssessmentsList = ({ assessments, loading, onReportClick, onNewAssessment 
                   </div>
                   
                   <div className="flex items-center space-x-2">
-                    {assessment.status === 'paid' && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="border-[#019f80] text-[#019f80] hover:bg-[#019f80] hover:text-white"
-                        onClick={(e) => handleDownloadPDF(assessment, e)}
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        PDF
-                      </Button>
-                    )}
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="border-[#019f80] text-[#019f80] hover:bg-[#019f80] hover:text-white"
+                      onClick={(e) => handleDownloadPDF(assessment, e)}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      PDF
+                    </Button>
                     
                     <Button 
                       size="sm"
