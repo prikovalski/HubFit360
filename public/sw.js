@@ -5,7 +5,7 @@ const urlsToCache = [
   '/static/js/bundle.js',
   '/static/css/main.css',
   '/manifest.json',
-  '/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.png'
+  '/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.webp'
 ];
 
 // Install event - cache resources

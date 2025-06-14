@@ -25,7 +25,7 @@ const Header = ({ setCurrentSection }: HeaderProps) => {
             aria-label="Ir para página inicial"
           >
             <img 
-              src="/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.png" 
+              src="/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.webp" 
               alt="HubFit360 - Logotipo da empresa" 
               className="w-16 h-16"
               width="64"

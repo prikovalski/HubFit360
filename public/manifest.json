@@ -11,15 +11,15 @@
   "scope": "/",
   "icons": [
     {
-      "src": "/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.png",
+      "src": "/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.webp",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/webp",
       "purpose": "any maskable"
     },
     {
-      "src": "/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.png",
+      "src": "/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.webp",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/webp",
       "purpose": "any maskable"
     }
   ],
@@ -28,9 +28,9 @@
   "prefer_related_applications": false,
   "screenshots": [
     {
-      "src": "/lovable-uploads/7a9d988c-761e-4bcc-9227-4773a43d8160.png",
+      "src": "/lovable-uploads/7a9d988c-761e-4bcc-9227-4773a43d8160.webp",
       "sizes": "1280x720",
-      "type": "image/png",
+      "type": "image/webp",
       "form_factor": "wide"
     }
   ]

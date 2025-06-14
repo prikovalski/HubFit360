@@ -33,7 +33,7 @@ const StructuredData = ({ type, data }: StructuredDataProps) => {
             name: siteConfig.siteName,
             logo: {
               "@type": "ImageObject",
-              url: `${siteConfig.baseUrl}/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.png`
+              url: `${siteConfig.baseUrl}/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.webp`
             }
           }
         };
@@ -45,7 +45,7 @@ const StructuredData = ({ type, data }: StructuredDataProps) => {
           "@type": "Organization",
           logo: {
             "@type": "ImageObject",
-            url: `${siteConfig.baseUrl}/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.png`
+            url: `${siteConfig.baseUrl}/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.webp`
           },
           sameAs: [
             siteConfig.socialMedia.facebook,
