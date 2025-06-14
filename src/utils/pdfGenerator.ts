@@ -69,9 +69,8 @@ export const generateAssessmentPDF = ({ report, userProfile, patientProfile }: G
   addText(`Altura: ${patientProfile?.height ? `${(patientProfile.height / 100).toFixed(2)}m` : 'Não informado'}`);
   addText(`Peso: ${patientProfile?.weight ? `${patientProfile.weight}kg` : 'Não informado'}`);
   
-  if (patientProfile?.city) {
-    addText(`Cidade: ${patientProfile.city}`);
-  }
+  // Nota: A cidade agora deve ser buscada separadamente usando city_id
+  // Por ora, removemos essa informação do PDF até implementarmos a busca
   
   if (patientProfile?.goal) {
     addText(`Objetivo: ${patientProfile.goal}`);
