@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { getEstados, Estado } from '@/services/stateService';
+import { getCidadesByEstado, Cidade } from '@/services/cityService';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -75,6 +75,8 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
   const { deleteProfile, loading: deleteLoading } = useDeleteProfile();
   const [estados, setEstados] = useState<Estado[]>([]);
   const [loadingEstados, setLoadingEstados] = useState(true);
+  const [cidades, setCidades] = useState<Cidade[]>([]);
+  const [loadingCidades, setLoadingCidades] = useState(false);
 
   useEffect(() => {
     fetchEstados();
@@ -107,6 +109,15 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
     }
   }, [userProfile, patientProfile]);
 
+  useEffect(() => {
+    if (estadoId) {
+      fetchCidades(estadoId);
+    } else {
+      setCidades([]);
+      setCity('');
+    }
+  }, [estadoId]);
+
   const fetchEstados = async () => {
     try {
       const estadosData = await getEstados();
@@ -121,6 +132,31 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
     } finally {
       setLoadingEstados(false);
     }
+  };
+
+  const fetchCidades = async (estadoId: string) => {
+    setLoadingCidades(true);
+    try {
+      const estado = estados.find(e => e.id.toString() === estadoId);
+      if (estado) {
+        const cidadesData = await getCidadesByEstado(estado.sigla);
+        setCidades(cidadesData);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar cidades:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar a lista de cidades.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingCidades(false);
+    }
+  };
+
+  const handleEstadoChange = (value: string) => {
+    setEstadoId(value);
+    setCity(''); // Reset city when state changes
   };
 
   const handleSaveProfile = async () => {
@@ -275,7 +311,7 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="estado">Estado</Label>
-                  <Select value={estadoId} onValueChange={setEstadoId} disabled={loadingEstados}>
+                  <Select value={estadoId} onValueChange={handleEstadoChange} disabled={loadingEstados}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder={loadingEstados ? "Carregando..." : "Selecione o estado"} />
                     </SelectTrigger>
@@ -290,12 +326,26 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
                 </div>
                 <div>
                   <Label htmlFor="city">Cidade</Label>
-                  <Input
-                    id="city"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="Sua cidade"
-                  />
+                  <Select value={city} onValueChange={setCity} disabled={!estadoId || loadingCidades}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue 
+                        placeholder={
+                          !estadoId 
+                            ? "Selecione primeiro o estado" 
+                            : loadingCidades 
+                              ? "Carregando cidades..." 
+                              : "Selecione a cidade"
+                        } 
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cidades.map((cidade) => (
+                        <SelectItem key={cidade.id} value={cidade.nome}>
+                          {cidade.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </CardContent>
