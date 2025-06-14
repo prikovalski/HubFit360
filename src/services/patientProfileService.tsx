@@ -124,6 +124,16 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
       console.log('Nenhuma atividade física válida encontrada');
     }
 
+    // Converter atividades físicas para Json compatível com Supabase
+    const physicalActivitiesJson = physicalActivitiesForDB.length > 0 
+      ? JSON.parse(JSON.stringify(physicalActivitiesForDB)) 
+      : [];
+
+    console.log('=== CONVERSÃO PARA JSON ===');
+    console.log('Atividades originais:', physicalActivitiesForDB);
+    console.log('Atividades convertidas para JSON:', physicalActivitiesJson);
+    console.log('Tipo das atividades convertidas:', typeof physicalActivitiesJson);
+
     // Criar o objeto de dados do paciente com validação
     const patientData = {
       user_id: userProfile.id,
@@ -138,7 +148,7 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
       avoid_food: formData.avoidFood || null,
       physical_activity: formData.physicalActivity || null,
       activity_frequency: formData.activityFrequency || null,
-      physical_activities: physicalActivitiesForDB,
+      physical_activities: physicalActivitiesJson as any, // Cast explícito para Json
       fixed_meal_times: formData.fixedMealTimes || null,
       must_have_food: formData.mustHaveFood || null,
       neck_circumference: formData.neckCircumference ? parseFloat(formData.neckCircumference) : null,
@@ -149,7 +159,8 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
     console.log('=== DADOS DO PACIENTE PARA INSERÇÃO ===');
     console.log('Dados completos:', JSON.stringify(patientData, null, 2));
     console.log('Atividades físicas específicas:', patientData.physical_activities);
-    console.log('Quantidade de atividades:', patientData.physical_activities?.length || 0);
+    console.log('Quantidade de atividades:', Array.isArray(patientData.physical_activities) ? patientData.physical_activities.length : 0);
+    console.log('Tipo final das atividades:', typeof patientData.physical_activities);
 
     // Verificar se já existe um perfil de paciente para este usuário
     const { data: existingProfile } = await supabase
@@ -174,7 +185,7 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
       console.log('Criando novo perfil de paciente...');
       const { data: insertData, error: insertError } = await supabase
         .from('patient_profiles')
-        .insert([patientData])
+        .insert(patientData)
         .select();
 
       if (insertError) {
@@ -199,6 +210,7 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
       console.log('Dados salvos no banco:', JSON.stringify(verificationData, null, 2));
       console.log('Atividades físicas salvas:', verificationData.physical_activities);
       console.log('Tipo das atividades salvas:', typeof verificationData.physical_activities);
+      console.log('Quantidade de atividades salvas:', Array.isArray(verificationData.physical_activities) ? verificationData.physical_activities.length : 0);
     }
 
     console.log('=== FIM DA CRIAÇÃO DO PERFIL DE PACIENTE ===');
