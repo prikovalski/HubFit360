@@ -1,11 +1,22 @@
 
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://yourdomain.com/</loc>
     <lastmod>2025-06-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://yourdomain.com/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.png</image:loc>
+      <image:caption>HubFit360 - Logo da empresa de avaliação física com IA</image:caption>
+      <image:title>HubFit360 Logo</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://yourdomain.com/lovable-uploads/7a9d988c-761e-4bcc-9227-4773a43d8160.png</image:loc>
+      <image:caption>HubFit360 - Interface de avaliação física</image:caption>
+      <image:title>Interface de Avaliação</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://yourdomain.com/about</loc>

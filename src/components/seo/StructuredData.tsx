@@ -1,5 +1,6 @@
 
 import { useEffect } from 'react';
+import { useSiteConfig } from '@/hooks/useSiteConfig';
 
 interface StructuredDataProps {
   type: 'website' | 'organization' | 'service';
@@ -7,14 +8,16 @@ interface StructuredDataProps {
 }
 
 const StructuredData = ({ type, data }: StructuredDataProps) => {
+  const siteConfig = useSiteConfig();
+
   useEffect(() => {
     const getStructuredData = () => {
       const baseData = {
         "@context": "https://schema.org",
         "@type": type === 'website' ? 'WebSite' : type === 'organization' ? 'Organization' : 'Service',
-        name: "HubFit360",
-        description: "Avaliação física completa com IA para direcionamento personalizado de treinos e dieta",
-        url: "https://yourdomain.com"
+        name: siteConfig.siteName,
+        description: siteConfig.description,
+        url: siteConfig.baseUrl
       };
 
       if (type === 'website') {
@@ -22,8 +25,16 @@ const StructuredData = ({ type, data }: StructuredDataProps) => {
           ...baseData,
           potentialAction: {
             "@type": "SearchAction",
-            target: "https://yourdomain.com/search?q={search_term_string}",
+            target: `${siteConfig.baseUrl}/search?q={search_term_string}`,
             "query-input": "required name=search_term_string"
+          },
+          publisher: {
+            "@type": "Organization",
+            name: siteConfig.siteName,
+            logo: {
+              "@type": "ImageObject",
+              url: `${siteConfig.baseUrl}/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.png`
+            }
           }
         };
       }
@@ -32,12 +43,20 @@ const StructuredData = ({ type, data }: StructuredDataProps) => {
         return {
           ...baseData,
           "@type": "Organization",
-          logo: "https://yourdomain.com/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.png",
+          logo: {
+            "@type": "ImageObject",
+            url: `${siteConfig.baseUrl}/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.png`
+          },
           sameAs: [
-            "https://www.facebook.com/hubfit360",
-            "https://www.instagram.com/hubfit360",
-            "https://www.linkedin.com/company/hubfit360"
-          ]
+            siteConfig.socialMedia.facebook,
+            siteConfig.socialMedia.instagram,
+            siteConfig.socialMedia.linkedin
+          ],
+          contactPoint: {
+            "@type": "ContactPoint",
+            contactType: "customer service",
+            availableLanguage: "Portuguese"
+          }
         };
       }
 
@@ -47,10 +66,26 @@ const StructuredData = ({ type, data }: StructuredDataProps) => {
           "@type": "Service",
           provider: {
             "@type": "Organization",
-            name: "HubFit360"
+            name: siteConfig.siteName
           },
           serviceType: "Avaliação Física com IA",
-          areaServed: "Brasil"
+          areaServed: {
+            "@type": "Country",
+            name: "Brasil"
+          },
+          hasOfferCatalog: {
+            "@type": "OfferCatalog",
+            name: "Serviços de Avaliação Física",
+            itemListElement: [
+              {
+                "@type": "Offer",
+                itemOffered: {
+                  "@type": "Service",
+                  name: "Análise de Composição Corporal com IA"
+                }
+              }
+            ]
+          }
         };
       }
 
@@ -63,9 +98,11 @@ const StructuredData = ({ type, data }: StructuredDataProps) => {
     document.head.appendChild(script);
 
     return () => {
-      document.head.removeChild(script);
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
     };
-  }, [type, data]);
+  }, [type, data, siteConfig]);
 
   return null;
 };

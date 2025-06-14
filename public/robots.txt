@@ -26,3 +26,16 @@ Disallow: /api/
 Disallow: /private/
 Disallow: /*.json$
 Disallow: /*?*
+Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /assessment/
+
+# Allow specific public pages
+Allow: /
+Allow: /about
+Allow: /auth
+
+# Security
+Disallow: /*sessionid*
+Disallow: /*session*
+Disallow: /*token*
