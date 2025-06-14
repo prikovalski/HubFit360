@@ -121,6 +121,8 @@ const SignupFormSteps = ({
   };
 
   const handlePhysicalActivitiesChange = (activities: PhysicalActivity[]) => {
+    console.log('SignupFormSteps - Atividades físicas alteradas:', activities);
+    console.log('Número de atividades:', activities.length);
     onInputChange('physicalActivities', activities);
   };
 
@@ -160,6 +162,15 @@ const SignupFormSteps = ({
     }
   };
 
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('=== SUBMIT DO FORMULÁRIO ===');
+    console.log('FormData completo no submit:', JSON.stringify(formData, null, 2));
+    console.log('Atividades físicas no submit:', formData.physicalActivities);
+    console.log('Quantidade de atividades no submit:', formData.physicalActivities?.length || 0);
+    onSubmit();
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <StepProgressIndicator
@@ -173,10 +184,7 @@ const SignupFormSteps = ({
         }}
       />
 
-      <form onSubmit={e => {
-        e.preventDefault();
-        onSubmit();
-      }} className="space-y-8">
+      <form onSubmit={handleFormSubmit} className="space-y-8">
         {step === 1 && (
           <FormSection
             title="Informações da Conta"
@@ -386,8 +394,14 @@ const SignupFormSteps = ({
             description="Conte sobre sua rotina de exercícios"
             icon={stepIcons[4]}
           >
+            <div className="mb-4">
+              <p className="text-sm text-gray-600">
+                Atual: {formData.physicalActivities?.length || 0} atividade(s) cadastrada(s)
+              </p>
+            </div>
+            
             <PhysicalActivitiesSection
-              activities={formData.physicalActivities}
+              activities={formData.physicalActivities || []}
               onChange={handlePhysicalActivitiesChange}
               disabled={loading}
             />

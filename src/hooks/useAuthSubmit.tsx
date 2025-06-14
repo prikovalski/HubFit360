@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/useAuth';
 import { FormData } from '@/types/authForm';
@@ -57,11 +56,15 @@ export const useAuthSubmit = ({
         }
 
         console.log('Creating user with form data:', formData);
+        console.log('Atividades físicas antes do signup:', formData.physicalActivities);
+        console.log('Número de atividades:', formData.physicalActivities?.length || 0);
+        
         // Map gender to backend format
         let backendGender: 'MALE' | 'FEMALE' | null = null;
         if (formData.gender === 'Masculino') backendGender = 'MALE';
         else if (formData.gender === 'Feminino') backendGender = 'FEMALE';
         // If 'Outro' or empty, keep as null
+        
         const { data, error } = await signUp(formData.email, formData.password, {
           name: formData.name,
           gender: backendGender,
@@ -87,7 +90,22 @@ export const useAuthSubmit = ({
         }
 
         if (data.user) {
-          await createPatientProfile(data.user.id, formData);
+          console.log('Usuário criado com sucesso, criando perfil de paciente...');
+          console.log('Dados completos do formData antes de criar perfil:', JSON.stringify(formData, null, 2));
+          console.log('Atividades físicas específicas:', formData.physicalActivities);
+          
+          try {
+            await createPatientProfile(data.user.id, formData);
+            console.log('Perfil de paciente criado com sucesso');
+          } catch (profileError) {
+            console.error('Erro ao criar perfil de paciente:', profileError);
+            // Não bloquear o fluxo, mas mostrar aviso
+            toast({
+              title: "Aviso",
+              description: "Conta criada, mas alguns dados podem não ter sido salvos. Você pode completá-los no seu perfil.",
+              variant: "default"
+            });
+          }
 
           toast({
             title: "Cadastro realizado com sucesso!",

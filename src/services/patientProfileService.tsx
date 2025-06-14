@@ -5,8 +5,12 @@ import { FormData, PhysicalActivity } from '@/types/authForm';
 
 export const createPatientProfile = async (authUserId: string, formData: FormData) => {
   try {
-    console.log('Criando perfil de paciente para auth_user_id:', authUserId);
-    console.log('Dados do formulário:', formData);
+    console.log('=== INÍCIO DA CRIAÇÃO DO PERFIL DE PACIENTE ===');
+    console.log('Auth User ID:', authUserId);
+    console.log('FormData recebido:', JSON.stringify(formData, null, 2));
+    console.log('Atividades físicas:', formData.physicalActivities);
+    console.log('Tipo das atividades físicas:', typeof formData.physicalActivities);
+    console.log('É array?', Array.isArray(formData.physicalActivities));
 
     // Aguardar um pouco para garantir que o trigger criou o registro na tabela users
     await new Promise(resolve => setTimeout(resolve, 3000));
@@ -20,7 +24,6 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
       console.log(`Tentativa ${attempts + 1} de buscar perfil do usuário`);
       
       try {
-        // Usar uma abordagem diferente para a consulta
         const { data, error, count } = await supabase
           .from('users')
           .select('id', { count: 'exact' })
@@ -110,6 +113,17 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
       }
     }
 
+    // Validar e processar atividades físicas
+    let physicalActivitiesForDB: PhysicalActivity[] = [];
+    if (formData.physicalActivities && Array.isArray(formData.physicalActivities)) {
+      physicalActivitiesForDB = formData.physicalActivities.filter(activity => 
+        activity && activity.type && activity.type.trim() !== ''
+      );
+      console.log('Atividades físicas processadas para o DB:', physicalActivitiesForDB);
+    } else {
+      console.log('Nenhuma atividade física válida encontrada');
+    }
+
     // Criar o objeto de dados do paciente com validação
     const patientData = {
       user_id: userProfile.id,
@@ -124,7 +138,7 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
       avoid_food: formData.avoidFood || null,
       physical_activity: formData.physicalActivity || null,
       activity_frequency: formData.activityFrequency || null,
-      physical_activities: formData.physicalActivities || [] as any,
+      physical_activities: physicalActivitiesForDB,
       fixed_meal_times: formData.fixedMealTimes || null,
       must_have_food: formData.mustHaveFood || null,
       neck_circumference: formData.neckCircumference ? parseFloat(formData.neckCircumference) : null,
@@ -132,7 +146,10 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
       hip_circumference: formData.hipCircumference ? parseFloat(formData.hipCircumference) : null
     };
 
-    console.log('Dados do paciente a serem inseridos:', patientData);
+    console.log('=== DADOS DO PACIENTE PARA INSERÇÃO ===');
+    console.log('Dados completos:', JSON.stringify(patientData, null, 2));
+    console.log('Atividades físicas específicas:', patientData.physical_activities);
+    console.log('Quantidade de atividades:', patientData.physical_activities?.length || 0);
 
     // Verificar se já existe um perfil de paciente para este usuário
     const { data: existingProfile } = await supabase
@@ -142,37 +159,56 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
 
     if (existingProfile && existingProfile.length > 0) {
       console.log('Perfil de paciente já existe, atualizando...');
-      const { error: updateError } = await supabase
+      const { data: updateData, error: updateError } = await supabase
         .from('patient_profiles')
         .update(patientData)
-        .eq('user_id', userProfile.id);
+        .eq('user_id', userProfile.id)
+        .select();
 
       if (updateError) {
         console.error('Erro ao atualizar perfil de paciente:', updateError);
         throw updateError;
       }
-      console.log('Perfil de paciente atualizado com sucesso');
+      console.log('Perfil de paciente atualizado com sucesso:', updateData);
     } else {
       console.log('Criando novo perfil de paciente...');
-      const { error: insertError } = await supabase
+      const { data: insertData, error: insertError } = await supabase
         .from('patient_profiles')
-        .insert([patientData]);
+        .insert([patientData])
+        .select();
 
       if (insertError) {
         console.error('Erro ao criar perfil de paciente:', insertError);
+        console.error('Detalhes do erro:', JSON.stringify(insertError, null, 2));
         throw insertError;
       }
-      console.log('Perfil de paciente criado com sucesso');
+      console.log('Perfil de paciente criado com sucesso:', insertData);
     }
 
+    // Verificar se os dados foram salvos corretamente
+    const { data: verificationData, error: verificationError } = await supabase
+      .from('patient_profiles')
+      .select('*')
+      .eq('user_id', userProfile.id)
+      .single();
+
+    if (verificationError) {
+      console.error('Erro ao verificar dados salvos:', verificationError);
+    } else {
+      console.log('=== VERIFICAÇÃO DOS DADOS SALVOS ===');
+      console.log('Dados salvos no banco:', JSON.stringify(verificationData, null, 2));
+      console.log('Atividades físicas salvas:', verificationData.physical_activities);
+      console.log('Tipo das atividades salvas:', typeof verificationData.physical_activities);
+    }
+
+    console.log('=== FIM DA CRIAÇÃO DO PERFIL DE PACIENTE ===');
+
   } catch (error) {
-    console.error('Erro ao criar perfil de paciente:', error);
-    // Não vamos fazer throw aqui para não bloquear o login
-    // O usuário consegue fazer login mesmo sem o patient_profile
-    toast({
-      title: "Aviso",
-      description: "Seu cadastro foi criado, mas alguns dados adicionais não foram salvos. Você pode completá-los mais tarde no seu perfil.",
-      variant: "default"
-    });
+    console.error('=== ERRO NA CRIAÇÃO DO PERFIL DE PACIENTE ===');
+    console.error('Erro detalhado:', error);
+    console.error('Stack trace:', error.stack);
+    
+    // Re-throw o erro para que seja tratado no nível superior
+    throw error;
   }
 };
