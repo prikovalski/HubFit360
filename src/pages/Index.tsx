@@ -7,10 +7,14 @@ import AboutSection from '@/components/AboutSection';
 import UserDashboard from '@/components/UserDashboard';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import StructuredData from '@/components/seo/StructuredData';
 
 const Index = () => {
   return (
     <AuthProvider>
+      <StructuredData type="website" />
+      <StructuredData type="organization" />
+      <StructuredData type="service" />
       <AppContent />
     </AuthProvider>
   );
