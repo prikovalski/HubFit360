@@ -141,6 +141,21 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
     }
   }, [estadoId]);
 
+  const formatDateInput = (value: string) => {
+    // Remove todos os caracteres não numéricos
+    const numbersOnly = value.replace(/\D/g, '');
+    
+    // Aplica a máscara dd/mm/aaaa
+    if (numbersOnly.length <= 2) {
+      return numbersOnly;
+    } else if (numbersOnly.length <= 4) {
+      return `${numbersOnly.slice(0, 2)}/${numbersOnly.slice(2)}`;
+    } else if (numbersOnly.length <= 8) {
+      return `${numbersOnly.slice(0, 2)}/${numbersOnly.slice(2, 4)}/${numbersOnly.slice(4, 8)}`;
+    }
+    return `${numbersOnly.slice(0, 2)}/${numbersOnly.slice(2, 4)}/${numbersOnly.slice(4, 8)}`;
+  };
+
   const fetchEstados = async () => {
     try {
       const estadosData = await getEstados();
@@ -183,12 +198,13 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
   };
 
   const handleBirthDateInputChange = (value: string) => {
-    setBirthDateInput(value);
+    const formattedValue = formatDateInput(value);
+    setBirthDateInput(formattedValue);
     
-    // Tentar parsear a data quando o usuário digitar
-    if (value.length === 10) { // dd/mm/yyyy
+    // Tentar parsear a data quando o usuário digitar uma data completa
+    if (formattedValue.length === 10) { // dd/mm/yyyy
       try {
-        const parsedDate = parse(value, "dd/MM/yyyy", new Date());
+        const parsedDate = parse(formattedValue, "dd/MM/yyyy", new Date());
         if (!isNaN(parsedDate.getTime())) {
           setBirthDate(parsedDate);
         }
@@ -335,6 +351,7 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
                     onChange={(e) => handleBirthDateInputChange(e.target.value)}
                     placeholder="dd/mm/aaaa"
                     className="flex-1"
+                    maxLength={10}
                   />
                   <Popover>
                     <PopoverTrigger asChild>
