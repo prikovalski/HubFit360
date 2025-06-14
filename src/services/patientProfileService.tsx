@@ -67,17 +67,46 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
       throw new Error('Não foi possível encontrar o perfil do usuário após várias tentativas');
     }
 
-    // Buscar city_id se uma cidade foi fornecida
-    let cityId = null;
-    if (formData.city) {
-      const { data: cityData, error: cityError } = await supabase
-        .from('cidades')
+    // Buscar estado_id se um estado foi fornecido
+    let estadoId = null;
+    if (formData.state) {
+      console.log('Buscando estado por sigla:', formData.state);
+      const { data: estadoData, error: estadoError } = await supabase
+        .from('estados')
         .select('id')
-        .eq('nome', formData.city)
+        .eq('sigla', formData.state)
         .maybeSingle();
 
-      if (!cityError && cityData) {
-        cityId = cityData.id;
+      if (!estadoError && estadoData) {
+        estadoId = estadoData.id;
+        console.log('Estado encontrado:', estadoId);
+      } else {
+        console.error('Erro ao buscar estado:', estadoError);
+      }
+    }
+
+    // Buscar city_id se uma cidade foi fornecida (agora já deve ser o ID)
+    let cityId = null;
+    if (formData.city) {
+      // Se formData.city for um UUID (ID da cidade), usar diretamente
+      // Se for um nome, buscar na tabela
+      if (formData.city.length > 10) { // Provavelmente é um UUID
+        cityId = formData.city;
+        console.log('Usando city_id diretamente:', cityId);
+      } else {
+        console.log('Buscando cidade por nome:', formData.city);
+        const { data: cityData, error: cityError } = await supabase
+          .from('cidades')
+          .select('id')
+          .eq('nome', formData.city)
+          .maybeSingle();
+
+        if (!cityError && cityData) {
+          cityId = cityData.id;
+          console.log('Cidade encontrada:', cityId);
+        } else {
+          console.error('Erro ao buscar cidade:', cityError);
+        }
       }
     }
 
@@ -87,8 +116,8 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
       height: formData.height ? parseFloat(formData.height) : null,
       weight: formData.weight ? parseFloat(formData.weight) : null,
       city_id: cityId,
+      estado_id: estadoId,
       goal: formData.goal || null,
-      intensity: formData.intensity || null,
       chronic_disease: formData.chronicDisease || null,
       medical_restriction: formData.medicalRestriction || null,
       food_allergy: formData.foodAllergy || null,
@@ -121,6 +150,7 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
         console.error('Erro ao atualizar perfil de paciente:', updateError);
         throw updateError;
       }
+      console.log('Perfil de paciente atualizado com sucesso');
     } else {
       console.log('Criando novo perfil de paciente...');
       const { error: insertError } = await supabase
@@ -131,9 +161,9 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
         console.error('Erro ao criar perfil de paciente:', insertError);
         throw insertError;
       }
+      console.log('Perfil de paciente criado com sucesso');
     }
 
-    console.log('Perfil de paciente criado/atualizado com sucesso');
   } catch (error) {
     console.error('Erro ao criar perfil de paciente:', error);
     // Não vamos fazer throw aqui para não bloquear o login

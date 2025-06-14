@@ -20,6 +20,7 @@ interface PatientProfile {
   height: number | null;
   weight: number | null;
   city_id: string | null;
+  estado_id: string | null;
   goal: string | null;
   chronic_disease: string | null;
   medical_restriction: string | null;
@@ -32,7 +33,6 @@ interface PatientProfile {
   neck_circumference: number | null;
   waist_circumference: number | null;
   hip_circumference: number | null;
-  estado_id: string | null;
   created_at: string;
   updated_at: string;
 }

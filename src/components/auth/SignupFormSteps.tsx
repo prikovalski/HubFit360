@@ -181,7 +181,7 @@ export const SignupFormSteps = ({
               >
                 <option value="">{cidadesLoading ? 'Carregando...' : 'Selecione'}</option>
                 {cidades.map((cidade) => (
-                  <option key={cidade.id} value={cidade.nome}>
+                  <option key={cidade.id} value={cidade.id.toString()}>
                     {cidade.nome}
                   </option>
                 ))}
@@ -306,16 +306,6 @@ export const SignupFormSteps = ({
               value={formData.activityFrequency}
               onChange={e => onInputChange('activityFrequency', e.target.value)}
               placeholder="Ex: 3-4 dias"
-              disabled={loading}
-            />
-          </div>
-          <div>
-            <Label htmlFor="intensity">Intensidade</Label>
-            <Input
-              id="intensity"
-              value={formData.intensity}
-              onChange={e => onInputChange('intensity', e.target.value)}
-              placeholder="Ex: Moderada"
               disabled={loading}
             />
           </div>
