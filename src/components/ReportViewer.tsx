@@ -1,177 +1,125 @@
-import { useState, useEffect } from 'react';
-import { toast } from "@/hooks/use-toast";
-import { useUserProfile } from '@/hooks/useUserProfile';
-import { supabase } from '@/integrations/supabase/client';
-import { Report } from '@/types/report';
+import { useEffect, useState } from 'react';
+import { useToast } from "@/hooks/use-toast";
+import { Copy, CheckCircle2 } from 'lucide-react';
 import ReportHeader from './report/ReportHeader';
-import MetricsOverview from './report/MetricsOverview';
+import PersonalInfoSection from './report/PersonalInfoSection';
+import EstimatesSection from './report/EstimatesSection';
+import BodyMeasurementsSection from './report/BodyMeasurementsSection';
 import BasicAnalysisSection from './report/BasicAnalysisSection';
 import PremiumSection from './report/PremiumSection';
+import LoggedPageLayout from '@/components/layout/LoggedPageLayout';
 
-const ReportViewer = ({ report, onBack }) => {
-  const { userProfile, patientProfile } = useUserProfile();
-  const [currentReport, setCurrentReport] = useState(report);
-  const [isCheckingPayment, setIsCheckingPayment] = useState(false);
+interface Report {
+  id: string;
+  date: string;
+  status: string;
+  age: number;
+  assessmentText: string;
+  preview: {
+    leanMass: string;
+    bodyFat: string;
+    bmi: string;
+    fatMass: string;
+    summary: string;
+  };
+}
 
-  // Verificar o status atual da avaliação ao carregar o componente
+interface ReportViewerProps {
+  report: Report;
+  onBack: () => void;
+  onLogoClick: () => void;
+  onProfileClick: () => void;
+  onLogout: () => void;
+}
+
+const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }: ReportViewerProps) => {
+  const { toast } = useToast();
+  const [copied, setCopied] = useState(false);
+
   useEffect(() => {
-    const checkPaymentStatus = async () => {
-      if (!userProfile?.id || !report.id) return;
-      
-      try {
-        console.log('Verificando status da avaliação:', report.id);
-        const { data, error } = await supabase
-          .from('assessments')
-          .select('status')
-          .eq('id', report.id)
-          .eq('user_id', userProfile.id)
-          .single();
+    if (copied) {
+      const timer = setTimeout(() => {
+        setCopied(false);
+      }, 2000);
 
-        if (error) {
-          console.error('Erro ao verificar status do pagamento:', error);
-          return;
-        }
+      return () => clearTimeout(timer);
+    }
+  }, [copied]);
 
-        if (data && data.status !== currentReport.status) {
-          console.log('Status atualizado de', currentReport.status, 'para', data.status);
-          setCurrentReport({ ...currentReport, status: data.status });
-          
-          if (data.status === 'paid') {
-            toast({
-              title: "Pagamento confirmado!",
-              description: "Seu laudo completo foi desbloqueado",
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Erro ao verificar status:', error);
-      }
-    };
-
-    checkPaymentStatus();
-    
-    // Verificar o status a cada 10 segundos por 2 minutos após carregar a página
-    const interval = setInterval(checkPaymentStatus, 10000);
-    const timeout = setTimeout(() => clearInterval(interval), 120000); // 2 minutos
-    
-    return () => {
-      clearInterval(interval);
-      clearTimeout(timeout);
-    };
-  }, [userProfile?.id, report.id, currentReport.status]);
-
-  const handleManualPaymentCheck = async () => {
-    if (!report.id) return;
-    
-    setIsCheckingPayment(true);
-    
+  const handleCopyToClipboard = async (text: string) => {
     try {
-      console.log('Verificando pagamento manualmente para assessment:', report.id);
-      
-      const { data, error } = await supabase.functions.invoke('check-payment-status', {
-        body: { assessmentId: report.id }
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast({
+        title: "Copiado!",
+        description: "O texto foi copiado para a área de transferência.",
       });
-
-      if (error) {
-        console.error('Erro ao verificar pagamento:', error);
-        toast({
-          title: "Erro",
-          description: "Erro ao verificar status do pagamento. Tente novamente.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      console.log('Resultado da verificação:', data);
-      
-      if (data.status === 'paid') {
-        setCurrentReport({ ...currentReport, status: 'paid' });
-        toast({
-          title: "Pagamento aprovado!",
-          description: "Laudo completo desbloqueado com sucesso",
-        });
-      } else if (data.status === 'failed') {
-        toast({
-          title: "Pagamento rejeitado",
-          description: "Seu pagamento foi rejeitado ou cancelado. Tente novamente.",
-          variant: "destructive"
-        });
-      } else if (data.status === 'pending') {
-        toast({
-          title: "Pagamento em processamento",
-          description: "Seu pagamento ainda está sendo processado. Aguarde alguns minutos.",
-        });
-      } else if (data.status === 'no_payment') {
-        toast({
-          title: "Nenhum pagamento encontrado",
-          description: "Nenhum pagamento pendente foi encontrado para esta avaliação.",
-        });
-      }
-    } catch (error) {
-      console.error('Erro ao verificar pagamento:', error);
+    } catch (err) {
+      console.error('Falha ao copiar: ', err);
       toast({
         title: "Erro",
-        description: "Erro ao verificar status do pagamento. Tente novamente.",
+        description: "Falha ao copiar o texto para a área de transferência.",
         variant: "destructive"
       });
-    } finally {
-      setIsCheckingPayment(false);
     }
   };
 
-  const handlePaymentSuccess = async () => {
-    toast({
-      title: "Pagamento aprovado!",
-      description: "Laudo completo desbloqueado com sucesso",
-    });
-    
-    // Verificar o status atualizado da avaliação
-    try {
-      const { data, error } = await supabase
-        .from('assessments')
-        .select('status')
-        .eq('id', report.id)
-        .eq('user_id', userProfile.id)
-        .single();
-
-      if (!error && data) {
-        setCurrentReport({ ...currentReport, status: data.status });
-      }
-    } catch (error) {
-      console.error('Erro ao atualizar status:', error);
-    }
-  };
-
-  const isPaid = currentReport.status === 'paid';
+  const userName = report.age ? `Usuário` : undefined;
 
   return (
-    <div className="py-12 px-4">
-      <div className="container mx-auto max-w-5xl">
-        <ReportHeader 
-          report={currentReport} 
-          userProfile={userProfile}
-          patientProfile={patientProfile}
-          onBack={onBack} 
-          isPaid={isPaid}
-          onManualPaymentCheck={handleManualPaymentCheck}
-          isCheckingPayment={isCheckingPayment}
-        />
+    <LoggedPageLayout
+      userName={userName}
+      onLogoClick={onLogoClick}
+      onProfileClick={onProfileClick}
+      onLogout={onLogout}
+    >
+      <div className="py-8 px-4">
+        <div className="container mx-auto max-w-4xl">
+          <ReportHeader report={report} onBack={onBack} />
+          
+          {report.status === 'paid' ? (
+            <div className="space-y-8">
+              <PersonalInfoSection report={report} />
+              <EstimatesSection report={report} />
+              <BodyMeasurementsSection report={report} />
 
-        <MetricsOverview report={currentReport} />
-
-        <BasicAnalysisSection 
-          report={currentReport} 
-          userProfile={userProfile}
-          patientProfile={patientProfile}
-        />
-
-        <PremiumSection 
-          report={currentReport} 
-          isPaid={isPaid} 
-          onPaymentSuccess={handlePaymentSuccess} 
-        />
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                  Análise Completa
+                </h3>
+                <p className="text-gray-700 leading-relaxed mb-6">
+                  {report.assessmentText}
+                </p>
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => handleCopyToClipboard(report.assessmentText)}
+                    className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md transition-colors"
+                    disabled={copied}
+                  >
+                    {copied ? (
+                      <>
+                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                        Copiado!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-5 h-5" />
+                        Copiar
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              <BasicAnalysisSection report={report} />
+              <PremiumSection />
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </LoggedPageLayout>
   );
 };
 

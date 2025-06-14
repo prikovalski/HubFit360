@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -5,9 +6,10 @@ import { supabase } from '@/integrations/supabase/client';
 import ReportViewer from '@/components/ReportViewer';
 import AssessmentForm from '@/components/AssessmentForm';
 import UserProfile from '@/components/UserProfile';
-import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import AssessmentsList from '@/components/dashboard/AssessmentsList';
+import LoggedPageLayout from '@/components/layout/LoggedPageLayout';
+import { useNavigation } from '@/hooks/useNavigation';
 
 interface Assessment {
   id: string;
@@ -24,11 +26,17 @@ interface Assessment {
 const UserDashboard = ({ user, onLogout }) => {
   const { toast } = useToast();
   const { userProfile } = useUserProfile();
-  const [selectedReport, setSelectedReport] = useState(null);
-  const [showAssessmentForm, setShowAssessmentForm] = useState(false);
-  const [showUserProfile, setShowUserProfile] = useState(false);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  const {
+    currentPage,
+    reportData,
+    goToDashboard,
+    goToProfile,
+    goToAssessment,
+    goToReport
+  } = useNavigation();
 
   useEffect(() => {
     if (userProfile?.id) {
@@ -63,8 +71,8 @@ const UserDashboard = ({ user, onLogout }) => {
   };
 
   const handleAssessmentSuccess = (assessment) => {
-    setShowAssessmentForm(false);
     fetchAssessments();
+    goToDashboard();
     toast({
       title: "Avaliação criada!",
       description: "Sua avaliação física foi processada com sucesso."
@@ -74,13 +82,12 @@ const UserDashboard = ({ user, onLogout }) => {
   const handleReportClick = (assessment) => {
     console.log('Avaliação selecionada:', assessment);
     
-    // Criar o objeto report com os dados corretos da avaliação
     const adaptedReport = {
       id: assessment.id,
       date: assessment.created_at,
       status: assessment.status,
-      age: assessment.age, // Incluir a idade salva na avaliação
-      assessmentText: assessment.assessment_text, // Incluir o texto completo da avaliação
+      age: assessment.age,
+      assessmentText: assessment.assessment_text,
       preview: {
         leanMass: `${assessment.lean_mass?.toFixed(1) || 'N/A'}kg`,
         bodyFat: `${assessment.body_fat_percentage?.toFixed(1) || 'N/A'}%`,
@@ -93,52 +100,78 @@ const UserDashboard = ({ user, onLogout }) => {
     };
     
     console.log('Report adaptado:', adaptedReport);
-    setSelectedReport(adaptedReport);
+    goToReport(adaptedReport);
   };
 
-  if (selectedReport) {
-    return <ReportViewer report={selectedReport} onBack={() => setSelectedReport(null)} />;
-  }
+  const renderCurrentPage = () => {
+    switch (currentPage) {
+      case 'report':
+        return (
+          <ReportViewer 
+            report={reportData} 
+            onBack={goToDashboard}
+            onLogoClick={goToDashboard}
+            onProfileClick={goToProfile}
+            onLogout={onLogout}
+          />
+        );
+      
+      case 'assessment':
+        return (
+          <AssessmentForm 
+            onBack={goToDashboard}
+            onSuccess={handleAssessmentSuccess}
+            onLogoClick={goToDashboard}
+            onProfileClick={goToProfile}
+            onLogout={onLogout}
+          />
+        );
+      
+      case 'profile':
+        return (
+          <UserProfile 
+            onBack={goToDashboard} 
+            onLogout={onLogout}
+            onLogoClick={goToDashboard}
+            onProfileClick={goToProfile}
+          />
+        );
+      
+      default:
+        return (
+          <LoggedPageLayout
+            userName={user.name}
+            onLogoClick={goToDashboard}
+            onProfileClick={goToProfile}
+            onLogout={onLogout}
+          >
+            <div className="py-12 px-4">
+              <div className="container mx-auto max-w-6xl">
+                <div className="mb-8">
+                  <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                    Dashboard
+                  </h1>
+                  <p className="text-gray-600">
+                    Acompanhe suas avaliações e progresso físico
+                  </p>
+                </div>
 
-  if (showAssessmentForm) {
-    return (
-      <AssessmentForm 
-        onBack={() => setShowAssessmentForm(false)}
-        onSuccess={handleAssessmentSuccess}
-      />
-    );
-  }
+                <DashboardStats assessments={assessments} />
 
-  if (showUserProfile) {
-    return (
-      <UserProfile 
-        onBack={() => setShowUserProfile(false)} 
-        onLogout={onLogout}
-      />
-    );
-  }
+                <AssessmentsList
+                  assessments={assessments}
+                  loading={loading}
+                  onReportClick={handleReportClick}
+                  onNewAssessment={goToAssessment}
+                />
+              </div>
+            </div>
+          </LoggedPageLayout>
+        );
+    }
+  };
 
-  return (
-    <div className="py-12 px-4">
-      <div className="container mx-auto max-w-6xl">
-        <DashboardHeader
-          userName={user.name}
-          onNewAssessment={() => setShowAssessmentForm(true)}
-          onUserProfile={() => setShowUserProfile(true)}
-          onLogout={onLogout}
-        />
-
-        <DashboardStats assessments={assessments} />
-
-        <AssessmentsList
-          assessments={assessments}
-          loading={loading}
-          onReportClick={handleReportClick}
-          onNewAssessment={() => setShowAssessmentForm(true)}
-        />
-      </div>
-    </div>
-  );
+  return renderCurrentPage();
 };
 
 export default UserDashboard;
