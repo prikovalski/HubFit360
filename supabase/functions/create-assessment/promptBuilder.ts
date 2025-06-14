@@ -60,7 +60,7 @@ Forneça recomendações de calorias para:
 - Emagrecimento saudável (cutting)
 - Ganho de massa muscular (bulking)
 
-Divisão de macronutrientes para cada cenário (proteínas, carboidratos, gorduras)
+Divisão de macronutrientes em cada refeição para cada cenário (proteínas, carboidratos, gorduras)
 
 4. PROJEÇÃO DE RESULTADOS
 Explique o que pode acontecer seguindo as recomendações por 30 dias
@@ -87,15 +87,16 @@ IMPORTANTE: Forneça o laudo em formato CSV estruturado exatamente como o exempl
 
 \`\`\`
 AVALIAÇÃO CORPORAL
- - Distribuição de Gordura,"Descrição detalhada","Valores específicos"
+ - Distribuição de Gordura,"Descrição detalhada",
+ "Valores específicos"
  
 GASTO ENERGÉTICO
- - Taxa Metabólica Basal (TMB): XXXX kcal/dia - "Descrição detalhada"
- - Gasto Energético Total (GET),XXXX kcal/dia - "Descrição detalhada"
+ - Taxa Metabólica Basal (TMB): "XXXX kcal/dia",  "Descrição detalhada"
+ - Gasto Energético Total (GET): "XXXX kcal/dia" - "Descrição detalhada"
  
 PLANEJAMENTO NUTRICIONAL
- - Manutenção com foco em definição: XXXX kcal/dia, "Descrição detalhada"
- - Emagrecimento saudável (cutting): XXXX kcal/dia, "Descrição detalhada"
+ - Manutenção com foco em definição: XXXX kcal/dia - "Descrição detalhada"
+ - Emagrecimento saudável (cutting): "XXXX kcal/dia" - "Descrição detalhada"
  - Ganho de massa muscular (bulking): XXXX kcal/dia, "Descrição detalhada"
  
  Divisão de Macronutrientes para MANUTENÇÃO:
@@ -116,9 +117,11 @@ PLANEJAMENTO NUTRICIONAL
 
    
 PROJEÇÃO DE RESULTADOS,
-  Emagrecimento saudável,"Descrição das expectativas em 30 dias","Valor esperado"
-  Manutenção com definição,"Descrição das expectativas em 30 dias","Valor esperado"
-  Bulking,"Descrição das expectativas em 30 dias","Valor esperado"
+  EMAGRECIMENTO SAUDÁVEL: "Descrição das expectativas em 30 dias","Valor esperado"
+  
+  MANUTENÇÃO COM DEFINIÇÃO: "Descrição das expectativas em 30 dias","Valor esperado"
+  
+  GANHO DE MASSA MUSCULAR: "Descrição das expectativas em 30 dias","Valor esperado"
   
 MÉTODOS UTILIZADOS,
   Composição Corporal:"Fórmula de Deurenberg para estimar percentual de gordura e massa magra"
