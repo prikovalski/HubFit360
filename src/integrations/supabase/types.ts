@@ -132,6 +132,7 @@ export type Database = {
           medical_restriction: string | null
           must_have_food: string | null
           neck_circumference: number | null
+          physical_activities: Json | null
           physical_activity: string | null
           updated_at: string
           user_id: number
@@ -154,6 +155,7 @@ export type Database = {
           medical_restriction?: string | null
           must_have_food?: string | null
           neck_circumference?: number | null
+          physical_activities?: Json | null
           physical_activity?: string | null
           updated_at?: string
           user_id: number
@@ -176,6 +178,7 @@ export type Database = {
           medical_restriction?: string | null
           must_have_food?: string | null
           neck_circumference?: number | null
+          physical_activities?: Json | null
           physical_activity?: string | null
           updated_at?: string
           user_id?: number

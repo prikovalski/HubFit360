@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { FormData } from '@/types/authForm';
+import { FormData, PhysicalActivity } from '@/types/authForm';
 
 export const useFormData = () => {
   const [formData, setFormData] = useState<FormData>({
@@ -21,6 +21,7 @@ export const useFormData = () => {
     avoidFood: '',
     physicalActivity: '',
     activityFrequency: '',
+    physicalActivities: [],
     fixedMealTimes: '',
     mustHaveFood: '',
     neckCircumference: '',
@@ -28,7 +29,7 @@ export const useFormData = () => {
     hipCircumference: ''
   });
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | PhysicalActivity[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -51,6 +52,7 @@ export const useFormData = () => {
       avoidFood: '',
       physicalActivity: '',
       activityFrequency: '',
+      physicalActivities: [],
       fixedMealTimes: '',
       mustHaveFood: '',
       neckCircumference: '',

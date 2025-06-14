@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { PhysicalActivity } from '@/types/authForm';
 
 interface UserProfile {
   id: number;
@@ -28,6 +28,7 @@ interface PatientProfile {
   avoid_food: string | null;
   physical_activity: string | null;
   activity_frequency: string | null;
+  physical_activities: PhysicalActivity[] | null;
   fixed_meal_times: string | null;
   must_have_food: string | null;
   neck_circumference: number | null;

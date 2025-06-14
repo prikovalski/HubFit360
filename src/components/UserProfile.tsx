@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -35,6 +34,7 @@ import { cn } from "@/lib/utils";
 import { DeleteProfileDialog } from "@/components/profile/DeleteProfileDialog";
 import { useDeleteProfile } from "@/hooks/useDeleteProfile";
 import LoggedPageLayout from '@/components/layout/LoggedPageLayout';
+import { PhysicalActivitiesSection, PhysicalActivity } from '@/components/PhysicalActivitiesSection';
 
 interface UserProfileProps {
   onBack: () => void;
@@ -79,6 +79,8 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
   const [cidades, setCidades] = useState<Cidade[]>([]);
   const [loadingCidades, setLoadingCidades] = useState(false);
 
+  const [physicalActivities, setPhysicalActivities] = useState<PhysicalActivity[]>([]);
+
   useEffect(() => {
     fetchEstados();
   }, []);
@@ -107,6 +109,19 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
       setNeckCircumference(patientProfile.neck_circumference?.toString() || '');
       setWaistCircumference(patientProfile.waist_circumference?.toString() || '');
       setHipCircumference(patientProfile.hip_circumference?.toString() || '');
+      
+      // Configurar atividades físicas
+      if (patientProfile.physical_activities && Array.isArray(patientProfile.physical_activities)) {
+        setPhysicalActivities(patientProfile.physical_activities);
+      } else if (patientProfile.physical_activity || patientProfile.activity_frequency) {
+        // Migrar dados antigos se existirem
+        setPhysicalActivities([{
+          type: patientProfile.physical_activity || '',
+          frequency: patientProfile.activity_frequency || ''
+        }]);
+      } else {
+        setPhysicalActivities([]);
+      }
     }
   }, [userProfile, patientProfile]);
 
@@ -186,6 +201,7 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
       avoid_food: avoidFood || null,
       physical_activity: physicalActivity || null,
       activity_frequency: activityFrequency || null,
+      physical_activities: physicalActivities,
       fixed_meal_times: fixedMealTimes || null,
       must_have_food: mustHaveFood || null,
       neck_circumference: neckCircumference ? parseFloat(neckCircumference) : null,
@@ -433,26 +449,11 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="physicalActivity">Tipo de Exercício</Label>
-                  <Input
-                    id="physicalActivity"
-                    value={physicalActivity}
-                    onChange={(e) => setPhysicalActivity(e.target.value)}
-                    placeholder="Ex: Musculação, corrida..."
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="activityFrequency">Frequência (dias/semana)</Label>
-                  <Input
-                    id="activityFrequency"
-                    value={activityFrequency}
-                    onChange={(e) => setActivityFrequency(e.target.value)}
-                    placeholder="Ex: 3-4 dias"
-                  />
-                </div>
-              </div>
+              <PhysicalActivitiesSection
+                activities={physicalActivities}
+                onChange={setPhysicalActivities}
+                disabled={isSaving}
+              />
             </CardContent>
           </Card>
 

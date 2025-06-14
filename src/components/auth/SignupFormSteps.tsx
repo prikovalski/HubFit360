@@ -1,388 +1,479 @@
-
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import React, { useEffect, useState, useMemo } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from 'date-fns/locale';
+import { cn } from "@/lib/utils";
 import { getEstados, Estado } from '@/services/stateService';
 import { getCidadesByEstado, Cidade } from '@/services/cityService';
-import { validatePassword } from "@/utils/inputValidation";
-import { Check, X } from "lucide-react";
-
-interface FormData {
-  email: string;
-  password: string;
-  name: string;
-  gender: string;
-  birthDate: string;
-  weight: string;
-  height: string;
-  city: string;
-  state: string; // UF do estado brasileiro
-  goal: string;
-  intensity: string;
-  chronicDisease: string;
-  medicalRestriction: string;
-  foodAllergy: string;
-  avoidFood: string;
-  physicalActivity: string;
-  activityFrequency: string;
-  fixedMealTimes: string;
-  mustHaveFood: string;
-  neckCircumference: string;
-  waistCircumference: string;
-  hipCircumference: string;
-}
+import { PhysicalActivitiesSection, PhysicalActivity } from '@/components/PhysicalActivitiesSection';
 
 interface SignupFormStepsProps {
-  step: number;
-  formData: FormData;
+  formData: any;
+  onInputChange: (field: string, value: string | PhysicalActivity[]) => void;
+  onSubmit: () => void;
   loading: boolean;
-  onInputChange: (field: string, value: string) => void;
-  onSubmit: (e: React.FormEvent) => void;
-  onPrevStep: () => void;
-  onSwitchToLogin: () => void;
+  onBack: () => void;
 }
 
-export const SignupFormSteps = ({ 
+const SignupFormSteps = ({ 
   formData, 
-  loading, 
   onInputChange, 
   onSubmit, 
-  onSwitchToLogin 
-}: Omit<SignupFormStepsProps, 'step' | 'onPrevStep'>) => {
+  loading, 
+  onBack 
+}: SignupFormStepsProps) => {
+  const [step, setStep] = useState(1);
   const [estados, setEstados] = useState<Estado[]>([]);
-  const [estadosLoading, setEstadosLoading] = useState(false);
   const [cidades, setCidades] = useState<Cidade[]>([]);
-  const [cidadesLoading, setCidadesLoading] = useState(false);
-
-  const passwordValidation = useMemo(() => {
-    if (!formData.password) return null;
-    return validatePassword(formData.password);
-  }, [formData.password]);
+  const [loadingEstados, setLoadingEstados] = useState(true);
+  const [loadingCidades, setLoadingCidades] = useState(false);
 
   useEffect(() => {
-    setEstadosLoading(true);
-    getEstados()
-      .then(data => setEstados(data))
-      .catch(() => setEstados([]))
-      .finally(() => setEstadosLoading(false));
+    fetchEstados();
   }, []);
 
-  // Buscar cidades quando o estado mudar
   useEffect(() => {
-    if (!formData.state) {
+    if (formData.state) {
+      fetchCidades(formData.state);
+    } else {
       setCidades([]);
-      return;
     }
-    setCidadesLoading(true);
-    getCidadesByEstado(formData.state)
-      .then(data => setCidades(data))
-      .catch(() => setCidades([]))
-      .finally(() => setCidadesLoading(false));
   }, [formData.state]);
 
+  const fetchEstados = async () => {
+    setLoadingEstados(true);
+    try {
+      const estadosData = await getEstados();
+      setEstados(estadosData);
+    } catch (error) {
+      console.error('Erro ao carregar estados:', error);
+    } finally {
+      setLoadingEstados(false);
+    }
+  };
+
+  const fetchCidades = async (estadoSigla: string) => {
+    setLoadingCidades(true);
+    try {
+      const cidadesData = await getCidadesByEstado(estadoSigla);
+      setCidades(cidadesData);
+    } catch (error) {
+      console.error('Erro ao carregar cidades:', error);
+    } finally {
+      setLoadingCidades(false);
+    }
+  };
+
+  const handleEstadoChange = (value: string) => {
+    onInputChange('state', value);
+    onInputChange('city', ''); // Reset city when state changes
+  };
+
+  const handlePhysicalActivitiesChange = (activities: PhysicalActivity[]) => {
+    onInputChange('physicalActivities', activities);
+  };
+
   return (
-    <form onSubmit={onSubmit} className="space-y-8 max-w-2xl mx-auto">
-      {/* Dados Pessoais */}
-      <div className="bg-green-50 rounded-xl shadow-md p-6 mb-6">
-        <div className="flex items-center mb-6">
-          <svg className="w-7 h-7 text-green-600 mr-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-          <h2 className="text-2xl font-bold text-gray-800">Dados Pessoais</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="md:col-span-3">
-            <Label htmlFor="name">Nome Completo</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={e => onInputChange('name', e.target.value)}
-              placeholder="Seu nome completo"
-              required
-              disabled={loading}
-            />
-          </div>
-          <div className="md:col-span-3">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={e => onInputChange('email', e.target.value)}
-              placeholder="seu@email.com"
-              required
-              disabled={loading}
-            />
-          </div>
-          <div className="md:col-span-3 md:col-span-2">
-            <Label htmlFor="password">Senha</Label>
-            <div className="relative">
+    <div>
+      <form onSubmit={e => {
+        e.preventDefault();
+        onSubmit();
+      }} className="space-y-8">
+        {step === 1 && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900">Informações da Conta</h2>
+              <p className="text-gray-600 mt-2">Crie sua conta para começar</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="password"
+                type="email"
+                id="email"
+                value={formData.email}
+                onChange={e => onInputChange('email', e.target.value)}
+                placeholder="seuemail@exemplo.com"
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <Label htmlFor="password">Senha</Label>
+              <Input
                 type="password"
+                id="password"
                 value={formData.password}
                 onChange={e => onInputChange('password', e.target.value)}
-                placeholder="Crie uma senha segura"
-                required
+                placeholder="********"
                 disabled={loading}
-                className={passwordValidation && formData.password ? 
-                  (passwordValidation.isValid ? 'border-green-500' : 'border-red-500') : ''
-                }
               />
-              {passwordValidation && formData.password && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  {passwordValidation.isValid ? (
-                    <Check className="w-4 h-4 text-green-500" />
-                  ) : (
-                    <X className="w-4 h-4 text-red-500" />
-                  )}
-                </div>
-              )}
             </div>
-            {passwordValidation && !passwordValidation.isValid && formData.password && (
-              <div className="mt-2 space-y-1">
-                {passwordValidation.errors.map((error, index) => (
-                  <p key={index} className="text-xs text-red-500 flex items-center">
-                    <X className="w-3 h-3 mr-1" />
-                    {error}
-                  </p>
-                ))}
+
+            <div className="flex justify-end pt-6">
+              <Button type="button" onClick={() => setStep(2)}>
+                Próximo
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900">Dados Pessoais</h2>
+              <p className="text-gray-600 mt-2">Informe seus dados pessoais</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="name">Nome Completo</Label>
+              <Input
+                type="text"
+                id="name"
+                value={formData.name}
+                onChange={e => onInputChange('name', e.target.value)}
+                placeholder="Seu nome completo"
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <Label htmlFor="gender">Gênero</Label>
+              <Select value={formData.gender} onValueChange={value => onInputChange('gender', value)} disabled={loading}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecione o gênero" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Masculino">Masculino</SelectItem>
+                  <SelectItem value="Feminino">Feminino</SelectItem>
+                  <SelectItem value="Outro">Outro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Data de Nascimento</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !formData.birthDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.birthDate ? format(new Date(formData.birthDate), "dd/MM/yyyy", { locale: ptBR }) : <span>Selecione a data</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.birthDate ? new Date(formData.birthDate) : undefined}
+                    onSelect={(date) => onInputChange('birthDate', date ? date.toISOString() : '')}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01")
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="flex justify-between pt-6">
+              <Button type="button" variant="outline" onClick={() => setStep(1)}>
+                Voltar
+              </Button>
+              <Button type="button" onClick={() => setStep(3)}>
+                Próximo
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900">Informações Físicas</h2>
+              <p className="text-gray-600 mt-2">Informe seus dados físicos</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="weight">Peso (kg)</Label>
+                <Input
+                  type="number"
+                  id="weight"
+                  value={formData.weight}
+                  onChange={e => onInputChange('weight', e.target.value)}
+                  placeholder="Ex: 75"
+                  disabled={loading}
+                />
               </div>
-            )}
-          </div>
+              <div>
+                <Label htmlFor="height">Altura (cm)</Label>
+                <Input
+                  type="number"
+                  id="height"
+                  value={formData.height}
+                  onChange={e => onInputChange('height', e.target.value)}
+                  placeholder="Ex: 175"
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <Label htmlFor="estado">Estado</Label>
+                <Select value={formData.state} onValueChange={handleEstadoChange} disabled={loading || loadingEstados}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={loadingEstados ? "Carregando..." : "Selecione o estado"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {estados.map((estado) => (
+                      <SelectItem key={estado.id} value={estado.sigla}>
+                        {estado.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="city">Cidade</Label>
+                <Select value={formData.city} onValueChange={value => onInputChange('city', value)} disabled={loading || loadingCidades || !formData.state}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue 
+                      placeholder={
+                        !formData.state 
+                          ? "Selecione primeiro o estado" 
+                          : loadingCidades 
+                            ? "Carregando cidades..." 
+                            : "Selecione a cidade"
+                      } 
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {cidades.map((cidade) => (
+                      <SelectItem key={cidade.id} value={cidade.id}>
+                        {cidade.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="goal">Objetivo</Label>
+                <Input
+                  type="text"
+                  id="goal"
+                  value={formData.goal}
+                  onChange={e => onInputChange('goal', e.target.value)}
+                  placeholder="Ex: Perder peso, ganhar massa muscular..."
+                  disabled={loading}
+                />
+              </div>
+            </div>
 
-          <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="state">Estado</Label>
-              <select
-                id="state"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                value={formData.state}
-                onChange={e => onInputChange('state', e.target.value)}
-                disabled={loading || estadosLoading}
-                required
-              >
-                <option value="">Selecione</option>
-                {estados.map((estado) => (
-                  <option key={estado.id} value={estado.sigla}>
-                    {estado.nome} ({estado.sigla})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <Label htmlFor="city">Cidade</Label>
-              <select
-                id="city"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                value={formData.city}
-                onChange={e => onInputChange('city', e.target.value)}
-                disabled={loading || cidadesLoading || !formData.state}
-                required
-              >
-                <option value="">{cidadesLoading ? 'Carregando...' : 'Selecione'}</option>
-                {cidades.map((cidade) => (
-                  <option key={cidade.id} value={cidade.id.toString()}>
-                    {cidade.nome}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-            <Label htmlFor="birthDate">Data de Nascimento</Label>
-            <Input
-              id="birthDate"
-              type="date"
-              value={formData.birthDate}
-              onChange={e => onInputChange('birthDate', e.target.value)}
-              required
-              disabled={loading}
-            />
-          </div>
-          <div>
-            <Label htmlFor="gender">Gênero</Label>
-            <select
-              id="gender"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              value={formData.gender}
-              onChange={e => onInputChange('gender', e.target.value)}
-              disabled={loading}
-              required
-            >
-              <option value="">Selecione</option>
-              <option value="Masculino">Masculino</option>
-              <option value="Feminino">Feminino</option>
-              <option value="Outro">Outro</option>
-            </select>
-          </div>
-          </div>
-          <div className="w-full max-w-4xl mx-auto md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="weight">Peso (kg)</Label>
-              <Input
-                id="weight"
-                value={formData.weight}
-                onChange={e => onInputChange('weight', e.target.value)}
-                placeholder="Ex: 75"
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <Label htmlFor="height">Altura (cm)</Label>
-              <Input
-                id="height"
-                value={formData.height}
-                onChange={e => onInputChange('height', e.target.value)}
-                placeholder="Ex: 175"
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <Label htmlFor="neckCircumference">Circunferência do Pescoço (cm)</Label>
-              <Input
-                id="neckCircumference"
-                value={formData.neckCircumference}
-                onChange={e => onInputChange('neckCircumference', e.target.value)}
-                placeholder="Ex: 38"
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <Label htmlFor="waistCircumference">Circunferência da Cintura (cm)</Label>
-              <Input
-                id="waistCircumference"
-                value={formData.waistCircumference}
-                onChange={e => onInputChange('waistCircumference', e.target.value)}
-                placeholder="Ex: 85"
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <Label htmlFor="hipCircumference">Quadril (cm)</Label>
-              <Input
-                id="hipCircumference"
-                type="number"
-                step="0.1"
-                value={formData.hipCircumference}
-                onChange={(e) => onInputChange('hipCircumference', e.target.value)}
-                placeholder="95.0"
-                disabled={loading}
-              />
+            <div className="flex justify-between pt-6">
+              <Button type="button" variant="outline" onClick={() => setStep(2)}>
+                Voltar
+              </Button>
+              <Button type="button" onClick={() => setStep(4)}>
+                Próximo
+              </Button>
             </div>
           </div>
-        </div>
-        <div>
-            <Label htmlFor="goal">Objetivo</Label>
-            <Input
-              id="goal"
-              value={formData.goal}
-              onChange={(e) => onInputChange('goal', e.target.value)}
-              placeholder="Ex: Perder peso, ganhar massa muscular..."
-              disabled={loading}
-            />
-          </div>
-      </div>
+        )}
 
-      {/* Atividade Física */}
-      <div className="bg-blue-50 rounded-xl shadow-md p-6 mb-6">
-        <div className="flex items-center mb-6">
-          <svg className="w-7 h-7 text-blue-600 mr-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M20 21v-2a4 4 0 00-3-3.87M4 21v-2a4 4 0 013-3.87m9-7.13a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-          <h2 className="text-2xl font-bold text-gray-800">Atividade Física</h2>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="physicalActivity">Tipo de Exercício</Label>
-            <Input
-              id="physicalActivity"
-              value={formData.physicalActivity}
-              onChange={e => onInputChange('physicalActivity', e.target.value)}
-              placeholder="Ex: Musculação"
+        {step === 4 && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900">Atividade Física</h2>
+              <p className="text-gray-600 mt-2">Conte sobre sua rotina de exercícios</p>
+            </div>
+            
+            <PhysicalActivitiesSection
+              activities={formData.physicalActivities}
+              onChange={handlePhysicalActivitiesChange}
               disabled={loading}
             />
-          </div>
-          <div>
-            <Label htmlFor="activityFrequency">Frequência (dias/semana)</Label>
-            <Input
-              id="activityFrequency"
-              value={formData.activityFrequency}
-              onChange={e => onInputChange('activityFrequency', e.target.value)}
-              placeholder="Ex: 3-4 dias"
-              disabled={loading}
-            />
-          </div>
-        </div>
-      </div>
 
-      {/* Saúde e Restrições */}
-      <div className="bg-red-50 rounded-xl shadow-md p-6 mb-6">
-        <div className="flex items-center mb-6">
-          <svg className="w-7 h-7 text-red-600 mr-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" /></svg>
-          <h2 className="text-2xl font-bold text-gray-800">Saúde e Restrições</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="chronicDisease">Doenças Crônicas</Label>
-            <Input
-              id="chronicDisease"
-              value={formData.chronicDisease}
-              onChange={e => onInputChange('chronicDisease', e.target.value)}
-              placeholder="Ex: Diabetes, hipertensão..."
-              disabled={loading}
-            />
+            <div className="flex justify-between pt-6">
+              <Button type="button" variant="outline" onClick={() => setStep(3)}>
+                Voltar
+              </Button>
+              <Button type="button" onClick={() => setStep(5)}>
+                Próximo
+              </Button>
+            </div>
           </div>
-          <div>
-            <Label htmlFor="medicalRestriction">Restrições Médicas</Label>
-            <Input
-              id="medicalRestriction"
-              value={formData.medicalRestriction}
-              onChange={e => onInputChange('medicalRestriction', e.target.value)}
-              placeholder="Ex: Cirurgia, lesão..."
-              disabled={loading}
-            />
-          </div>
-          <div>
-            <Label htmlFor="foodAllergy">Alergias Alimentares</Label>
-            <Input
-              id="foodAllergy"
-              value={formData.foodAllergy}
-              onChange={e => onInputChange('foodAllergy', e.target.value)}
-              placeholder="Ex: Glúten, lactose..."
-              disabled={loading}
-            />
-          </div>
-          <div>
-            <Label htmlFor="avoidFood">Alimentos a Evitar</Label>
-            <Input
-              id="avoidFood"
-              value={formData.avoidFood}
-              onChange={e => onInputChange('avoidFood', e.target.value)}
-              placeholder="Ex: Frituras, açúcar..."
-              disabled={loading}
-            />
-          </div>
-        </div>
-      </div>
+        )}
 
-      {/* Botão de submit */}
-      <div className="pt-2">
-        <Button 
-          type="submit"
-          className="w-full bg-[#019f80] hover:bg-[#017a63] text-white text-lg py-3"
-          disabled={loading}
-        >
-          {loading ? 'Processando...' : 'Finalizar Cadastro'}
-        </Button>
-       
-        <div className="text-center mt-4">
-          <button 
-            type="button"
-            onClick={onSwitchToLogin}
-            className="text-[#019f80] hover:underline text-sm"
-            disabled={loading}
-          >
-            Já possui conta? Entrar
-          </button>
+        {step === 5 && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900">Saúde e Restrições</h2>
+              <p className="text-gray-600 mt-2">Informações sobre sua saúde e restrições</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="chronicDisease">Doenças Crônicas</Label>
+                <Input
+                  id="chronicDisease"
+                  value={formData.chronicDisease}
+                  onChange={e => onInputChange('chronicDisease', e.target.value)}
+                  placeholder="Ex: Diabetes, hipertensão..."
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <Label htmlFor="medicalRestriction">Restrições Médicas</Label>
+                <Input
+                  id="medicalRestriction"
+                  value={formData.medicalRestriction}
+                  onChange={e => onInputChange('medicalRestriction', e.target.value)}
+                  placeholder="Ex: Cirurgia, lesão..."
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <Label htmlFor="foodAllergy">Alergias Alimentares</Label>
+                <Input
+                  id="foodAllergy"
+                  value={formData.foodAllergy}
+                  onChange={e => onInputChange('foodAllergy', e.target.value)}
+                  placeholder="Ex: Glúten, lactose..."
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <Label htmlFor="avoidFood">Alimentos a Evitar</Label>
+                <Input
+                  id="avoidFood"
+                  value={formData.avoidFood}
+                  onChange={e => onInputChange('avoidFood', e.target.value)}
+                  placeholder="Ex: Frituras, açúcar..."
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-between pt-6">
+              <Button type="button" variant="outline" onClick={() => setStep(4)}>
+                Voltar
+              </Button>
+              <Button type="button" onClick={() => setStep(6)}>
+                Próximo
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 6 && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900">Preferências Alimentares</h2>
+              <p className="text-gray-600 mt-2">Suas preferências e horários de alimentação</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="fixedMealTimes">Horários Fixos de Refeição</Label>
+                <Input
+                  id="fixedMealTimes"
+                  value={formData.fixedMealTimes}
+                  onChange={e => onInputChange('fixedMealTimes', e.target.value)}
+                  placeholder="Ex: 8h, 12h, 18h..."
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <Label htmlFor="mustHaveFood">Alimentos Indispensáveis</Label>
+                <Input
+                  id="mustHaveFood"
+                  value={formData.mustHaveFood}
+                  onChange={e => onInputChange('mustHaveFood', e.target.value)}
+                  placeholder="Ex: Café, arroz..."
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-between pt-6">
+              <Button type="button" variant="outline" onClick={() => setStep(5)}>
+                Voltar
+              </Button>
+              <Button type="button" onClick={() => setStep(7)}>
+                Próximo
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 7 && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900">Medidas Corporais</h2>
+              <p className="text-gray-600 mt-2">Informações adicionais para uma análise mais precisa</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="neckCircumference">Circunferência do Pescoço (cm)</Label>
+                <Input
+                  id="neckCircumference"
+                  value={formData.neckCircumference}
+                  onChange={e => onInputChange('neckCircumference', e.target.value)}
+                  placeholder="Ex: 38"
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <Label htmlFor="waistCircumference">Circunferência da Cintura (cm)</Label>
+                <Input
+                  id="waistCircumference"
+                  value={formData.waistCircumference}
+                  onChange={e => onInputChange('waistCircumference', e.target.value)}
+                  placeholder="Ex: 85"
+                  disabled={loading}
+                />
+              </div>
+              <div>
+                <Label htmlFor="hipCircumference">Quadril (cm)</Label>
+                <Input
+                  id="hipCircumference"
+                  value={formData.hipCircumference}
+                  onChange={e => onInputChange('hipCircumference', e.target.value)}
+                  placeholder="Ex: 95"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-between pt-6">
+              <Button type="button" variant="outline" onClick={() => setStep(6)}>
+                Voltar
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Criando conta...' : 'Criar conta'}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="text-center text-gray-500">
+          Já tem uma conta? <Button variant="link" onClick={onBack}>Faça login</Button>
         </div>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 };
+
+export default SignupFormSteps;

@@ -1,4 +1,9 @@
 
+export interface PhysicalActivity {
+  type: string;
+  frequency: string;
+}
+
 export interface FormData {
   email: string;
   password: string;
@@ -17,6 +22,7 @@ export interface FormData {
   avoidFood: string;
   physicalActivity: string;
   activityFrequency: string;
+  physicalActivities: PhysicalActivity[];
   fixedMealTimes: string;
   mustHaveFood: string;
   neckCircumference: string;
