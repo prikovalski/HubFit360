@@ -8,6 +8,7 @@ import UserDashboard from '@/components/UserDashboard';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import StructuredData from '@/components/seo/StructuredData';
+import InstallPWAButton from '@/components/pwa/InstallPWAButton';
 
 const Index = () => {
   return (
@@ -89,6 +90,7 @@ const AppContent = () => {
                 >
                   Sobre
                 </button>
+                <InstallPWAButton />
                 <Button 
                   onClick={() => setCurrentSection('auth')}
                   className="bg-[#019f80] hover:bg-[#017a63] text-white px-6 py-2 rounded-full transition-all duration-300 hover:shadow-lg"
@@ -148,7 +150,7 @@ const HomeSection = ({ setCurrentSection }) => {
               Avaliação física completa com IA para direcionamento personalizado de treinos e dieta. 
               Conheça sua composição corporal e otimize seus resultados.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button 
                 onClick={() => setCurrentSection('auth')}
                 className="bg-[#019f80] hover:bg-[#017a63] text-white px-8 py-4 text-lg rounded-full transition-all duration-300 hover:shadow-xl hover:scale-105"
@@ -163,6 +165,9 @@ const HomeSection = ({ setCurrentSection }) => {
               >
                 Saiba Mais
               </Button>
+              <div className="sm:hidden">
+                <InstallPWAButton />
+              </div>
             </div>
           </div>
         </div>

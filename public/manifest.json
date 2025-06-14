@@ -5,20 +5,33 @@
   "description": "Avaliação física completa com IA para direcionamento personalizado de treinos e dieta",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#019f80",
+  "scope": "/",
   "icons": [
     {
       "src": "/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
   "categories": ["health", "fitness", "lifestyle"],
-  "lang": "pt-BR"
+  "lang": "pt-BR",
+  "prefer_related_applications": false,
+  "screenshots": [
+    {
+      "src": "/lovable-uploads/7a9d988c-761e-4bcc-9227-4773a43d8160.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
 }
