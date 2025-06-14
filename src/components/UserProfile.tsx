@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuth } from '@/hooks/useAuth';
+import { getEstados, Estado } from '@/services/stateService';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -55,6 +56,7 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
   const [weight, setWeight] = useState(patientProfile?.weight?.toString() || '');
   const [height, setHeight] = useState(patientProfile?.height?.toString() || '');
   const [city, setCity] = useState(patientProfile?.city || '');
+  const [estadoId, setEstadoId] = useState(patientProfile?.estado_id || '');
   const [goal, setGoal] = useState(patientProfile?.goal || '');
   const [chronicDisease, setChronicDisease] = useState(patientProfile?.chronic_disease || '');
   const [medicalRestriction, setMedicalRestriction] = useState(patientProfile?.medical_restriction || '');
@@ -71,6 +73,12 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
   const [isSaving, setIsSaving] = useState(false);
   const [deleteProfileOpen, setDeleteProfileOpen] = useState(false);
   const { deleteProfile, loading: deleteLoading } = useDeleteProfile();
+  const [estados, setEstados] = useState<Estado[]>([]);
+  const [loadingEstados, setLoadingEstados] = useState(true);
+
+  useEffect(() => {
+    fetchEstados();
+  }, []);
 
   useEffect(() => {
     if (userProfile) {
@@ -83,6 +91,7 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
       setWeight(patientProfile.weight?.toString() || '');
       setHeight(patientProfile.height?.toString() || '');
       setCity(patientProfile.city || '');
+      setEstadoId(patientProfile.estado_id || '');
       setGoal(patientProfile.goal || '');
       setChronicDisease(patientProfile.chronic_disease || '');
       setMedicalRestriction(patientProfile.medical_restriction || '');
@@ -97,6 +106,22 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
       setHipCircumference(patientProfile.hip_circumference?.toString() || '');
     }
   }, [userProfile, patientProfile]);
+
+  const fetchEstados = async () => {
+    try {
+      const estadosData = await getEstados();
+      setEstados(estadosData);
+    } catch (error) {
+      console.error('Erro ao carregar estados:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar a lista de estados.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingEstados(false);
+    }
+  };
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
@@ -116,6 +141,7 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
       weight: weight ? parseFloat(weight) : null,
       height: height ? parseFloat(height) : null,
       city: city || null,
+      estado_id: estadoId || null,
       goal: goal || null,
       chronic_disease: chronicDisease || null,
       medical_restriction: medicalRestriction || null,
@@ -276,6 +302,24 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
                     placeholder="Ex: 175"
                   />
                 </div>
+                <div>
+                  <Label htmlFor="estado">Estado</Label>
+                  <Select value={estadoId} onValueChange={setEstadoId} disabled={loadingEstados}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={loadingEstados ? "Carregando..." : "Selecione o estado"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {estados.map((estado) => (
+                        <SelectItem key={estado.id} value={estado.id.toString()}>
+                          {estado.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                 <div>
                   <Label htmlFor="city">Cidade</Label>
                   <Input

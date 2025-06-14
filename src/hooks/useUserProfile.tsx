@@ -32,6 +32,7 @@ interface PatientProfile {
   neck_circumference: number | null;
   waist_circumference: number | null;
   hip_circumference: number | null;
+  estado_id: string | null;
   created_at: string;
   updated_at: string;
 }

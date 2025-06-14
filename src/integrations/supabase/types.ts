@@ -122,6 +122,7 @@ export type Database = {
           chronic_disease: string | null
           city: string | null
           created_at: string
+          estado_id: string | null
           fixed_meal_times: string | null
           food_allergy: string | null
           goal: string | null
@@ -143,6 +144,7 @@ export type Database = {
           chronic_disease?: string | null
           city?: string | null
           created_at?: string
+          estado_id?: string | null
           fixed_meal_times?: string | null
           food_allergy?: string | null
           goal?: string | null
@@ -164,6 +166,7 @@ export type Database = {
           chronic_disease?: string | null
           city?: string | null
           created_at?: string
+          estado_id?: string | null
           fixed_meal_times?: string | null
           food_allergy?: string | null
           goal?: string | null
@@ -180,6 +183,13 @@ export type Database = {
           weight?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "patient_profiles_estado_id_fkey"
+            columns: ["estado_id"]
+            isOneToOne: false
+            referencedRelation: "estados"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "patient_profiles_user_id_fkey"
             columns: ["user_id"]
