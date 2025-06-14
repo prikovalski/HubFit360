@@ -47,9 +47,13 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
     return 'Preencha seus dados';
   };
 
-  // Wrapper function to handle form submission with proper event parameter
-  const handleFormSubmit = (e: React.FormEvent) => {
-    handleSubmit(e);
+  // Wrapper function that matches the expected signature
+  const handleFormSubmit = () => {
+    // Create a synthetic event for the handleSubmit function
+    const syntheticEvent = {
+      preventDefault: () => {}
+    } as React.FormEvent;
+    handleSubmit(syntheticEvent);
   };
 
   return (
