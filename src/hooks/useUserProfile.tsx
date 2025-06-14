@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -77,7 +78,14 @@ export const useUserProfile = () => {
           .maybeSingle();
 
         if (!patientError && patientData) {
-          setPatientProfile(patientData);
+          // Convert JSON to PhysicalActivity array if needed
+          const processedPatientData = {
+            ...patientData,
+            physical_activities: Array.isArray(patientData.physical_activities) 
+              ? patientData.physical_activities 
+              : []
+          };
+          setPatientProfile(processedPatientData);
         }
       }
     } catch (error) {
@@ -104,27 +112,40 @@ export const useUserProfile = () => {
   const createOrUpdatePatientProfile = async (profileData: Partial<PatientProfile>) => {
     if (!user || !userProfile) return;
 
+    // Convert PhysicalActivity[] to JSON format for Supabase
+    const supabaseProfileData = {
+      ...profileData,
+      physical_activities: profileData.physical_activities || []
+    };
+
     if (patientProfile) {
       // Update existing profile
       const { error } = await supabase
         .from('patient_profiles')
-        .update({ ...profileData, updated_at: new Date().toISOString() })
+        .update({ ...supabaseProfileData, updated_at: new Date().toISOString() })
         .eq('user_id', userProfile.id);
 
       if (!error) {
-        setPatientProfile({ ...patientProfile, ...profileData });
+        const updatedProfile = { ...patientProfile, ...profileData };
+        setPatientProfile(updatedProfile);
       }
       return { error };
     } else {
       // Create new profile
       const { data, error } = await supabase
         .from('patient_profiles')
-        .insert([{ ...profileData, user_id: userProfile.id }])
+        .insert([{ ...supabaseProfileData, user_id: userProfile.id }])
         .select()
         .single();
 
       if (!error && data) {
-        setPatientProfile(data);
+        const processedData = {
+          ...data,
+          physical_activities: Array.isArray(data.physical_activities) 
+            ? data.physical_activities 
+            : []
+        };
+        setPatientProfile(processedData);
       }
       return { error };
     }

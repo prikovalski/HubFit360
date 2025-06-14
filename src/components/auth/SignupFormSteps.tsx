@@ -22,7 +22,7 @@ interface SignupFormStepsProps {
   onInputChange: (field: string, value: string | PhysicalActivity[]) => void;
   onSubmit: () => void;
   loading: boolean;
-  onBack: () => void;
+  onSwitchToLogin: () => void;
 }
 
 const SignupFormSteps = ({ 
@@ -30,7 +30,7 @@ const SignupFormSteps = ({
   onInputChange, 
   onSubmit, 
   loading, 
-  onBack 
+  onSwitchToLogin 
 }: SignupFormStepsProps) => {
   const [step, setStep] = useState(1);
   const [estados, setEstados] = useState<Estado[]>([]);
@@ -259,7 +259,7 @@ const SignupFormSteps = ({
                   </SelectTrigger>
                   <SelectContent>
                     {cidades.map((cidade) => (
-                      <SelectItem key={cidade.id} value={cidade.id}>
+                      <SelectItem key={cidade.id} value={String(cidade.id)}>
                         {cidade.nome}
                       </SelectItem>
                     ))}
@@ -469,7 +469,7 @@ const SignupFormSteps = ({
 
         {/* Footer */}
         <div className="text-center text-gray-500">
-          Já tem uma conta? <Button variant="link" onClick={onBack}>Faça login</Button>
+          Já tem uma conta? <Button variant="link" onClick={onSwitchToLogin}>Faça login</Button>
         </div>
       </form>
     </div>

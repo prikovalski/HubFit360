@@ -1,7 +1,7 @@
 import { EmailExistsOptions } from './auth/EmailExistsOptions';
 import { PasswordResetForm } from './auth/PasswordResetForm';
 import { LoginForm } from './auth/LoginForm';
-import { SignupFormSteps } from './auth/SignupFormSteps';
+import SignupFormSteps from './auth/SignupFormSteps';
 import { AuthHeader } from './auth/AuthHeader';
 import { AuthCard } from './auth/AuthCard';
 import { useAuthForm } from '@/hooks/useAuthForm';
@@ -22,8 +22,6 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
   const {
     isLogin,
     setIsLogin,
-
-
     loading,
     showPasswordReset,
     setShowPasswordReset,
@@ -41,13 +39,11 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
   const getTitle = () => {
     if (isLogin) return 'Bem-vindo de volta!';
     return 'Criar sua conta';
-    return 'Informações adicionais';
   };
 
   const getDescription = () => {
     if (isLogin) return 'Entre para acessar suas avaliações';
     return 'Preencha seus dados';
-    return 'Complete seu perfil';
   };
 
   return (
