@@ -67,12 +67,26 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
       throw new Error('Não foi possível encontrar o perfil do usuário após várias tentativas');
     }
 
+    // Buscar city_id se uma cidade foi fornecida
+    let cityId = null;
+    if (formData.city) {
+      const { data: cityData, error: cityError } = await supabase
+        .from('cidades')
+        .select('id')
+        .eq('nome', formData.city)
+        .maybeSingle();
+
+      if (!cityError && cityData) {
+        cityId = cityData.id;
+      }
+    }
+
     // Criar o objeto de dados do paciente com validação
     const patientData = {
       user_id: userProfile.id,
       height: formData.height ? parseFloat(formData.height) : null,
       weight: formData.weight ? parseFloat(formData.weight) : null,
-      city: formData.city || null,
+      city_id: cityId,
       goal: formData.goal || null,
       intensity: formData.intensity || null,
       chronic_disease: formData.chronicDisease || null,

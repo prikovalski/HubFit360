@@ -32,7 +32,7 @@ export interface PatientProfile {
   user_id: number;
   height: number | null;
   weight: number | null;
-  city: string | null;
+  city_id: string | null;
   goal: string | null;
   chronic_disease: string | null;
   medical_restriction: string | null;

@@ -1,5 +1,7 @@
 
+import { useState, useEffect } from 'react';
 import { UserProfile, PatientProfile } from "@/types/report";
+import { supabase } from '@/integrations/supabase/client';
 
 interface PersonalInfoSectionProps {
   userProfile: UserProfile | null;
@@ -8,6 +10,30 @@ interface PersonalInfoSectionProps {
 }
 
 const PersonalInfoSection = ({ userProfile, patientProfile, displayAge }: PersonalInfoSectionProps) => {
+  const [cityName, setCityName] = useState<string>('N/A');
+
+  useEffect(() => {
+    const fetchCityName = async () => {
+      if (patientProfile?.city_id) {
+        try {
+          const { data, error } = await supabase
+            .from('cidades')
+            .select('nome')
+            .eq('id', patientProfile.city_id)
+            .maybeSingle();
+
+          if (!error && data) {
+            setCityName(data.nome);
+          }
+        } catch (error) {
+          console.error('Erro ao buscar nome da cidade:', error);
+        }
+      }
+    };
+
+    fetchCityName();
+  }, [patientProfile?.city_id]);
+
   const formatGender = (gender: string | null | undefined) => {
     if (!gender) return 'N/A';
     return gender === 'Masculino' ? 'Masculino' : 'Feminino';
@@ -20,7 +46,10 @@ const PersonalInfoSection = ({ userProfile, patientProfile, displayAge }: Person
           <span className="text-gray-600 font-medium">Nome:</span>
           <div className="text-gray-800 font-semibold text-lg">{userProfile?.name || 'N/A'}</div>
         </div>
-        <div></div>
+        <div>
+          <span className="text-gray-600 font-medium">Cidade:</span>
+          <div className="text-gray-800 font-semibold text-lg">{cityName}</div>
+        </div>
         <div>
           <span className="text-gray-600 font-medium">Idade:</span>
           <div className="text-gray-800 font-semibold text-lg">{displayAge} anos</div>
