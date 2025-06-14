@@ -271,6 +271,33 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
                   </PopoverContent>
                 </Popover>
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="estado">Estado</Label>
+                  <Select value={estadoId} onValueChange={setEstadoId} disabled={loadingEstados}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={loadingEstados ? "Carregando..." : "Selecione o estado"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {estados.map((estado) => (
+                        <SelectItem key={estado.id} value={estado.id.toString()}>
+                          {estado.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="city">Cidade</Label>
+                  <Input
+                    id="city"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="Sua cidade"
+                  />
+                </div>
+              </div>
             </CardContent>
           </Card>
 
@@ -279,11 +306,11 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
             <CardHeader>
               <CardTitle className="text-2xl">Informações Físicas</CardTitle>
               <CardDescription>
-                Medidas corporais e localização.
+                Medidas corporais e objetivos.
               </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="weight">Peso (kg)</Label>
                   <Input
@@ -300,33 +327,6 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
                     value={height}
                     onChange={(e) => setHeight(e.target.value)}
                     placeholder="Ex: 175"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="estado">Estado</Label>
-                  <Select value={estadoId} onValueChange={setEstadoId} disabled={loadingEstados}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={loadingEstados ? "Carregando..." : "Selecione o estado"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {estados.map((estado) => (
-                        <SelectItem key={estado.id} value={estado.id.toString()}>
-                          {estado.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-                <div>
-                  <Label htmlFor="city">Cidade</Label>
-                  <Input
-                    id="city"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="Sua cidade"
                   />
                 </div>
               </div>
