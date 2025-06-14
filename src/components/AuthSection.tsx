@@ -1,3 +1,4 @@
+
 import { EmailExistsOptions } from './auth/EmailExistsOptions';
 import { PasswordResetForm } from './auth/PasswordResetForm';
 import { LoginForm } from './auth/LoginForm';
@@ -46,6 +47,11 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
     return 'Preencha seus dados';
   };
 
+  // Wrapper function to handle form submission without event parameter
+  const handleFormSubmit = () => {
+    handleSubmit();
+  };
+
   return (
     <div className="py-12 px-4">
       <div className="container mx-auto max-w-2xl py-8">
@@ -84,7 +90,7 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
                   formData={formData}
                   loading={loading}
                   onInputChange={handleInputChange}
-                  onSubmit={handleSubmit}
+                  onSubmit={handleFormSubmit}
                   onSocialLogin={handleSocialLogin}
                   onSwitchToSignup={() => setIsLogin(false)}
                   onForgotPassword={handleForgotPassword}
@@ -94,7 +100,7 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
                   formData={formData}
                   loading={loading}
                   onInputChange={handleInputChange}
-                  onSubmit={handleSubmit}
+                  onSubmit={handleFormSubmit}
                   onSwitchToLogin={() => setIsLogin(true)}
                 />
               )}

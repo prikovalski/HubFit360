@@ -79,10 +79,10 @@ export const useUserProfile = () => {
 
         if (!patientError && patientData) {
           // Convert JSON to PhysicalActivity array if needed
-          const processedPatientData = {
+          const processedPatientData: PatientProfile = {
             ...patientData,
             physical_activities: Array.isArray(patientData.physical_activities) 
-              ? patientData.physical_activities 
+              ? patientData.physical_activities as PhysicalActivity[]
               : []
           };
           setPatientProfile(processedPatientData);
@@ -139,10 +139,10 @@ export const useUserProfile = () => {
         .single();
 
       if (!error && data) {
-        const processedData = {
+        const processedData: PatientProfile = {
           ...data,
           physical_activities: Array.isArray(data.physical_activities) 
-            ? data.physical_activities 
+            ? data.physical_activities as PhysicalActivity[]
             : []
         };
         setPatientProfile(processedData);
