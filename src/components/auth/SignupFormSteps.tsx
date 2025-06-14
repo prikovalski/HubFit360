@@ -10,7 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { ptBR } from 'date-fns/locale';
 import { cn } from "@/lib/utils";
 import { getEstados, Estado } from '@/services/stateService';
@@ -37,6 +37,7 @@ const SignupFormSteps = ({
   const [cidades, setCidades] = useState<Cidade[]>([]);
   const [loadingEstados, setLoadingEstados] = useState(true);
   const [loadingCidades, setLoadingCidades] = useState(false);
+  const [birthDateInput, setBirthDateInput] = useState('');
 
   useEffect(() => {
     fetchEstados();
@@ -49,6 +50,14 @@ const SignupFormSteps = ({
       setCidades([]);
     }
   }, [formData.state]);
+
+  // Sincronizar o input de data com o formData
+  useEffect(() => {
+    if (formData.birthDate) {
+      const date = new Date(formData.birthDate);
+      setBirthDateInput(format(date, "dd/MM/yyyy"));
+    }
+  }, [formData.birthDate]);
 
   const fetchEstados = async () => {
     setLoadingEstados(true);
@@ -81,6 +90,29 @@ const SignupFormSteps = ({
 
   const handlePhysicalActivitiesChange = (activities: PhysicalActivity[]) => {
     onInputChange('physicalActivities', activities);
+  };
+
+  const handleBirthDateInputChange = (value: string) => {
+    setBirthDateInput(value);
+    
+    // Tentar parsear a data quando o usuário digitar
+    if (value.length === 10) { // dd/mm/yyyy
+      try {
+        const parsedDate = parse(value, "dd/MM/yyyy", new Date());
+        if (!isNaN(parsedDate.getTime())) {
+          onInputChange('birthDate', parsedDate.toISOString());
+        }
+      } catch (error) {
+        // Ignorar erro de parsing
+      }
+    }
+  };
+
+  const handleCalendarSelect = (date: Date | undefined) => {
+    if (date) {
+      onInputChange('birthDate', date.toISOString());
+      setBirthDateInput(format(date, "dd/MM/yyyy"));
+    }
   };
 
   return (
@@ -160,31 +192,39 @@ const SignupFormSteps = ({
             </div>
             <div>
               <Label>Data de Nascimento</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formData.birthDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.birthDate ? format(new Date(formData.birthDate), "dd/MM/yyyy", { locale: ptBR }) : <span>Selecione a data</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={formData.birthDate ? new Date(formData.birthDate) : undefined}
-                    onSelect={(date) => onInputChange('birthDate', date ? date.toISOString() : '')}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  value={birthDateInput}
+                  onChange={(e) => handleBirthDateInputChange(e.target.value)}
+                  placeholder="dd/mm/aaaa"
+                  className="flex-1"
+                  disabled={loading}
+                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      disabled={loading}
+                    >
+                      <CalendarIcon className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formData.birthDate ? new Date(formData.birthDate) : undefined}
+                      onSelect={handleCalendarSelect}
+                      disabled={(date) =>
+                        date > new Date() || date < new Date("1900-01-01")
+                      }
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
 
             <div className="flex justify-between pt-6">

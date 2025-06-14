@@ -28,7 +28,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { ptBR } from 'date-fns/locale';
 import { cn } from "@/lib/utils";
 import { DeleteProfileDialog } from "@/components/profile/DeleteProfileDialog";
@@ -52,8 +52,9 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
   const [name, setName] = useState(userProfile?.name || '');
   const [gender, setGender] = useState(userProfile?.gender || '');
   const [birthDate, setBirthDate] = useState<Date | undefined>(userProfile?.birth_date ? new Date(userProfile.birth_date) : undefined);
+  const [birthDateInput, setBirthDateInput] = useState('');
   
-  // Patient profile fields
+  // Patient profile fields state variables
   const [weight, setWeight] = useState(patientProfile?.weight?.toString() || '');
   const [height, setHeight] = useState(patientProfile?.height?.toString() || '');
   const [cityId, setCityId] = useState(patientProfile?.city_id || '');
@@ -90,6 +91,12 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
       setName(userProfile.name);
       setGender(userProfile.gender || '');
       setBirthDate(userProfile.birth_date ? new Date(userProfile.birth_date) : undefined);
+      
+      // Sincronizar o input de data com o userProfile
+      if (userProfile.birth_date) {
+        const date = new Date(userProfile.birth_date);
+        setBirthDateInput(format(date, "dd/MM/yyyy"));
+      }
     }
     
     if (patientProfile) {
@@ -105,10 +112,10 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
       setPhysicalActivity(patientProfile.physical_activity || '');
       setActivityFrequency(patientProfile.activity_frequency || '');
       setFixedMealTimes(patientProfile.fixed_meal_times || '');
-      setMustHaveFood(patientProfile.must_have_food || '');
-      setNeckCircumference(patientProfile.neck_circumference?.toString() || '');
-      setWaistCircumference(patientProfile.waist_circumference?.toString() || '');
-      setHipCircumference(patientProfile.hip_circumference?.toString() || '');
+      setMustHaveFood(patientProfile?.must_have_food || '');
+      setNeckCircumference(patientProfile?.neck_circumference?.toString() || '');
+      setWaistCircumference(patientProfile?.waist_circumference?.toString() || '');
+      setHipCircumference(patientProfile?.hip_circumference?.toString() || '');
       
       // Configurar atividades físicas
       if (patientProfile.physical_activities && Array.isArray(patientProfile.physical_activities)) {
@@ -173,6 +180,29 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
   const handleEstadoChange = (value: string) => {
     setEstadoId(value);
     setCityId(''); // Reset city when state changes
+  };
+
+  const handleBirthDateInputChange = (value: string) => {
+    setBirthDateInput(value);
+    
+    // Tentar parsear a data quando o usuário digitar
+    if (value.length === 10) { // dd/mm/yyyy
+      try {
+        const parsedDate = parse(value, "dd/MM/yyyy", new Date());
+        if (!isNaN(parsedDate.getTime())) {
+          setBirthDate(parsedDate);
+        }
+      } catch (error) {
+        // Ignorar erro de parsing
+      }
+    }
+  };
+
+  const handleCalendarSelect = (date: Date | undefined) => {
+    setBirthDate(date);
+    if (date) {
+      setBirthDateInput(format(date, "dd/MM/yyyy"));
+    }
   };
 
   const handleSaveProfile = async () => {
@@ -298,31 +328,37 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
 
               <div>
                 <Label>Data de Nascimento</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !birthDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {birthDate ? format(birthDate, "dd/MM/yyyy", { locale: ptBR }) : <span>Selecione a data</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={birthDate}
-                      onSelect={setBirthDate}
-                      disabled={(date) =>
-                        date > new Date() || date < new Date("1900-01-01")
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    value={birthDateInput}
+                    onChange={(e) => handleBirthDateInputChange(e.target.value)}
+                    placeholder="dd/mm/aaaa"
+                    className="flex-1"
+                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                      >
+                        <CalendarIcon className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={birthDate}
+                        onSelect={handleCalendarSelect}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -368,7 +404,6 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
             </CardContent>
           </Card>
 
-          {/* Informações Físicas */}
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">Informações Físicas</CardTitle>
@@ -440,7 +475,6 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
             </CardContent>
           </Card>
 
-          {/* Atividade Física */}
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">Atividade Física</CardTitle>
@@ -457,7 +491,6 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
             </CardContent>
           </Card>
 
-          {/* Saúde e Restrições */}
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">Saúde e Restrições</CardTitle>
@@ -507,7 +540,6 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
             </CardContent>
           </Card>
 
-          {/* Preferências Alimentares */}
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">Preferências Alimentares</CardTitle>
@@ -539,7 +571,6 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
             </CardContent>
           </Card>
 
-          {/* Ações */}
           <Card>
             <CardContent className="pt-6">
               <div className="space-y-4">
