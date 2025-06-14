@@ -59,25 +59,25 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-green-100 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <nav className="flex items-center justify-between">
-            <div 
-              className="flex items-center space-x-3 cursor-pointer"
-              onClick={() => {
-                setCurrentSection('home');
-              }}
-            >
-              <img 
-                src="/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.png" 
-                alt="HubFit360 Logo" 
-                className="w-16 h-16"
-              />
-              <span className="text-2xl font-bold text-gray-800">HubFit360</span>
-            </div>
-            
-            {!user && (
+      {/* Header - apenas para usuários não logados */}
+      {!user && (
+        <header className="bg-white/80 backdrop-blur-md border-b border-green-100 sticky top-0 z-50">
+          <div className="container mx-auto px-4 py-4">
+            <nav className="flex items-center justify-between">
+              <div 
+                className="flex items-center space-x-3 cursor-pointer"
+                onClick={() => {
+                  setCurrentSection('home');
+                }}
+              >
+                <img 
+                  src="/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.png" 
+                  alt="HubFit360 Logo" 
+                  className="w-16 h-16"
+                />
+                <span className="text-2xl font-bold text-gray-800">HubFit360</span>
+              </div>
+              
               <div className="hidden md:flex items-center space-x-6">
                 <button 
                   onClick={() => setCurrentSection('about')}
@@ -92,10 +92,10 @@ const AppContent = () => {
                   Faça Sua Avaliação
                 </Button>
               </div>
-            )}
-          </nav>
-        </div>
-      </header>
+            </nav>
+          </div>
+        </header>
+      )}
 
       {/* Main Content */}
       <main>
