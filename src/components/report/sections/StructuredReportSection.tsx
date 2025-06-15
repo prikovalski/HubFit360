@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText } from 'lucide-react';
 
@@ -64,9 +63,12 @@ const StructuredReportSection = ({ assessmentText }: StructuredReportSectionProp
               {assessmentText || 'Relatório não disponível.'}
             </div>
             
-            <div className="mt-6 pt-4 border-t border-gray-200">
+            <div className="mt-6 pt-4 border-t border-gray-200 space-y-2">
               <p className="text-xs text-gray-500">
                 <strong>Nota:</strong> Esta análise foi gerada por inteligência artificial baseada nos seus dados físicos e perfil de saúde.
+              </p>
+              <p className="text-xs text-gray-500">
+                <strong>Importante:</strong> Se as fotos não estiverem de acordo com o solicitado, a leitura será feita com base nos números informados no formulário.
               </p>
             </div>
           </CardContent>
@@ -164,9 +166,12 @@ const StructuredReportSection = ({ assessmentText }: StructuredReportSectionProp
         </Card>
       )}
       
-      <div className="mt-6 pt-4 border-t border-gray-200">
+      <div className="mt-6 pt-4 border-t border-gray-200 space-y-2">
         <p className="text-xs text-gray-500">
           <strong>Nota:</strong> Esta análise foi gerada por inteligência artificial baseada nos seus dados físicos e perfil de saúde.
+        </p>
+        <p className="text-xs text-gray-500">
+          <strong>Importante:</strong> Se as fotos não estiverem de acordo com o solicitado, a leitura será feita com base nos números informados no formulário.
         </p>
       </div>
     </div>
