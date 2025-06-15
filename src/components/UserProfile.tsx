@@ -308,6 +308,7 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
     >
       <div className="py-12 px-4">
         <div className="container mx-auto max-w-4xl space-y-8">
+          
           {/* Dados Pessoais */}
           <Card>
             <CardHeader>
