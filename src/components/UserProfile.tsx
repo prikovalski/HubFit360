@@ -27,7 +27,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ArrowLeft } from "lucide-react";
 import { format, parse } from "date-fns";
 import { ptBR } from 'date-fns/locale';
 import { cn } from "@/lib/utils";
@@ -308,6 +308,20 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
     >
       <div className="py-12 px-4">
         <div className="container mx-auto max-w-4xl space-y-8">
+          
+          {/* Botão de voltar */}
+          <div className="flex items-center space-x-4">
+            <Button
+              onClick={onBack}
+              variant="outline"
+              size="sm"
+              className="flex items-center space-x-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Voltar</span>
+            </Button>
+            <h1 className="text-3xl font-bold text-gray-900">Meu Perfil</h1>
+          </div>
           
           {/* Dados Pessoais */}
           <Card>
