@@ -16,13 +16,13 @@ const HomeSection = ({ setCurrentSection }: HomeSectionProps) => {
           <div className="max-w-4xl mx-auto">
             <h1 
               id="hero-title"
-              className="text-5xl md:text-6xl font-bold text-gray-800 mb-6 leading-tight"
+              className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight"
             >
               Descubra Seu
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#019f80] to-[#4ade80]"> Potencial </span>
               Físico
             </h1>
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+            <p className="text-xl text-gray-700 mb-8 leading-relaxed">
               Avaliação física completa com IA para direcionamento personalizado de treinos e dieta. 
               Conheça sua composição corporal e otimize seus resultados.
             </p>

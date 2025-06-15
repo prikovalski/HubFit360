@@ -10,7 +10,6 @@ const StructuredReportSection = ({ assessmentText }: StructuredReportSectionProp
   console.log(assessmentText);
   console.log('=== FIM DO TEXTO ===');
 
-  // Função para processar o texto estruturado em CSV
   function parseStructuredReport(text: string) {
     if (!text) return null;
 
@@ -49,25 +48,25 @@ const StructuredReportSection = ({ assessmentText }: StructuredReportSectionProp
   if (!sections) {
     return (
       <div className="space-y-6 mb-8">
-        <h3 className="text-2xl font-bold text-gray-800 mb-6">Relatório Detalhado</h3>
+        <h3 className="text-2xl font-bold text-gray-900 mb-6">Relatório Detalhado</h3>
         
         <Card className="border-2 shadow-lg bg-white border-gray-200">
           <CardHeader>
-            <CardTitle className="text-lg font-bold flex items-center text-gray-700">
+            <CardTitle className="text-lg font-bold flex items-center text-gray-800">
               <FileText className="w-6 h-6 mr-3 text-[#019f80]" />
               Análise Completa
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+            <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
               {assessmentText || 'Relatório não disponível.'}
             </div>
             
             <div className="mt-6 pt-4 border-t border-gray-200 space-y-2">
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-700">
                 <strong>Nota:</strong> Esta análise foi gerada por inteligência artificial baseada nos seus dados físicos e perfil de saúde.
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-700">
                 <strong>Importante:</strong> Se as fotos não estiverem de acordo com o solicitado, a leitura será feita com base nos números informados no formulário.
               </p>
             </div>
@@ -79,19 +78,19 @@ const StructuredReportSection = ({ assessmentText }: StructuredReportSectionProp
 
   return (
     <div className="space-y-6 mb-8">
-      <h3 className="text-2xl font-bold text-gray-800 mb-6">Relatório Detalhado</h3>
+      <h3 className="text-2xl font-bold text-gray-900 mb-6">Relatório Detalhado</h3>
       
       {/* Avaliação Corporal */}
       {sections.avaliacaoCorporal && (
         <Card className="border-2 shadow-lg bg-white border-gray-200">
           <CardHeader>
-            <CardTitle className="text-lg font-bold flex items-center text-gray-700">
+            <CardTitle className="text-lg font-bold flex items-center text-gray-800">
               <FileText className="w-6 h-6 mr-3 text-[#019f80]" />
               Avaliação Corporal
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+            <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
               {sections.avaliacaoCorporal}
             </div>
           </CardContent>
@@ -102,13 +101,13 @@ const StructuredReportSection = ({ assessmentText }: StructuredReportSectionProp
       {sections.gastoEnergetico && (
         <Card className="border-2 shadow-lg bg-white border-gray-200">
           <CardHeader>
-            <CardTitle className="text-lg font-bold flex items-center text-gray-700">
+            <CardTitle className="text-lg font-bold flex items-center text-gray-800">
               <FileText className="w-6 h-6 mr-3 text-[#019f80]" />
               Gasto Energético
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+            <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
               {sections.gastoEnergetico}
             </div>
           </CardContent>
@@ -119,13 +118,13 @@ const StructuredReportSection = ({ assessmentText }: StructuredReportSectionProp
       {sections.planejamentoNutricional && (
         <Card className="border-2 shadow-lg bg-white border-gray-200">
           <CardHeader>
-            <CardTitle className="text-lg font-bold flex items-center text-gray-700">
+            <CardTitle className="text-lg font-bold flex items-center text-gray-800">
               <FileText className="w-6 h-6 mr-3 text-[#019f80]" />
               Planejamento Nutricional
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+            <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
               {sections.planejamentoNutricional}
             </div>
           </CardContent>
@@ -136,13 +135,13 @@ const StructuredReportSection = ({ assessmentText }: StructuredReportSectionProp
       {sections.projecaoResultados && (
         <Card className="border-2 shadow-lg bg-white border-gray-200">
           <CardHeader>
-            <CardTitle className="text-lg font-bold flex items-center text-gray-700">
+            <CardTitle className="text-lg font-bold flex items-center text-gray-800">
               <FileText className="w-6 h-6 mr-3 text-[#019f80]" />
               Projeção de Resultados
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+            <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
               {sections.projecaoResultados}
             </div>
           </CardContent>
@@ -153,13 +152,13 @@ const StructuredReportSection = ({ assessmentText }: StructuredReportSectionProp
       {sections.metodosUtilizados && (
         <Card className="border-2 shadow-lg bg-white border-gray-200">
           <CardHeader>
-            <CardTitle className="text-lg font-bold flex items-center text-gray-700">
+            <CardTitle className="text-lg font-bold flex items-center text-gray-800">
               <FileText className="w-6 h-6 mr-3 text-[#019f80]" />
               Métodos Utilizados
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+            <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
               {sections.metodosUtilizados}
             </div>
           </CardContent>
@@ -167,10 +166,10 @@ const StructuredReportSection = ({ assessmentText }: StructuredReportSectionProp
       )}
       
       <div className="mt-6 pt-4 border-t border-gray-200 space-y-2">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-700">
           <strong>Nota:</strong> Esta análise foi gerada por inteligência artificial baseada nos seus dados físicos e perfil de saúde.
         </p>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-700">
           <strong>Importante:</strong> Se as fotos não estiverem de acordo com o solicitado, a leitura será feita com base nos números informados no formulário.
         </p>
       </div>

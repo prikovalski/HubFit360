@@ -36,11 +36,11 @@ const FeaturesSection = () => {
         <div className="text-center mb-12">
           <h2 
             id="features-title"
-            className="text-3xl md:text-4xl font-bold text-gray-800 mb-4"
+            className="text-3xl md:text-4xl font-bold text-gray-900 mb-4"
           >
             Por que escolher a HubFit360?
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-700 max-w-2xl mx-auto">
             Nossa tecnologia de ponta oferece uma análise completa e precisa do seu corpo
           </p>
         </div>
@@ -59,10 +59,10 @@ const FeaturesSection = () => {
                 >
                   <feature.icon className="w-8 h-8 text-white" />
                 </div>
-                <CardTitle className="text-gray-800">{feature.title}</CardTitle>
+                <CardTitle className="text-gray-900">{feature.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-center text-gray-600">
+                <CardDescription className="text-center text-gray-700">
                   {feature.description}
                 </CardDescription>
               </CardContent>

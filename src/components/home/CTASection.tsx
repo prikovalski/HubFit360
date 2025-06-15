@@ -21,12 +21,12 @@ const CTASection = ({ setCurrentSection }: CTASectionProps) => {
           >
             Pronto para transformar seus resultados?
           </h2>
-          <p className="text-xl mb-8 opacity-90">
+          <p className="text-xl mb-8 opacity-95">
             Faça sua avaliação física completa em apenas alguns minutos e descubra seu verdadeiro potencial
           </p>
           <Button 
             onClick={() => setCurrentSection('auth')}
-            className="bg-white text-[#019f80] hover:bg-gray-100 px-8 py-4 text-lg rounded-full transition-all duration-300 hover:shadow-xl hover:scale-105 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#019f80]"
+            className="bg-white text-[#019f80] hover:bg-gray-50 px-8 py-4 text-lg rounded-full transition-all duration-300 hover:shadow-xl hover:scale-105 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#019f80]"
             aria-label="Iniciar avaliação física gratuita agora"
           >
             Iniciar Avaliação Gratuita

@@ -32,13 +32,13 @@ const Header = ({ setCurrentSection }: HeaderProps) => {
               height="64"
               loading="eager"
             />
-            <span className="text-2xl font-bold text-gray-800">HubFit360</span>
+            <span className="text-2xl font-bold text-gray-900">HubFit360</span>
           </div>
           
           <div className="hidden md:flex items-center space-x-6">
             <button 
               onClick={() => setCurrentSection('about')}
-              className="text-gray-600 hover:text-[#019f80] transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-[#019f80] rounded px-3 py-2"
+              className="text-gray-700 hover:text-[#019f80] transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-[#019f80] rounded px-3 py-2"
               aria-label="Ir para página sobre a empresa"
             >
               Sobre
