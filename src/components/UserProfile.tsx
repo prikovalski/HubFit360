@@ -82,6 +82,39 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
 
   const [physicalActivities, setPhysicalActivities] = useState<PhysicalActivity[]>([]);
 
+  // Função para mapear gêneros do banco para exibição
+  const mapGenderFromDB = (dbGender: string | null) => {
+    if (!dbGender) return '';
+    
+    switch (dbGender.toUpperCase()) {
+      case 'MALE':
+      case 'MASCULINO':
+        return 'Masculino';
+      case 'FEMALE':
+      case 'FEMININO':
+        return 'Feminino';
+      case 'OTHER':
+      case 'OUTRO':
+        return 'Outro';
+      default:
+        return dbGender;
+    }
+  };
+
+  // Função para mapear gêneros da exibição para o banco
+  const mapGenderToDB = (displayGender: string) => {
+    switch (displayGender) {
+      case 'Masculino':
+        return 'MALE';
+      case 'Feminino':
+        return 'FEMALE';
+      case 'Outro':
+        return 'OTHER';
+      default:
+        return displayGender;
+    }
+  };
+
   useEffect(() => {
     fetchEstados();
   }, []);
@@ -89,7 +122,8 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
   useEffect(() => {
     if (userProfile) {
       setName(userProfile.name);
-      setGender(userProfile.gender || '');
+      // Mapear o gênero do banco para exibição
+      setGender(mapGenderFromDB(userProfile.gender));
       setBirthDate(userProfile.birth_date ? new Date(userProfile.birth_date) : undefined);
       
       // Sincronizar o input de data com o userProfile
@@ -225,10 +259,10 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
     setIsSaving(true);
     if (!user) return;
 
-    // Update user profile
+    // Update user profile - mapear gênero de volta para o formato do banco
     const userUpdates = {
       name,
-      gender,
+      gender: mapGenderToDB(gender),
       birth_date: birthDate ? birthDate.toISOString() : null
     };
 
