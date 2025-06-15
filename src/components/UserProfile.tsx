@@ -313,9 +313,9 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
           <div className="flex items-center space-x-4">
             <Button
               onClick={onBack}
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-2 text-[#01a280] hover:text-[#01a280] hover:bg-transparent p-0"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Voltar</span>
