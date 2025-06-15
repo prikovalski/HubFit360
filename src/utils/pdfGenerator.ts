@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import { UserProfile, PatientProfile } from '@/types/report';
 
@@ -170,6 +169,12 @@ export const generateAssessmentPDF = ({ report, userProfile, patientProfile }: G
     
     currentY += 10;
   }
+
+  // Nota sobre a Fórmula de Deurenberg
+  addText('NOTA TÉCNICA', 14, true);
+  addText('A fórmula de Deurenberg pode superestimar a % de gordura em pessoas com boa massa muscular, pois usa apenas IMC e idade, sem diferenciar entre peso de gordura e peso magro.');
+  
+  currentY += 10;
 
   // Rodapé
   currentY = pageHeight - 30;
