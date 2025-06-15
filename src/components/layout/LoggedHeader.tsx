@@ -20,7 +20,7 @@ const LoggedHeader = ({ userName, onLogoClick, onProfileClick, onLogout }: Logge
             onClick={onLogoClick}
           >
             <img 
-              src="/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.png" 
+              src="/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.webp" 
               alt="HubFit360 Logo" 
               className="w-12 h-12"
             />
