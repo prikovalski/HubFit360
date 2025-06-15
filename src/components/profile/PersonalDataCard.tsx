@@ -7,7 +7,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Estado, Cidade } from '@/services/stateService';
+import { Estado } from '@/services/stateService';
+import { Cidade } from '@/services/cityService';
 
 interface PersonalDataCardProps {
   name: string;
