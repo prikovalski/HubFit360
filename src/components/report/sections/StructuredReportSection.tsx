@@ -193,17 +193,17 @@ const StructuredReportSection = ({ assessmentText }: StructuredReportSectionProp
           <p className="text-amber-800 leading-relaxed">
             A fórmula de Deurenberg pode superestimar a % de gordura em pessoas com boa massa muscular, pois usa apenas IMC e idade, sem diferenciar entre peso de gordura e peso magro.
           </p>
+          
+          <div className="mt-6 pt-4 border-t border-amber-200 space-y-2">
+            <p className="text-xs text-amber-700">
+              <strong>Nota:</strong> Esta análise foi gerada por inteligência artificial baseada nos seus dados físicos e perfil de saúde.
+            </p>
+            <p className="text-xs text-amber-700">
+              <strong>Importante:</strong> Se as fotos não estiverem de acordo com o solicitado, a leitura será feita com base nos números informados no formulário.
+            </p>
+          </div>
         </CardContent>
-      </CardContent>
-      
-      <div className="mt-6 pt-4 border-t border-gray-200 space-y-2">
-        <p className="text-xs text-gray-700">
-          <strong>Nota:</strong> Esta análise foi gerada por inteligência artificial baseada nos seus dados físicos e perfil de saúde.
-        </p>
-        <p className="text-xs text-gray-700">
-          <strong>Importante:</strong> Se as fotos não estiverem de acordo com o solicitado, a leitura será feita com base nos números informados no formulário.
-        </p>
-      </div>
+      </Card>
     </div>
   );
 };
