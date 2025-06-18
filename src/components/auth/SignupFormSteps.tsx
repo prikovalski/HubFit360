@@ -16,6 +16,7 @@ import { StepProgressIndicator } from './StepProgressIndicator';
 import { FormSection } from './FormSection';
 import { FormField } from './FormField';
 import { NavigationButtons } from './NavigationButtons';
+import { validatePassword } from '@/utils/inputValidation';
 
 interface SignupFormStepsProps {
   formData: any;
@@ -152,7 +153,8 @@ const SignupFormSteps = ({
   const canGoNext = () => {
     switch (step) {
       case 1:
-        return formData.email && formData.password;
+        const { isValid: isPasswordValid } = validatePassword(formData.password);
+        return formData.email && formData.password && isPasswordValid;
       case 2:
         return formData.name && formData.gender && formData.birthDate;
       case 3:
@@ -211,6 +213,7 @@ const SignupFormSteps = ({
                 disabled={loading}
                 required
                 tooltip="Escolha uma senha forte com pelo menos 8 caracteres"
+                showPasswordValidation={true}
               />
             </div>
             

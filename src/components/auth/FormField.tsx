@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from '@/lib/utils';
 import { HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { PasswordValidation } from './PasswordValidation';
 
 interface FormFieldProps {
   label: string;
@@ -20,6 +21,7 @@ interface FormFieldProps {
   options?: { value: string; label: string }[];
   loading?: boolean;
   maxLength?: number;
+  showPasswordValidation?: boolean;
 }
 
 export const FormField = ({ 
@@ -34,10 +36,12 @@ export const FormField = ({
   className,
   options,
   loading,
-  maxLength
+  maxLength,
+  showPasswordValidation = false
 }: FormFieldProps) => {
   const fieldId = label.toLowerCase().replace(/\s+/g, '-');
   const hasValue = value && value.length > 0;
+  const isPasswordField = type === 'password';
 
   const LabelComponent = (
     <div className="flex items-center gap-2">
@@ -105,6 +109,10 @@ export const FormField = ({
           hasValue && "border-[#019f80] ring-1 ring-[#019f80]/20"
         )}
       />
+      
+      {isPasswordField && showPasswordValidation && (
+        <PasswordValidation password={value} />
+      )}
     </div>
   );
 };
