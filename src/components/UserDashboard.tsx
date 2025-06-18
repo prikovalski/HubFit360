@@ -11,6 +11,8 @@ import AssessmentsList from '@/components/dashboard/AssessmentsList';
 import LoggedPageLayout from '@/components/layout/LoggedPageLayout';
 import { useNavigation } from '@/hooks/useNavigation';
 import { DashboardStatsSkeleton, DashboardHeaderSkeleton } from '@/components/ui/dashboard-skeleton';
+import { Button } from "@/components/ui/button";
+import { Plus } from 'lucide-react';
 
 interface Assessment {
   id: string;
@@ -152,12 +154,25 @@ const UserDashboard = ({ user, onLogout }) => {
                   <DashboardHeaderSkeleton />
                 ) : (
                   <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                      Dashboard
-                    </h1>
-                    <p className="text-gray-600">
-                      Acompanhe suas avaliações e progresso físico
-                    </p>
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                      <div>
+                        <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                          Dashboard
+                        </h1>
+                        <p className="text-gray-600">
+                          Acompanhe suas avaliações e progresso físico
+                        </p>
+                      </div>
+                      
+                      <Button 
+                        onClick={goToAssessment}
+                        className="bg-[#019f80] hover:bg-[#017a63] text-white mt-4 md:mt-0"
+                        size="lg"
+                      >
+                        <Plus className="w-5 h-5 mr-2" />
+                        Nova Avaliação
+                      </Button>
+                    </div>
                   </div>
                 )}
 
