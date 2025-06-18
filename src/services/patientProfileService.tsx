@@ -169,7 +169,6 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
       .eq('user_id', userProfile.id);
 
     if (existingProfile && existingProfile.length > 0) {
-      console.log('Perfil de paciente já existe, atualizando...');
       const { data: updateData, error: updateError } = await supabase
         .from('patient_profiles')
         .update(patientData)

@@ -122,7 +122,6 @@ serve(async (req) => {
         }
 
         // Atualizar status do pagamento
-        console.log('Atualizando status do pagamento para paid...');
         const { data: updatedPayment, error: paymentError } = await supabase
           .from('payments')
           .update({ 
@@ -146,7 +145,6 @@ serve(async (req) => {
 
           // Se for um pagamento de avaliação, atualizar status da avaliação
           if (updatedPayment.assessment_id && updatedPayment.products.type === 'assessment') {
-            console.log('Atualizando status da assessment para paid...', updatedPayment.assessment_id);
             
             const { data: updatedAssessment, error: assessmentError } = await supabase
               .from('assessments')
