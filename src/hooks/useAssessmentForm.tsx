@@ -18,7 +18,7 @@ interface AssessmentFormData {
 
 export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
   const [loading, setLoading] = useState(false);
-  const [photos, setPhotos] = useState<{ [key: string]: string }>({});
+  const [photos, setPhotos] = useState<{ front?: string; side?: string; back?: string }>({});
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [neckCircumference, setNeckCircumference] = useState('');
@@ -51,9 +51,9 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
 
     try {
       const assessmentData: AssessmentFormData = {
-        frontPhoto: photos.front,
-        sidePhoto: photos.side,
-        backPhoto: photos.back,
+        frontPhoto: photos.front!,
+        sidePhoto: photos.side!,
+        backPhoto: photos.back!,
         sex: userProfile.gender || 'masculino',
         height: parseInt(height),
         weight: parseFloat(weight),

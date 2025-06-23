@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useUserCredits } from '@/hooks/useUserCredits';
@@ -7,7 +8,7 @@ import LoggedPageLayout from '@/components/layout/LoggedPageLayout';
 import DashboardHeader from './dashboard/DashboardHeader';
 import DashboardStats from './dashboard/DashboardStats';
 import AssessmentsList from './dashboard/AssessmentsList';
-import { DashboardSkeleton } from '@/components/ui/dashboard-skeleton';
+import { DashboardStatsSkeleton } from '@/components/ui/dashboard-skeleton';
 import { supabase } from '@/integrations/supabase/client';
 
 interface UserDashboardProps {
@@ -78,7 +79,7 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
       >
         <div className="py-12 px-4">
           <div className="container mx-auto max-w-6xl">
-            <DashboardSkeleton />
+            <DashboardStatsSkeleton />
           </div>
         </div>
       </LoggedPageLayout>
@@ -97,13 +98,15 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
           <DashboardHeader 
             userName={userProfile?.name || 'Usuário'}
             onNewAssessment={handleNewAssessment}
+            onUserProfile={onProfileClick}
+            onLogout={onLogout}
           />
           
           <DashboardStats assessments={assessments} />
           
           <AssessmentsList 
             assessments={assessments}
-            onViewReport={handleViewReport}
+            onViewAssessment={handleViewReport}
           />
         </div>
       </div>
