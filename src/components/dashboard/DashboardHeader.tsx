@@ -1,15 +1,15 @@
 
+
 import { Button } from "@/components/ui/button";
-import { LogOut, Plus, User, Settings } from 'lucide-react';
+import { Plus, User, Settings } from 'lucide-react';
 
 interface DashboardHeaderProps {
   userName: string;
   onNewAssessment: () => void;
   onUserProfile: () => void;
-  onLogout: () => void;
 }
 
-const DashboardHeader = ({ userName, onNewAssessment, onUserProfile, onLogout }: DashboardHeaderProps) => {
+const DashboardHeader = ({ userName, onNewAssessment, onUserProfile }: DashboardHeaderProps) => {
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
       <div className="flex items-center space-x-4">
@@ -38,17 +38,10 @@ const DashboardHeader = ({ userName, onNewAssessment, onUserProfile, onLogout }:
           <Plus className="w-4 h-4 mr-2" />
           Nova Avaliação
         </Button>
-        <Button 
-          onClick={onLogout}
-          variant="outline" 
-          className="border-gray-300 text-gray-600 hover:bg-gray-50"
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          Sair
-        </Button>
       </div>
     </div>
   );
 };
 
 export default DashboardHeader;
+

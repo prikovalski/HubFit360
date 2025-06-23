@@ -111,7 +111,6 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
             userName={userProfile?.name || 'Usuário'}
             onNewAssessment={handleNewAssessment}
             onUserProfile={onProfileClick}
-            onLogout={onLogout}
           />
           
           <DashboardStats assessments={assessments} />
