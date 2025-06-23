@@ -10,6 +10,7 @@ import LazyUserDashboard from '@/components/lazy/LazyUserDashboard';
 import LazyAuthSection from '@/components/lazy/LazyAuthSection';
 import LazyAssessmentForm from '@/components/lazy/LazyAssessmentForm';
 import LazyReportViewer from '@/components/lazy/LazyReportViewer';
+import LazyUserProfile from '@/components/lazy/LazyUserProfile';
 
 const AppContent = () => {
   const [currentSection, setCurrentSection] = useState('home');
@@ -73,6 +74,15 @@ const AppContent = () => {
           return (
             <LazyReportViewer
               report={selectedReport}
+              onBack={handleBackToDashboard}
+              onLogoClick={handleBackToDashboard}
+              onProfileClick={() => setCurrentSection('profile')}
+              onLogout={handleLogout}
+            />
+          );
+        case 'profile':
+          return (
+            <LazyUserProfile
               onBack={handleBackToDashboard}
               onLogoClick={handleBackToDashboard}
               onProfileClick={() => setCurrentSection('profile')}
