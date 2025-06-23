@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useUserCredits } from '@/hooks/useUserCredits';
@@ -7,6 +8,7 @@ import LoggedPageLayout from '@/components/layout/LoggedPageLayout';
 import DashboardHeader from './dashboard/DashboardHeader';
 import DashboardStats from './dashboard/DashboardStats';
 import AssessmentsList from './dashboard/AssessmentsList';
+import CreditsModal from './credits/CreditsModal';
 import { DashboardStatsSkeleton } from '@/components/ui/dashboard-skeleton';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -21,6 +23,7 @@ interface UserDashboardProps {
 const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileClick, onLogout }: UserDashboardProps) => {
   const [assessments, setAssessments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [creditsModalOpen, setCreditsModalOpen] = useState(false);
   const { userProfile } = useUserProfile();
   const { credits, fetchCredits } = useUserCredits();
   const { toast } = useToast();
@@ -81,6 +84,11 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
     onViewReport(report);
   };
 
+  const handleBuyCredits = () => {
+    console.log('Abrindo modal de compra de créditos');
+    setCreditsModalOpen(true);
+  };
+
   if (loading) {
     return (
       <LoggedPageLayout
@@ -111,6 +119,7 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
             userName={userProfile?.name || 'Usuário'}
             onNewAssessment={handleNewAssessment}
             onUserProfile={onProfileClick}
+            onBuyCredits={handleBuyCredits}
           />
           
           <DashboardStats assessments={assessments} />
@@ -123,6 +132,11 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
           />
         </div>
       </div>
+
+      <CreditsModal 
+        isOpen={creditsModalOpen}
+        onClose={() => setCreditsModalOpen(false)}
+      />
     </LoggedPageLayout>
   );
 };
