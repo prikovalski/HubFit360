@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,13 @@ const CreditsModal = ({ isOpen, onClose }: CreditsModalProps) => {
   const [products, setProducts] = useState<HotmartProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Mapeamento dos links específicos da Hotmart
+  const hotmartLinks = {
+    1: 'https://pay.hotmart.com/W100447075R?off=eppmv6cm',
+    5: 'https://pay.hotmart.com/W100447075R?off=29rv5rs3',
+    10: 'https://pay.hotmart.com/W100447075R?off=690j8uta'
+  };
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -45,9 +53,14 @@ const CreditsModal = ({ isOpen, onClose }: CreditsModalProps) => {
     }
   }, [isOpen]);
 
-  const handleBuyCredits = (productId: string) => {
-    // Redirecionar para o link do Hotmart
-    window.open('https://pay.hotmart.com/W100447075R', '_blank');
+  const handleBuyCredits = (creditsAmount: number) => {
+    const link = hotmartLinks[creditsAmount as keyof typeof hotmartLinks];
+    if (link) {
+      window.open(link, '_blank');
+    } else {
+      // Fallback para o link padrão se não encontrar o específico
+      window.open('https://pay.hotmart.com/W100447075R', '_blank');
+    }
   };
 
   const getDiscountPercentage = (credits: number, price: number) => {
@@ -141,7 +154,7 @@ const CreditsModal = ({ isOpen, onClose }: CreditsModalProps) => {
                       </div>
 
                       <Button
-                        onClick={() => handleBuyCredits(product.hotmart_product_id)}
+                        onClick={() => handleBuyCredits(product.credits_amount)}
                         className="w-full bg-green-600 hover:bg-green-700 text-white py-3"
                         size="lg"
                       >
