@@ -18,11 +18,6 @@ const DashboardStats = ({ assessments }: DashboardStatsProps) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      {/* Widget de Créditos */}
-      <CreditsWidget 
-        onBuyCredits={() => console.log('Abrir modal de créditos')}
-        onViewHistory={() => console.log('Ver histórico')}
-      />
       
       {/* Cards existentes */}
       <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">

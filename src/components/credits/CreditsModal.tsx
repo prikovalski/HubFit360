@@ -26,8 +26,8 @@ const CreditsModal = ({ isOpen, onClose }: CreditsModalProps) => {
   // Mapeamento dos links específicos da Hotmart
   const hotmartLinks = {
     1: 'https://pay.hotmart.com/W100447075R?off=eppmv6cm',
-    5: 'https://pay.hotmart.com/W100447075R?off=uzf9p2mp',
-    10: 'https://pay.hotmart.com/W100447075R?off=690j8uta'
+    5: 'https://pay.hotmart.com/W100447075R?off=mc0my8q7',
+    10: 'https://pay.hotmart.com/W100447075R?off=puafdvn5'
   };
 
   useEffect(() => {
