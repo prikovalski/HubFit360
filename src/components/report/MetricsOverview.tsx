@@ -7,6 +7,12 @@ interface MetricsOverviewProps {
 }
 
 const MetricsOverview = ({ report }: MetricsOverviewProps) => {
+  // Verificação de segurança para preview
+  const preview = report?.preview || {};
+  const safeLeanMass = preview.leanMass || 'N/A';
+  const safeBodyFat = preview.bodyFat || 'N/A';
+  const safeBmi = preview.bmi || 'N/A';
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
       <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white relative overflow-hidden">
@@ -18,7 +24,7 @@ const MetricsOverview = ({ report }: MetricsOverviewProps) => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-4xl font-bold mb-2">{report.preview.leanMass}</div>
+          <div className="text-4xl font-bold mb-2">{safeLeanMass}</div>
           <p className="text-blue-100 text-sm">Músculos e ossos</p>
           <div className="mt-3 text-xs text-blue-200">
             Indica massa corporal livre de gordura
@@ -35,7 +41,7 @@ const MetricsOverview = ({ report }: MetricsOverviewProps) => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-4xl font-bold mb-2">{report.preview.bodyFat}</div>
+          <div className="text-4xl font-bold mb-2">{safeBodyFat}</div>
           <p className="text-orange-100 text-sm">Percentual de gordura</p>
           <div className="mt-3 text-xs text-orange-200">
             Medição precisa da composição corporal
@@ -52,7 +58,7 @@ const MetricsOverview = ({ report }: MetricsOverviewProps) => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-4xl font-bold mb-2">{report.preview.bmi}</div>
+          <div className="text-4xl font-bold mb-2">{safeBmi}</div>
           <p className="text-green-100 text-sm">Índice de massa corporal</p>
           <div className="mt-3 text-xs text-green-200">
             Classificação padrão internacional

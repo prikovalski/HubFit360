@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,6 +45,12 @@ const ReportHeader = ({
     }
   };
 
+  // Verificação de segurança para preview
+  const preview = report?.preview || {};
+  const safeLeanMass = preview.leanMass || 'N/A';
+  const safeBodyFat = preview.bodyFat || 'N/A';
+  const safeBmi = preview.bmi || 'N/A';
+
   return (
     <Card className="border-0 shadow-xl bg-gradient-to-r from-[#019f80] to-green-600 text-white mb-8">
       <CardHeader className="pb-4">
@@ -67,7 +74,7 @@ const ReportHeader = ({
             </div>
             <div className="flex items-center text-green-100 mb-2">
               <Calendar className="w-4 h-4 mr-2" />
-              <span>Gerado em {new Date(report.date).toLocaleDateString('pt-BR')}</span>
+              <span>Gerado em {new Date(report.date || report.created_at).toLocaleDateString('pt-BR')}</span>
             </div>
             {userProfile?.name && (
               <p className="text-lg font-medium text-green-100">
@@ -102,15 +109,15 @@ const ReportHeader = ({
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
           <div className="bg-white/10 rounded-lg p-4">
-            <div className="text-2xl font-bold">{report.preview.leanMass}</div>
+            <div className="text-2xl font-bold">{safeLeanMass}</div>
             <div className="text-green-100">Massa Magra</div>
           </div>
           <div className="bg-white/10 rounded-lg p-4">
-            <div className="text-2xl font-bold">{report.preview.bodyFat}</div>
+            <div className="text-2xl font-bold">{safeBodyFat}</div>
             <div className="text-green-100">Gordura Corporal</div>
           </div>
           <div className="bg-white/10 rounded-lg p-4">
-            <div className="text-2xl font-bold">{report.preview.bmi}</div>
+            <div className="text-2xl font-bold">{safeBmi}</div>
             <div className="text-green-100">IMC</div>
           </div>
         </div>

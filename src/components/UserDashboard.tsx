@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useUserCredits } from '@/hooks/useUserCredits';
@@ -47,7 +46,20 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
             variant: "destructive"
           });
         } else {
-          setAssessments(data || []);
+          // Transformar os dados do banco para incluir o objeto preview
+          const transformedAssessments = (data || []).map(assessment => ({
+            ...assessment,
+            preview: {
+              leanMass: assessment.lean_mass ? `${assessment.lean_mass.toFixed(1)}kg` : 'N/A',
+              bodyFat: assessment.body_fat_percentage ? `${assessment.body_fat_percentage.toFixed(1)}%` : 'N/A',
+              bmi: assessment.bmi ? assessment.bmi.toFixed(1) : 'N/A',
+              fatMass: assessment.fat_mass ? `${assessment.fat_mass.toFixed(1)}kg` : 'N/A',
+              summary: assessment.assessment_text || ''
+            }
+          }));
+          
+          console.log('Avaliações transformadas:', transformedAssessments);
+          setAssessments(transformedAssessments);
         }
       } finally {
         setLoading(false);
