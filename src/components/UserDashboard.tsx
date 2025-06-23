@@ -58,6 +58,7 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
       } else {
         const transformedAssessments = (data || []).map(assessment => ({
           ...assessment,
+          assessmentText: assessment.assessment_text, // Adicionar campo no nível principal
           preview: {
             leanMass: assessment.lean_mass ? `${assessment.lean_mass.toFixed(1)}kg` : 'N/A',
             bodyFat: assessment.body_fat_percentage ? `${assessment.body_fat_percentage.toFixed(1)}%` : 'N/A',
