@@ -24,14 +24,6 @@ const DashboardHeader = ({ userName, onNewAssessment, onUserProfile }: Dashboard
       
       <div className="flex space-x-3">
         <Button 
-          onClick={onUserProfile}
-          variant="outline"
-          className="border-gray-300 text-gray-600 hover:bg-gray-50"
-        >
-          <Settings className="w-4 h-4 mr-2" />
-          Meu Perfil
-        </Button>
-        <Button 
           onClick={onNewAssessment}
           className="bg-[#019f80] hover:bg-[#017a63] text-white"
         >
