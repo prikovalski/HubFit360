@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useUserCredits } from '@/hooks/useUserCredits';
@@ -9,6 +8,7 @@ import DashboardHeader from './dashboard/DashboardHeader';
 import DashboardStats from './dashboard/DashboardStats';
 import AssessmentsList from './dashboard/AssessmentsList';
 import CreditsModal from './credits/CreditsModal';
+import CreditUserForm from './admin/CreditUserForm';
 import { DashboardStatsSkeleton } from '@/components/ui/dashboard-skeleton';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -24,51 +24,58 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
   const [assessments, setAssessments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [creditsModalOpen, setCreditsModalOpen] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
   const { userProfile } = useUserProfile();
   const { credits, fetchCredits } = useUserCredits();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchAssessments = async () => {
-      if (!userProfile?.id) return;
+    // Verificar se é admin para mostrar painel administrativo
+    if (userProfile?.role === 'ADMIN') {
+      setShowAdminPanel(true);
+    }
+  }, [userProfile]);
 
-      try {
-        setLoading(true);
-        const { data, error } = await supabase
-          .from('assessments')
-          .select('*')
-          .eq('user_id', userProfile.id)
-          .order('created_at', { ascending: false });
+  const fetchAssessments = async () => {
+    if (!userProfile?.id) return;
 
-        if (error) {
-          console.error('Erro ao buscar avaliações:', error);
-          toast({
-            title: "Erro",
-            description: "Falha ao carregar avaliações. Tente novamente.",
-            variant: "destructive"
-          });
-        } else {
-          // Transformar os dados do banco para incluir o objeto preview
-          const transformedAssessments = (data || []).map(assessment => ({
-            ...assessment,
-            preview: {
-              leanMass: assessment.lean_mass ? `${assessment.lean_mass.toFixed(1)}kg` : 'N/A',
-              bodyFat: assessment.body_fat_percentage ? `${assessment.body_fat_percentage.toFixed(1)}%` : 'N/A',
-              bmi: assessment.bmi ? assessment.bmi.toFixed(1) : 'N/A',
-              fatMass: assessment.fat_mass ? `${assessment.fat_mass.toFixed(1)}kg` : 'N/A',
-              summary: assessment.assessment_text || ''
-            }
-          }));
-          
-          console.log('Avaliações transformadas:', transformedAssessments);
-          setAssessments(transformedAssessments);
-        }
-      } finally {
-        setLoading(false);
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('assessments')
+        .select('*')
+        .eq('user_id', userProfile.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Erro ao buscar avaliações:', error);
+        toast({
+          title: "Erro",
+          description: "Falha ao carregar avaliações. Tente novamente.",
+          variant: "destructive"
+        });
+      } else {
+        const transformedAssessments = (data || []).map(assessment => ({
+          ...assessment,
+          preview: {
+            leanMass: assessment.lean_mass ? `${assessment.lean_mass.toFixed(1)}kg` : 'N/A',
+            bodyFat: assessment.body_fat_percentage ? `${assessment.body_fat_percentage.toFixed(1)}%` : 'N/A',
+            bmi: assessment.bmi ? assessment.bmi.toFixed(1) : 'N/A',
+            fatMass: assessment.fat_mass ? `${assessment.fat_mass.toFixed(1)}kg` : 'N/A',
+            summary: assessment.assessment_text || ''
+          }
+        }));
+        
+        console.log('Avaliações transformadas:', transformedAssessments);
+        setAssessments(transformedAssessments);
       }
-    };
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     if (userProfile?.id) {
       fetchAssessments();
     }
@@ -123,6 +130,13 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
           />
           
           <DashboardStats assessments={assessments} />
+          
+          {showAdminPanel && (
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold mb-4">Painel Administrativo</h3>
+              <CreditUserForm />
+            </div>
+          )}
           
           <AssessmentsList 
             assessments={assessments}
