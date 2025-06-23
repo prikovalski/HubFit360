@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -26,11 +26,35 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
   const [hipCircumference, setHipCircumference] = useState('');
   
   const { toast } = useToast();
-  const { userProfile } = useUserProfile();
+  const { userProfile, patientProfile } = useUserProfile();
+
+  // Carregar dados do perfil automaticamente quando disponíveis
+  useEffect(() => {
+    if (patientProfile) {
+      console.log('Carregando dados do perfil do paciente:', patientProfile);
+      
+      if (patientProfile.height) {
+        setHeight(patientProfile.height.toString());
+      }
+      if (patientProfile.weight) {
+        setWeight(patientProfile.weight.toString());
+      }
+      if (patientProfile.neck_circumference) {
+        setNeckCircumference(patientProfile.neck_circumference.toString());
+      }
+      if (patientProfile.waist_circumference) {
+        setWaistCircumference(patientProfile.waist_circumference.toString());
+      }
+      if (patientProfile.hip_circumference) {
+        setHipCircumference(patientProfile.hip_circumference.toString());
+      }
+    }
+  }, [patientProfile]);
 
   const canSubmit = photos.front && photos.side && photos.back && height && weight;
 
   const handlePhotoUpload = (photoType: string, photoData: string) => {
+    console.log('Upload de foto:', photoType);
     setPhotos(prev => ({
       ...prev,
       [photoType]: photoData
