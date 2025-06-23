@@ -106,7 +106,9 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
           
           <AssessmentsList 
             assessments={assessments}
-            onViewAssessment={handleViewReport}
+            loading={loading}
+            onReportClick={handleViewReport}
+            onNewAssessment={handleNewAssessment}
           />
         </div>
       </div>

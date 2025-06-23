@@ -39,7 +39,24 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
   } = useAssessmentForm(handleAssessmentSuccess);
 
   const [prompt, setPrompt] = useState<string | null>(null);
-  const [formReady, setFormReady] = useState(true); // Simular carregamento inicial
+  const [formReady, setFormReady] = useState(true);
+
+  // Convert photos object to match PhotoUploadSection expectations
+  const adaptedPhotos = {
+    front: photos.front ? new File([], 'front.jpg') : null,
+    side: photos.side ? new File([], 'side.jpg') : null,
+    back: photos.back ? new File([], 'back.jpg') : null,
+  };
+
+  const handlePhotoUploadAdapter = (position: 'front' | 'side' | 'back', file: File) => {
+    // Convert File to base64 string for the hook
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      handlePhotoUpload(position, base64);
+    };
+    reader.readAsDataURL(file);
+  };
 
   function handleAssessmentSuccess(assessment: any) {
     if (assessment && assessment.prompt) {
@@ -87,8 +104,8 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
               <InstructionsCard />
 
               <PhotoUploadSection
-                photos={photos}
-                onPhotoUpload={handlePhotoUpload}
+                photos={adaptedPhotos}
+                onPhotoUpload={handlePhotoUploadAdapter}
               />
 
               <SubmitSection

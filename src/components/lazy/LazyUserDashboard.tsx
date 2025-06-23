@@ -5,7 +5,10 @@ import LazyLoader from '@/components/LazyLoader';
 const UserDashboard = lazy(() => import('@/components/UserDashboard'));
 
 interface LazyUserDashboardProps {
-  user: any;
+  onNewAssessment: () => void;
+  onViewReport: (report: any) => void;
+  onLogoClick: () => void;
+  onProfileClick: () => void;
   onLogout: () => void;
 }
 
