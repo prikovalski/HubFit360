@@ -8,9 +8,12 @@ import Header from '@/components/home/Header';
 import HomePage from '@/components/home/HomePage';
 import LazyUserDashboard from '@/components/lazy/LazyUserDashboard';
 import LazyAuthSection from '@/components/lazy/LazyAuthSection';
+import LazyAssessmentForm from '@/components/lazy/LazyAssessmentForm';
+import LazyReportViewer from '@/components/lazy/LazyReportViewer';
 
 const AppContent = () => {
   const [currentSection, setCurrentSection] = useState('home');
+  const [selectedReport, setSelectedReport] = useState<any>(null);
   const { user, signOut } = useAuth();
   const { userProfile, loading } = useUserProfile();
 
@@ -19,8 +22,27 @@ const AppContent = () => {
     setCurrentSection('home');
   };
 
+  const handleNewAssessment = () => {
+    setCurrentSection('assessment');
+  };
+
+  const handleViewReport = (report: any) => {
+    setSelectedReport(report);
+    setCurrentSection('report');
+  };
+
+  const handleBackToDashboard = () => {
+    setCurrentSection('dashboard');
+    setSelectedReport(null);
+  };
+
+  const handleAssessmentSuccess = (assessment: any) => {
+    setSelectedReport(assessment);
+    setCurrentSection('report');
+  };
+
   const renderSection = () => {
-    // Se o usuário está logado, sempre mostrar o dashboard (mesmo que o perfil ainda esteja carregando)
+    // Se o usuário está logado, mostrar as seções do dashboard
     if (user) {
       if (loading) {
         return (
@@ -35,8 +57,39 @@ const AppContent = () => {
         );
       }
 
-      // Se o usuário está logado e o perfil foi carregado (ou falhou ao carregar), mostrar dashboard
-      return <LazyUserDashboard user={userProfile || { name: user.email, id: user.id }} onLogout={handleLogout} />;
+      // Renderizar seções baseadas no estado atual
+      switch (currentSection) {
+        case 'assessment':
+          return (
+            <LazyAssessmentForm
+              onBack={handleBackToDashboard}
+              onSuccess={handleAssessmentSuccess}
+              onLogoClick={handleBackToDashboard}
+              onProfileClick={() => setCurrentSection('profile')}
+              onLogout={handleLogout}
+            />
+          );
+        case 'report':
+          return (
+            <LazyReportViewer
+              report={selectedReport}
+              onBack={handleBackToDashboard}
+              onLogoClick={handleBackToDashboard}
+              onProfileClick={() => setCurrentSection('profile')}
+              onLogout={handleLogout}
+            />
+          );
+        default:
+          return (
+            <LazyUserDashboard
+              onNewAssessment={handleNewAssessment}
+              onViewReport={handleViewReport}
+              onLogoClick={() => setCurrentSection('dashboard')}
+              onProfileClick={() => setCurrentSection('profile')}
+              onLogout={handleLogout}
+            />
+          );
+      }
     }
 
     // Se não está logado, mostrar as seções normais
