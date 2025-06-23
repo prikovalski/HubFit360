@@ -5,6 +5,7 @@ import { Copy, CheckCircle2 } from 'lucide-react';
 import ReportHeader from './report/ReportHeader';
 import BasicAnalysisSection from './report/BasicAnalysisSection';
 import PremiumSection from './report/PremiumSection';
+import UpgradeModal from './report/UpgradeModal';
 import LoggedPageLayout from '@/components/layout/LoggedPageLayout';
 import { useUserProfile } from '@/hooks/useUserProfile';
 
@@ -12,6 +13,7 @@ interface Report {
   id: string;
   date: string;
   status: string;
+  tier: string;
   age: number;
   assessmentText: string;
   preview: {
@@ -34,6 +36,8 @@ interface ReportViewerProps {
 const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }: ReportViewerProps) => {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [currentReport, setCurrentReport] = useState(report);
   const { userProfile, patientProfile } = useUserProfile();
 
   useEffect(() => {
@@ -64,13 +68,22 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
     }
   };
 
-  const handlePaymentSuccess = () => {
-    // Refresh the page or update the report status
-    window.location.reload();
+  const handleUpgradeSuccess = () => {
+    // Atualizar o report para premium
+    setCurrentReport({
+      ...currentReport,
+      tier: 'premium'
+    });
+    
+    // Recarregar a página para buscar os novos dados
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
   };
 
   const userName = userProfile?.name || 'Usuário';
-  const isPaid = report.status === 'paid';
+  const isPremium = currentReport.tier === 'premium';
+  const isBasic = currentReport.tier === 'basic';
 
   return (
     <LoggedPageLayout
@@ -82,31 +95,31 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
       <div className="py-8 px-4">
         <div className="container mx-auto max-w-4xl">
           <ReportHeader
-            report={report}
+            report={currentReport}
             userProfile={userProfile}
             patientProfile={patientProfile}
-            isPaid={isPaid}
+            isPaid={isPremium}
             onBack={onBack}
           />
           
-          {isPaid ? (
-            <div className="space-y-8">
-              <BasicAnalysisSection 
-                report={report}
-                userProfile={userProfile}
-                patientProfile={patientProfile}
-              />
+          <div className="space-y-8">
+            <BasicAnalysisSection 
+              report={currentReport}
+              userProfile={userProfile}
+              patientProfile={patientProfile}
+            />
 
+            {isPremium ? (
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">
                   Análise Completa
                 </h3>
                 <p className="text-gray-700 leading-relaxed mb-6">
-                  {report.assessmentText}
+                  {currentReport.assessmentText}
                 </p>
                 <div className="flex justify-end">
                   <button
-                    onClick={() => handleCopyToClipboard(report.assessmentText)}
+                    onClick={() => handleCopyToClipboard(currentReport.assessmentText)}
                     className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md transition-colors"
                     disabled={copied}
                   >
@@ -124,23 +137,40 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
                   </button>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="space-y-8">
-              <BasicAnalysisSection 
-                report={report}
-                userProfile={userProfile}
-                patientProfile={patientProfile}
-              />
+            ) : isBasic ? (
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
+                <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                  🎉 Análise Básica Completa!
+                </h3>
+                <p className="text-gray-700 mb-4">
+                  Sua avaliação básica foi processada com sucesso. Para desbloquear análises 
+                  avançadas, recomendações nutricionais personalizadas e projeção de resultados, 
+                  faça o upgrade para a versão premium.
+                </p>
+                <button
+                  onClick={() => setShowUpgradeModal(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-md transition-colors"
+                >
+                  Fazer Upgrade para Premium
+                </button>
+              </div>
+            ) : (
               <PremiumSection 
-                report={report}
-                isPaid={isPaid}
-                onPaymentSuccess={handlePaymentSuccess}
+                report={currentReport}
+                isPaid={isPremium}
+                onPaymentSuccess={() => window.location.reload()}
               />
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
+
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        assessmentId={currentReport.id}
+        onUpgradeSuccess={handleUpgradeSuccess}
+      />
     </LoggedPageLayout>
   );
 };

@@ -23,6 +23,7 @@ export type Database = {
           lean_mass: number | null
           side_photo: string
           status: string | null
+          tier: string
           updated_at: string
           user_id: number
         }
@@ -39,6 +40,7 @@ export type Database = {
           lean_mass?: number | null
           side_photo: string
           status?: string | null
+          tier?: string
           updated_at?: string
           user_id: number
         }
@@ -55,6 +57,7 @@ export type Database = {
           lean_mass?: number | null
           side_photo?: string
           status?: string | null
+          tier?: string
           updated_at?: string
           user_id?: number
         }
