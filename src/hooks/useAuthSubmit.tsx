@@ -20,6 +20,39 @@ export const useAuthSubmit = ({
 }: UseAuthSubmitProps) => {
   const { signUp, signIn, checkEmailExists } = useAuth();
 
+  const getLoginErrorMessage = (error: any): string => {
+    const errorMessage = error?.message?.toLowerCase() || '';
+    
+    // Diferentes tipos de erro de autenticação
+    if (errorMessage.includes('invalid login credentials') || 
+        errorMessage.includes('invalid_credentials') ||
+        errorMessage.includes('email not confirmed') ||
+        errorMessage.includes('invalid email or password')) {
+      return 'Email ou senha incorretos. Verifique suas credenciais e tente novamente.';
+    }
+    
+    if (errorMessage.includes('email not confirmed')) {
+      return 'Conta não confirmada. Verifique seu email para confirmar a conta.';
+    }
+    
+    if (errorMessage.includes('too many requests') || 
+        errorMessage.includes('rate limit') ||
+        errorMessage.includes('429')) {
+      return 'Muitas tentativas de login. Aguarde alguns minutos antes de tentar novamente.';
+    }
+    
+    if (errorMessage.includes('user not found')) {
+      return 'Usuário não encontrado. Verifique o email ou crie uma nova conta.';
+    }
+    
+    if (errorMessage.includes('signup disabled')) {
+      return 'Cadastro temporariamente desabilitado. Tente novamente mais tarde.';
+    }
+    
+    // Mensagem genérica para outros erros
+    return 'Erro no login. Verifique suas credenciais e tente novamente.';
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -29,9 +62,10 @@ export const useAuthSubmit = ({
         const { data, error } = await signIn(formData.email, formData.password);
         
         if (error) {
+          const userFriendlyMessage = getLoginErrorMessage(error);
           toast({
             title: "Erro no login",
-            description: error.message,
+            description: userFriendlyMessage,
             variant: "destructive"
           });
           return;
@@ -118,18 +152,27 @@ export const useAuthSubmit = ({
     } catch (error) {
       console.error('Erro no handleSubmit:', error);
       
-      if (error?.message?.includes('429') || error?.message?.includes('Too Many Requests')) {
+      if (isLogin) {
+        const userFriendlyMessage = getLoginErrorMessage(error);
         toast({
-          title: "Limite de tentativas excedido",
-          description: "Aguarde alguns minutos antes de tentar se cadastrar novamente.",
+          title: "Erro no login",
+          description: userFriendlyMessage,
           variant: "destructive"
         });
       } else {
-        toast({
-          title: "Erro",
-          description: "Ocorreu um erro inesperado",
-          variant: "destructive"
-        });
+        if (error?.message?.includes('429') || error?.message?.includes('Too Many Requests')) {
+          toast({
+            title: "Limite de tentativas excedido",
+            description: "Aguarde alguns minutos antes de tentar se cadastrar novamente.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Erro",
+            description: "Ocorreu um erro inesperado",
+            variant: "destructive"
+          });
+        }
       }
     } finally {
       setLoading(false);
