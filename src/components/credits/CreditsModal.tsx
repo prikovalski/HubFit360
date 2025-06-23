@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,9 +46,8 @@ const CreditsModal = ({ isOpen, onClose }: CreditsModalProps) => {
   }, [isOpen]);
 
   const handleBuyCredits = (productId: string) => {
-    // Por enquanto, apenas log - integração com Hotmart será feita depois
-    console.log('Comprar produto:', productId);
-    // window.open(`https://pay.hotmart.com/...?prod=${productId}`, '_blank');
+    // Redirecionar para o link do Hotmart
+    window.open('https://pay.hotmart.com/W100447075R', '_blank');
   };
 
   const getDiscountPercentage = (credits: number, price: number) => {
