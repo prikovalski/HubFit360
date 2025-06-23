@@ -1,3 +1,4 @@
+
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from '@/hooks/useAuth';
 import { FormData } from '@/types/authForm';
@@ -21,36 +22,49 @@ export const useAuthSubmit = ({
   const { signUp, signIn, checkEmailExists } = useAuth();
 
   const getLoginErrorMessage = (error: any): string => {
-    const errorMessage = error?.message?.toLowerCase() || '';
+    console.log('Erro de login recebido:', error);
+    console.log('Mensagem do erro:', error?.message);
+    console.log('Código do erro:', error?.code);
     
-    // Diferentes tipos de erro de autenticação
-    if (errorMessage.includes('invalid login credentials') || 
+    const errorMessage = error?.message?.toLowerCase() || '';
+    const errorCode = error?.code || '';
+    
+    console.log('Mensagem processada:', errorMessage);
+    console.log('Código processado:', errorCode);
+    
+    // Verificar códigos de erro específicos do Supabase
+    if (errorCode === 'invalid_credentials' || 
+        errorMessage.includes('invalid login credentials') || 
         errorMessage.includes('invalid_credentials') ||
-        errorMessage.includes('email not confirmed') ||
         errorMessage.includes('invalid email or password')) {
       return 'Email ou senha incorretos. Verifique suas credenciais e tente novamente.';
     }
     
-    if (errorMessage.includes('email not confirmed')) {
+    if (errorMessage.includes('email not confirmed') || 
+        errorCode === 'email_not_confirmed') {
       return 'Conta não confirmada. Verifique seu email para confirmar a conta.';
     }
     
     if (errorMessage.includes('too many requests') || 
         errorMessage.includes('rate limit') ||
+        errorCode === 'too_many_requests' ||
         errorMessage.includes('429')) {
       return 'Muitas tentativas de login. Aguarde alguns minutos antes de tentar novamente.';
     }
     
-    if (errorMessage.includes('user not found')) {
+    if (errorMessage.includes('user not found') || 
+        errorCode === 'user_not_found') {
       return 'Usuário não encontrado. Verifique o email ou crie uma nova conta.';
     }
     
-    if (errorMessage.includes('signup disabled')) {
+    if (errorMessage.includes('signup disabled') || 
+        errorCode === 'signup_disabled') {
       return 'Cadastro temporariamente desabilitado. Tente novamente mais tarde.';
     }
     
     // Mensagem genérica para outros erros
-    return 'Erro no login. Verifique suas credenciais e tente novamente.';
+    console.log('Usando mensagem genérica para erro:', errorMessage);
+    return 'Email ou senha incorretos. Verifique suas credenciais e tente novamente.';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,10 +73,14 @@ export const useAuthSubmit = ({
 
     try {
       if (isLogin) {
+        console.log('Tentando fazer login com:', formData.email);
         const { data, error } = await signIn(formData.email, formData.password);
         
         if (error) {
+          console.log('Erro no signIn:', error);
           const userFriendlyMessage = getLoginErrorMessage(error);
+          console.log('Mensagem amigável gerada:', userFriendlyMessage);
+          
           toast({
             title: "Erro no login",
             description: userFriendlyMessage,
@@ -150,10 +168,12 @@ export const useAuthSubmit = ({
         }
       }
     } catch (error) {
-      console.error('Erro no handleSubmit:', error);
+      console.error('Erro no handleSubmit (catch):', error);
       
       if (isLogin) {
         const userFriendlyMessage = getLoginErrorMessage(error);
+        console.log('Mensagem de erro final para login:', userFriendlyMessage);
+        
         toast({
           title: "Erro no login",
           description: userFriendlyMessage,
