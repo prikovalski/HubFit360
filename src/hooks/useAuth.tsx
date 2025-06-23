@@ -43,6 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Set up auth state listener - fixed to remove async
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -143,7 +144,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      console.log('Executando signOut...');
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Erro no signOut:', error);
+        throw error;
+      }
+      
+      // Limpar estado local explicitamente
+      setSession(null);
+      setUser(null);
+      
+      console.log('SignOut executado com sucesso');
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+      throw error;
+    }
   };
 
   // Secure email existence check using edge function

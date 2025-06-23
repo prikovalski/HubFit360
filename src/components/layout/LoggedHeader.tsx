@@ -1,6 +1,8 @@
 
 import { Button } from "@/components/ui/button";
 import { User, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from "@/hooks/use-toast";
 
 interface LoggedHeaderProps {
   userName?: string;
@@ -10,6 +12,33 @@ interface LoggedHeaderProps {
 }
 
 const LoggedHeader = ({ userName, onLogoClick, onProfileClick, onLogout }: LoggedHeaderProps) => {
+  const { signOut } = useAuth();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    try {
+      console.log('Iniciando logout...');
+      await signOut();
+      
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso!"
+      });
+      
+      // Chamar a função de callback após o logout
+      onLogout();
+      
+      console.log('Logout realizado com sucesso');
+    } catch (error) {
+      console.error('Erro no logout:', error);
+      toast({
+        title: "Erro no logout",
+        description: "Ocorreu um erro ao tentar sair. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <header className="bg-white/80 backdrop-blur-md border-b border-green-100 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
@@ -46,7 +75,7 @@ const LoggedHeader = ({ userName, onLogoClick, onProfileClick, onLogout }: Logge
             </Button>
             
             <Button
-              onClick={onLogout}
+              onClick={handleLogout}
               variant="outline"
               size="sm"
               className="flex items-center space-x-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"

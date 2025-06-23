@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Activity } from 'lucide-react';
 import AboutSection from '@/components/AboutSection';
@@ -19,8 +18,18 @@ const AppContent = () => {
   const { userProfile, loading } = useUserProfile();
 
   const handleLogout = async () => {
-    await signOut();
-    setCurrentSection('home');
+    try {
+      console.log('AppContent: Iniciando logout...');
+      await signOut();
+      
+      // Resetar estado da aplicação
+      setCurrentSection('home');
+      setSelectedReport(null);
+      
+      console.log('AppContent: Logout concluído, redirecionando para home');
+    } catch (error) {
+      console.error('AppContent: Erro no logout:', error);
+    }
   };
 
   const handleNewAssessment = () => {
