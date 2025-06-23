@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -13,6 +12,8 @@ import { useNavigation } from '@/hooks/useNavigation';
 import { DashboardStatsSkeleton, DashboardHeaderSkeleton } from '@/components/ui/dashboard-skeleton';
 import { Button } from "@/components/ui/button";
 import { Plus } from 'lucide-react';
+import { useUserCredits } from '@/hooks/useUserCredits';
+import CreditsModal from '@/components/credits/CreditsModal';
 
 interface Assessment {
   id: string;
@@ -40,6 +41,9 @@ const UserDashboard = ({ user, onLogout }) => {
     goToAssessment,
     goToReport
   } = useNavigation();
+
+  const [showCreditsModal, setShowCreditsModal] = useState(false);
+  const { hasCredits, consumeCredit } = useUserCredits();
 
   useEffect(() => {
     if (userProfile?.id) {
@@ -73,13 +77,34 @@ const UserDashboard = ({ user, onLogout }) => {
     }
   };
 
-  const handleAssessmentSuccess = (assessment) => {
+  const handleAssessmentSuccess = async (assessment) => {
+    // Se tem créditos, consumir automaticamente
+    if (hasCredits && assessment?.id) {
+      try {
+        await consumeCredit(assessment.id);
+        console.log('Crédito consumido automaticamente');
+      } catch (error) {
+        console.error('Erro ao consumir crédito:', error);
+        // Não bloquear o fluxo se houver erro
+      }
+    }
+    
     fetchAssessments();
     goToDashboard();
     toast({
       title: "Avaliação criada!",
       description: "Sua avaliação física foi processada com sucesso."
     });
+  };
+
+  const handleNewAssessment = () => {
+    if (!hasCredits) {
+      // Mostrar modal de compra de créditos
+      setShowCreditsModal(true);
+      return;
+    }
+    
+    goToAssessment();
   };
 
   const handleReportClick = (assessment) => {
@@ -165,7 +190,7 @@ const UserDashboard = ({ user, onLogout }) => {
                       </div>
                       
                       <Button 
-                        onClick={goToAssessment}
+                        onClick={handleNewAssessment}
                         className="bg-[#019f80] hover:bg-[#017a63] text-white mt-4 md:mt-0"
                         size="lg"
                       >
@@ -195,7 +220,15 @@ const UserDashboard = ({ user, onLogout }) => {
     }
   };
 
-  return renderCurrentPage();
+  return (
+    <>
+      {renderCurrentPage()}
+      <CreditsModal 
+        isOpen={showCreditsModal} 
+        onClose={() => setShowCreditsModal(false)} 
+      />
+    </>
+  );
 };
 
 export default UserDashboard;
