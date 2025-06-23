@@ -15,6 +15,8 @@ serve(async (req) => {
 
   try {
     console.log('=== INÍCIO DO WEBHOOK HOTMART ===');
+    console.log('Method:', req.method);
+    console.log('Headers:', Object.fromEntries(req.headers.entries()));
     
     const body = await req.json();
     console.log('Webhook body recebido:', JSON.stringify(body, null, 2));
@@ -28,39 +30,99 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Extrair dados do webhook da Hotmart
-    const { event, data } = body;
-    
-    if (!event || !data) {
-      throw new Error('Estrutura do webhook inválida');
+    // Validar estrutura do webhook
+    if (!body || typeof body !== 'object') {
+      throw new Error('Body do webhook inválido ou vazio');
     }
 
-    console.log('Evento:', event);
-    console.log('Dados da transação:', data);
+    // Extrair dados do webhook da Hotmart - suporte para diferentes estruturas
+    let event, data;
+    
+    if (body.event && body.data) {
+      // Estrutura padrão
+      event = body.event;
+      data = body.data;
+    } else if (body.hottok) {
+      // Estrutura alternativa da Hotmart
+      event = body.hottok;
+      data = body;
+    } else {
+      console.log('Estrutura não reconhecida, tentando extrair dados...');
+      event = body.event || body.status || 'UNKNOWN';
+      data = body.data || body;
+    }
 
-    // Processar apenas eventos de compra aprovada
-    if (event !== 'PURCHASE_APPROVED') {
+    console.log('Evento extraído:', event);
+    console.log('Dados extraídos:', JSON.stringify(data, null, 2));
+
+    // Processar diferentes tipos de eventos
+    const validEvents = [
+      'PURCHASE_APPROVED', 
+      'PURCHASE_COMPLETE', 
+      'PURCHASE_APPROVED_HOTMART',
+      'PURCHASE_COMPLETE_HOTMART',
+      'approved',
+      'complete'
+    ];
+
+    const isValidEvent = validEvents.some(validEvent => 
+      event && event.toString().toLowerCase().includes(validEvent.toLowerCase())
+    );
+
+    if (!isValidEvent) {
       console.log('Evento ignorado:', event);
-      return new Response(JSON.stringify({ status: 'ignored', event }), {
+      return new Response(JSON.stringify({ 
+        status: 'ignored', 
+        event,
+        message: 'Evento não é de compra aprovada' 
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       });
     }
 
-    const {
+    // Extrair dados da transação com múltiplas tentativas
+    let transaction, product, buyer;
+    
+    // Tentar diferentes estruturas de dados
+    if (data.transaction || data.purchase) {
+      transaction = data.transaction || data.purchase;
+      product = data.product;
+      buyer = data.buyer;
+    } else {
+      // Estrutura alternativa
+      transaction = {
+        transaction: data.transaction_id || data.hottok || data.id,
+        status: data.status || 'approved'
+      };
+      product = {
+        id: data.product_id || data.prod,
+        name: data.product_name || data.prod_name
+      };
+      buyer = {
+        email: data.buyer_email || data.email,
+        name: data.buyer_name || data.name
+      };
+    }
+
+    console.log('Dados processados:', {
       transaction,
       product,
       buyer
-    } = data;
+    });
 
     if (!transaction || !product || !buyer) {
       throw new Error('Dados obrigatórios não encontrados no webhook');
     }
 
-    const transactionId = transaction.transaction;
-    const productId = product.id;
+    const transactionId = transaction.transaction || transaction.id;
+    const productId = product.id || product.product_id;
     const buyerEmail = buyer.email;
     const buyerName = buyer.name;
+
+    if (!transactionId || !productId || !buyerEmail) {
+      throw new Error(`Dados obrigatórios ausentes: transactionId=${transactionId}, productId=${productId}, buyerEmail=${buyerEmail}`);
+    }
 
     console.log('Processando compra:', {
       transactionId,
@@ -72,28 +134,53 @@ serve(async (req) => {
     // Verificar se a transação já foi processada
     const { data: existingTransaction, error: txError } = await supabase
       .from('hotmart_transactions')
-      .select('id')
+      .select('id, status')
       .eq('transaction_id', transactionId)
       .single();
 
     if (existingTransaction) {
-      console.log('Transação já processada:', transactionId);
-      return new Response(JSON.stringify({ status: 'already_processed' }), {
+      console.log('Transação já processada:', transactionId, 'Status:', existingTransaction.status);
+      return new Response(JSON.stringify({ 
+        status: 'already_processed',
+        transaction_id: transactionId,
+        existing_status: existingTransaction.status
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       });
     }
 
-    // Buscar produto Hotmart no banco
-    const { data: hotmartProduct, error: productError } = await supabase
+    // Buscar produto Hotmart no banco com busca flexível
+    let hotmartProduct;
+    const { data: productData, error: productError } = await supabase
       .from('hotmart_products')
       .select('*')
       .eq('hotmart_product_id', productId)
       .single();
 
-    if (productError || !hotmartProduct) {
-      console.error('Produto não encontrado:', productId);
-      throw new Error(`Produto Hotmart não configurado: ${productId}`);
+    if (productError || !productData) {
+      console.error('Produto não encontrado com ID exato:', productId);
+      
+      // Tentar buscar por nome do produto
+      if (product.name) {
+        const { data: productByName } = await supabase
+          .from('hotmart_products')
+          .select('*')
+          .ilike('product_name', `%${product.name}%`)
+          .single();
+        
+        if (productByName) {
+          hotmartProduct = productByName;
+          console.log('Produto encontrado por nome:', hotmartProduct);
+        }
+      }
+      
+      if (!hotmartProduct) {
+        console.error('Produto não encontrado nem por ID nem por nome');
+        throw new Error(`Produto Hotmart não configurado: ${productId}. Nome: ${product.name}`);
+      }
+    } else {
+      hotmartProduct = productData;
     }
 
     console.log('Produto encontrado:', hotmartProduct);
@@ -115,7 +202,7 @@ serve(async (req) => {
         .from('users')
         .insert({
           email: buyerEmail,
-          name: buyerName,
+          name: buyerName || 'Usuário Hotmart',
           auth_user_id: crypto.randomUUID() // Usuário criado via webhook, sem auth
         })
         .select()
@@ -130,7 +217,7 @@ serve(async (req) => {
       console.log('Novo usuário criado:', user.id);
     }
 
-    // Registrar transação Hotmart
+    // Registrar transação Hotmart ANTES de processar
     const { error: logError } = await supabase
       .from('hotmart_transactions')
       .insert({
@@ -147,32 +234,37 @@ serve(async (req) => {
       throw logError;
     }
 
+    console.log('Transação registrada com sucesso');
+
     // Processar baseado no tipo de produto
     if (hotmartProduct.type === 'credits') {
-      // Adicionar créditos
       await processCredits(supabase, user.id, hotmartProduct, transactionId);
     } else if (hotmartProduct.type === 'direct_access') {
-      // Criar assessment diretamente
       await processDirectAssessment(supabase, user.id, hotmartProduct, transactionId);
     }
 
-    console.log('Webhook processado com sucesso');
+    console.log('Webhook processado com sucesso para usuário:', user.id);
 
     return new Response(JSON.stringify({ 
       status: 'success',
       user_id: user.id,
-      product_type: hotmartProduct.type
+      user_email: user.email,
+      product_type: hotmartProduct.type,
+      credits_added: hotmartProduct.credits_amount || 0,
+      transaction_id: transactionId
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
 
   } catch (error) {
-    console.error('ERRO no webhook Hotmart:', error);
+    console.error('ERRO CRÍTICO no webhook Hotmart:', error);
+    console.error('Stack trace:', error.stack);
     
     return new Response(JSON.stringify({
       error: error.message,
-      details: error.stack
+      details: error.stack,
+      timestamp: new Date().toISOString()
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
@@ -181,90 +273,130 @@ serve(async (req) => {
 });
 
 async function processCredits(supabase: any, userId: number, product: any, transactionId: string) {
-  console.log('Processando créditos para usuário:', userId);
+  console.log('=== PROCESSANDO CRÉDITOS ===');
+  console.log('UserId:', userId, 'Créditos a adicionar:', product.credits_amount);
   
   const creditsToAdd = product.credits_amount;
   
-  // Buscar saldo atual
-  const { data: currentCredits, error: fetchError } = await supabase
-    .from('user_credits')
-    .select('balance')
-    .eq('user_id', userId)
-    .single();
-
-  let newBalance = creditsToAdd;
-  
-  if (currentCredits) {
-    // Atualizar saldo existente
-    newBalance = currentCredits.balance + creditsToAdd;
-    
-    const { error: updateError } = await supabase
-      .from('user_credits')
-      .update({ balance: newBalance })
-      .eq('user_id', userId);
-      
-    if (updateError) throw updateError;
-  } else {
-    // Criar novo registro de créditos
-    const { error: insertError } = await supabase
-      .from('user_credits')
-      .insert({
-        user_id: userId,
-        balance: newBalance
-      });
-      
-    if (insertError) throw insertError;
+  if (!creditsToAdd || creditsToAdd <= 0) {
+    throw new Error('Quantidade de créditos inválida');
   }
 
-  // Registrar transação de crédito
-  const { error: transactionError } = await supabase
-    .from('credit_transactions')
-    .insert({
-      user_id: userId,
-      type: 'purchase',
-      amount: creditsToAdd,
-      source: 'hotmart',
-      reference_id: transactionId,
-      description: `Compra Hotmart: ${product.product_name}`
-    });
+  try {
+    // Buscar saldo atual
+    const { data: currentCredits, error: fetchError } = await supabase
+      .from('user_credits')
+      .select('balance')
+      .eq('user_id', userId)
+      .single();
 
-  if (transactionError) throw transactionError;
+    let newBalance = creditsToAdd;
+    
+    if (currentCredits && !fetchError) {
+      // Atualizar saldo existente
+      newBalance = currentCredits.balance + creditsToAdd;
+      
+      const { error: updateError } = await supabase
+        .from('user_credits')
+        .update({ 
+          balance: newBalance,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId);
+        
+      if (updateError) {
+        console.error('Erro ao atualizar créditos:', updateError);
+        throw updateError;
+      }
+      
+      console.log('Créditos atualizados. Saldo anterior:', currentCredits.balance, 'Novo saldo:', newBalance);
+    } else {
+      // Criar novo registro de créditos
+      const { error: insertError } = await supabase
+        .from('user_credits')
+        .insert({
+          user_id: userId,
+          balance: newBalance
+        });
+        
+      if (insertError) {
+        console.error('Erro ao criar registro de créditos:', insertError);
+        throw insertError;
+      }
+      
+      console.log('Novo registro de créditos criado com saldo:', newBalance);
+    }
 
-  console.log(`${creditsToAdd} créditos adicionados. Novo saldo: ${newBalance}`);
+    // Registrar transação de crédito
+    const { error: transactionError } = await supabase
+      .from('credit_transactions')
+      .insert({
+        user_id: userId,
+        type: 'purchase',
+        amount: creditsToAdd,
+        source: 'hotmart',
+        reference_id: transactionId,
+        description: `Compra Hotmart: ${product.product_name} (${creditsToAdd} créditos)`
+      });
+
+    if (transactionError) {
+      console.error('Erro ao registrar transação de crédito:', transactionError);
+      throw transactionError;
+    }
+
+    console.log(`✅ SUCESSO: ${creditsToAdd} créditos adicionados. Saldo final: ${newBalance}`);
+    
+  } catch (error) {
+    console.error('Erro ao processar créditos:', error);
+    throw error;
+  }
 }
 
 async function processDirectAssessment(supabase: any, userId: number, product: any, transactionId: string) {
-  console.log('Processando acesso direto para usuário:', userId);
+  console.log('=== PROCESSANDO ACESSO DIRETO ===');
+  console.log('UserId:', userId, 'Produto:', product.product_name);
   
-  // Criar assessment pré-pago
-  const { data: assessment, error: assessmentError } = await supabase
-    .from('assessments')
-    .insert({
-      user_id: userId,
-      status: 'payment_approved',
-      front_photo: '',
-      side_photo: '',
-      back_photo: ''
-    })
-    .select()
-    .single();
+  try {
+    // Criar assessment pré-pago
+    const { data: assessment, error: assessmentError } = await supabase
+      .from('assessments')
+      .insert({
+        user_id: userId,
+        status: 'payment_approved',
+        front_photo: '',
+        side_photo: '',
+        back_photo: ''
+      })
+      .select()
+      .single();
 
-  if (assessmentError) throw assessmentError;
+    if (assessmentError) {
+      console.error('Erro ao criar assessment:', assessmentError);
+      throw assessmentError;
+    }
 
-  // Registrar transação para rastreamento
-  const { error: transactionError } = await supabase
-    .from('credit_transactions')
-    .insert({
-      user_id: userId,
-      type: 'purchase',
-      amount: 0, // Acesso direto não consome créditos
-      source: 'hotmart',
-      reference_id: transactionId,
-      description: `Acesso direto Hotmart: ${product.product_name}`,
-      assessment_id: assessment.id
-    });
+    // Registrar transação para rastreamento
+    const { error: transactionError } = await supabase
+      .from('credit_transactions')
+      .insert({
+        user_id: userId,
+        type: 'purchase',
+        amount: 0, // Acesso direto não consome créditos
+        source: 'hotmart',
+        reference_id: transactionId,
+        description: `Acesso direto Hotmart: ${product.product_name}`,
+        assessment_id: assessment.id
+      });
 
-  if (transactionError) throw transactionError;
+    if (transactionError) {
+      console.error('Erro ao registrar transação de acesso direto:', transactionError);
+      throw transactionError;
+    }
 
-  console.log('Assessment criado com acesso direto:', assessment.id);
+    console.log('✅ SUCESSO: Assessment criado com acesso direto:', assessment.id);
+    
+  } catch (error) {
+    console.error('Erro ao processar acesso direto:', error);
+    throw error;
+  }
 }
