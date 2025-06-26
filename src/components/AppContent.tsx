@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Activity } from 'lucide-react';
 import AboutSection from '@/components/AboutSection';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,6 +16,14 @@ const AppContent = () => {
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const { user, signOut } = useAuth();
   const { userProfile, loading } = useUserProfile();
+
+  // Auto-redirect to dashboard when user logs in
+  useEffect(() => {
+    if (user && currentSection === 'home') {
+      console.log('Usuario logado detectado, redirecionando para dashboard');
+      setCurrentSection('dashboard');
+    }
+  }, [user, currentSection]);
 
   const handleLogout = async () => {
     try {
