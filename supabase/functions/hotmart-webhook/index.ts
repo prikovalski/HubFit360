@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -82,7 +81,7 @@ serve(async (req) => {
     }
 
     // Extrair dados da transação com múltiplas tentativas
-    let transaction, product, buyer;
+    let transaction, product, buyer, offer;
     
     // Tentar diferentes estruturas de dados
     if (data.transaction || data.purchase) {
@@ -105,10 +104,20 @@ serve(async (req) => {
       };
     }
 
+    // Extrair dados da oferta
+    if (transaction && transaction.offer) {
+      offer = transaction.offer;
+    } else if (data.offer) {
+      offer = data.offer;
+    } else {
+      offer = null;
+    }
+
     console.log('Dados processados:', {
       transaction,
       product,
-      buyer
+      buyer,
+      offer
     });
 
     if (!transaction || !product || !buyer) {
@@ -117,16 +126,26 @@ serve(async (req) => {
 
     const transactionId = transaction.transaction || transaction.id;
     const productId = product.id || product.product_id;
+    const offerId = offer?.code || null;
     const buyerEmail = buyer.email;
     const buyerName = buyer.name;
 
-    if (!transactionId || !productId || !buyerEmail) {
-      throw new Error(`Dados obrigatórios ausentes: transactionId=${transactionId}, productId=${productId}, buyerEmail=${buyerEmail}`);
+    console.log('Identificadores extraídos:', {
+      transactionId,
+      productId,
+      offerId,
+      buyerEmail,
+      buyerName
+    });
+
+    if (!transactionId || !buyerEmail) {
+      throw new Error(`Dados obrigatórios ausentes: transactionId=${transactionId}, buyerEmail=${buyerEmail}`);
     }
 
     console.log('Processando compra:', {
       transactionId,
       productId,
+      offerId,
       buyerEmail,
       buyerName
     });
@@ -150,37 +169,62 @@ serve(async (req) => {
       });
     }
 
-    // Buscar produto Hotmart no banco com busca flexível
+    // Buscar produto Hotmart no banco - PRIORIZAR BUSCA POR OFFER_ID
     let hotmartProduct;
-    const { data: productData, error: productError } = await supabase
-      .from('hotmart_products')
-      .select('*')
-      .eq('hotmart_product_id', productId)
-      .single();
+    
+    // 1. Tentar buscar por offer_id primeiro (método principal)
+    if (offerId) {
+      console.log('Buscando produto por offer_id:', offerId);
+      const { data: productByOffer, error: offerError } = await supabase
+        .from('hotmart_products')
+        .select('*')
+        .eq('offer_id', offerId)
+        .single();
 
-    if (productError || !productData) {
-      console.error('Produto não encontrado com ID exato:', productId);
-      
-      // Tentar buscar por nome do produto
-      if (product.name) {
-        const { data: productByName } = await supabase
-          .from('hotmart_products')
-          .select('*')
-          .ilike('product_name', `%${product.name}%`)
-          .single();
-        
-        if (productByName) {
-          hotmartProduct = productByName;
-          console.log('Produto encontrado por nome:', hotmartProduct);
-        }
+      if (productByOffer && !offerError) {
+        hotmartProduct = productByOffer;
+        console.log('Produto encontrado por offer_id:', hotmartProduct);
+      } else {
+        console.log('Produto não encontrado por offer_id:', offerId, 'Erro:', offerError?.message);
       }
-      
-      if (!hotmartProduct) {
-        console.error('Produto não encontrado nem por ID nem por nome');
-        throw new Error(`Produto Hotmart não configurado: ${productId}. Nome: ${product.name}`);
+    }
+
+    // 2. Fallback: buscar por product_id se offer_id não funcionou
+    if (!hotmartProduct && productId) {
+      console.log('Tentando buscar por hotmart_product_id:', productId);
+      const { data: productById, error: productError } = await supabase
+        .from('hotmart_products')
+        .select('*')
+        .eq('hotmart_product_id', productId)
+        .single();
+
+      if (productById && !productError) {
+        hotmartProduct = productById;
+        console.log('Produto encontrado por hotmart_product_id:', hotmartProduct);
+      } else {
+        console.log('Produto não encontrado por hotmart_product_id:', productId);
       }
-    } else {
-      hotmartProduct = productData;
+    }
+
+    // 3. Fallback: buscar por nome do produto
+    if (!hotmartProduct && product.name) {
+      console.log('Tentando buscar por nome do produto:', product.name);
+      const { data: productByName, error: nameError } = await supabase
+        .from('hotmart_products')
+        .select('*')
+        .ilike('product_name', `%${product.name}%`)
+        .single();
+      
+      if (productByName && !nameError) {
+        hotmartProduct = productByName;
+        console.log('Produto encontrado por nome:', hotmartProduct);
+      }
+    }
+    
+    if (!hotmartProduct) {
+      const errorMsg = `Produto Hotmart não configurado. offer_id: ${offerId}, product_id: ${productId}, nome: ${product.name}`;
+      console.error(errorMsg);
+      throw new Error(errorMsg);
     }
 
     console.log('Produto encontrado:', hotmartProduct);
@@ -223,7 +267,7 @@ serve(async (req) => {
       .insert({
         transaction_id: transactionId,
         user_id: user.id,
-        hotmart_product_id: productId,
+        hotmart_product_id: hotmartProduct.hotmart_product_id,
         status: 'approved',
         webhook_data: body,
         processed_at: new Date().toISOString()
@@ -250,6 +294,8 @@ serve(async (req) => {
       user_id: user.id,
       user_email: user.email,
       product_type: hotmartProduct.type,
+      product_found_by: offerId ? 'offer_id' : (productId ? 'product_id' : 'name'),
+      offer_id: offerId,
       credits_added: hotmartProduct.credits_amount || 0,
       transaction_id: transactionId
     }), {

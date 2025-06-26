@@ -176,6 +176,7 @@ export type Database = {
           credits_amount: number | null
           hotmart_product_id: string
           id: string
+          offer_id: string | null
           price: number
           product_name: string
           type: string
@@ -187,6 +188,7 @@ export type Database = {
           credits_amount?: number | null
           hotmart_product_id: string
           id?: string
+          offer_id?: string | null
           price: number
           product_name: string
           type: string
@@ -198,6 +200,7 @@ export type Database = {
           credits_amount?: number | null
           hotmart_product_id?: string
           id?: string
+          offer_id?: string | null
           price?: number
           product_name?: string
           type?: string
