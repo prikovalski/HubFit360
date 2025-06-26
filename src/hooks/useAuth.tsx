@@ -148,9 +148,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('Executando signOut...');
       const { error } = await supabase.auth.signOut();
       
+      // Tratar erros específicos do Supabase
       if (error) {
-        console.error('Erro no signOut:', error);
-        throw error;
+        // Se for erro de sessão não encontrada, não é crítico - apenas log
+        if (error.message?.includes('Session not found') || 
+            error.message?.includes('session_not_found') ||
+            error.message?.includes('Auth session missing')) {
+          console.log('Sessão já havia expirado, logout bem-sucedido');
+        } else {
+          console.error('Erro no signOut:', error);
+          throw error;
+        }
       }
       
       // Limpar estado local explicitamente
@@ -160,6 +168,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log('SignOut executado com sucesso');
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
+      // Limpar estado local mesmo com erro
+      setSession(null);
+      setUser(null);
       throw error;
     }
   };

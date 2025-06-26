@@ -14,20 +14,23 @@ import LazyUserProfile from '@/components/lazy/LazyUserProfile';
 const AppContent = () => {
   const [currentSection, setCurrentSection] = useState('home');
   const [selectedReport, setSelectedReport] = useState<any>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { user, signOut } = useAuth();
   const { userProfile, loading } = useUserProfile();
 
-  // Auto-redirect to dashboard when user logs in
+  // Auto-redirect to dashboard when user logs in (but not during logout)
   useEffect(() => {
-    if (user && currentSection === 'home') {
+    if (user && currentSection === 'home' && !isLoggingOut) {
       console.log('Usuario logado detectado, redirecionando para dashboard');
       setCurrentSection('dashboard');
     }
-  }, [user, currentSection]);
+  }, [user, currentSection, isLoggingOut]);
 
   const handleLogout = async () => {
     try {
       console.log('AppContent: Iniciando logout...');
+      setIsLoggingOut(true);
+      
       await signOut();
       
       // Resetar estado da aplicação
@@ -37,6 +40,11 @@ const AppContent = () => {
       console.log('AppContent: Logout concluído, redirecionando para home');
     } catch (error) {
       console.error('AppContent: Erro no logout:', error);
+      // Mesmo com erro, resetar o estado da aplicação
+      setCurrentSection('home');
+      setSelectedReport(null);
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
