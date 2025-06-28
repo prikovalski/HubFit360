@@ -44,10 +44,10 @@ export function buildAssessmentPrompt(
 
   return `Você é um avaliador físico profissional especializado em análise de composição corporal.
 
-Analise os dados fornecidos, gere um laudo completo incluindo:
+Analise os dados e as fotos fornecidas, gere um laudo completo incluindo:
 
 1. AVALIAÇÃO CORPORAL
-- Análise da distribuição de gordura corporal
+- Com base nas fotos faça uma análise da distribuição de gordura corporal
 - Use como referência os valores já calculados: ${bodyFatPercentage.toFixed(1)}% de gordura corporal
 
 2. GASTO ENERGÉTICO
@@ -55,7 +55,7 @@ Analise os dados fornecidos, gere um laudo completo incluindo:
 - Estimativa do Gasto Energético Total (GET)
 
 3. PLANEJAMENTO NUTRICIONAL
-Forneça recomendações de calorias para:
+Considerando as doenças crônicas e as atividades fisicas informadas abaixo, forneça recomendações de calorias para:
 - Manutenção com foco em definição
 - Emagrecimento saudável (cutting)
 - Ganho de massa muscular (bulking)
@@ -92,6 +92,7 @@ AVALIAÇÃO CORPORAL
  
 GASTO ENERGÉTICO
  - Taxa Metabólica Basal (TMB): "XXXX kcal/dia",  "Descrição detalhada"
+ 
  - Gasto Energético Total (GET): "XXXX kcal/dia" - "Descrição detalhada"
  
 PLANEJAMENTO NUTRICIONAL
@@ -99,18 +100,18 @@ PLANEJAMENTO NUTRICIONAL
  - Emagrecimento saudável (cutting): "XXXX kcal/dia" - "Descrição detalhada"
  - Ganho de massa muscular (bulking): XXXX kcal/dia, "Descrição detalhada"
  
- Divisão de Macronutrientes para MANUTENÇÃO:
+ Divisão de Macronutrientes por refeição para MANUTENÇÃO:
     Proteínas: XXXg
     Carboidratos: XXXg
     Gorduras: XXXg
     
- Divisão de Macronutrientes para EMAGRECIMENTO:
+ Divisão de Macronutrientes por refeição para EMAGRECIMENTO:
     Proteínas: "XXXg"
     Carboidratos: "XXXg" 
     Gorduras: "XXXg"
 
     
- Divisão de Macronutrientes para GANHO DE MASSA MUSCULAR:
+ Divisão de Macronutrientes por refeição para GANHO DE MASSA MUSCULAR:
    Proteínas: "XXXg" 
    Carboidratos: "XXXg" 
    Gorduras: "XXXg"
