@@ -28,12 +28,14 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
     neckCircumference,
     waistCircumference,
     hipCircumference,
+    patientName,
     canSubmit,
     setHeight,
     setWeight,
     setNeckCircumference,
     setWaistCircumference,
     setHipCircumference,
+    setPatientName,
     handlePhotoUpload,
     handleSubmit
   } = useAssessmentForm(handleAssessmentSuccess);
@@ -94,11 +96,13 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
                 neckCircumference={neckCircumference}
                 waistCircumference={waistCircumference}
                 hipCircumference={hipCircumference}
+                patientName={patientName}
                 onHeightChange={setHeight}
                 onWeightChange={setWeight}
                 onNeckCircumferenceChange={setNeckCircumference}
                 onWaistCircumferenceChange={setWaistCircumference}
                 onHipCircumferenceChange={setHipCircumference}
+                onPatientNameChange={setPatientName}
               />
 
               <InstructionsCard />

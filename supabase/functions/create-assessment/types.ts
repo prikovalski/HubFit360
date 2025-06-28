@@ -7,30 +7,17 @@ export interface AssessmentRequest {
   sex: string;
   height: number;
   weight: number;
-}
-
-export interface UserData {
-  birth_date?: string;
-  gender?: string;
-  patient_profiles?: PatientProfile[];
-}
-
-export interface PatientProfile {
-  neck_circumference?: number;
-  waist_circumference?: number;
-  hip_circumference?: number;
-  physical_activity?: string;
-  chronic_disease?: string;
-  goal?: string;
+  patientName?: string | null;
 }
 
 export interface AssessmentResult {
   success: boolean;
   assessment?: any;
-  bodyFat?: number | null;
-  leanMass?: number | null;
-  fatMass?: number | null;
+  bodyFat?: number;
+  leanMass?: number;
+  fatMass?: number;
   bmi?: number;
   age?: number;
+  tier?: string;
   error?: string;
 }

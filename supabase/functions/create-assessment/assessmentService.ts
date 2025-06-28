@@ -12,7 +12,8 @@ export async function saveAssessment(
   fatMass: number | null,
   bmi: number,
   assessment: string | null,
-  tier: string = 'basic'
+  tier: string = 'basic',
+  patientName: string | null = null
 ) {
   const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
@@ -32,7 +33,8 @@ export async function saveAssessment(
       bmi: parseFloat(bmi.toFixed(2)),
       assessment_text: assessment,
       status: 'completed',
-      tier: tier
+      tier: tier,
+      patient_name: patientName
     }])
     .select()
     .single();

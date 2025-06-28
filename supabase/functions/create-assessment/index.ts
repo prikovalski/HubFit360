@@ -92,10 +92,11 @@ serve(async (req) => {
       backPhoto, 
       sex, 
       height, 
-      weight 
+      weight,
+      patientName
     }: AssessmentRequest = await req.json();
 
-    console.log('Recebendo dados para avaliação:', { userId, sex, height, weight });
+    console.log('Recebendo dados para avaliação:', { userId, sex, height, weight, patientName });
 
     // Buscar dados do usuário
     const userData = await fetchUserData(userId);
@@ -154,7 +155,8 @@ serve(async (req) => {
       fatMass,
       bmi,
       assessment,
-      tier
+      tier,
+      patientName
     );
 
     // Se foi uma análise premium, consumir o crédito

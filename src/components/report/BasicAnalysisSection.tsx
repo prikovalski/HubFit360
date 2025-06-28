@@ -9,7 +9,7 @@ import StructuredReportSection from "./sections/StructuredReportSection";
 import AnalysisIncludedSection from "./sections/AnalysisIncludedSection";
 
 interface BasicAnalysisSectionProps {
-  report: Report;
+  report: Report & { patient_name?: string | null };
   userProfile: UserProfile | null;
   patientProfile: PatientProfile | null;
 }
@@ -46,6 +46,7 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
           userProfile={userProfile}
           patientProfile={patientProfile}
           displayAge={displayAge}
+          patientName={report.patient_name}
         />
 
         <EstimatesSection preview={report.preview} />

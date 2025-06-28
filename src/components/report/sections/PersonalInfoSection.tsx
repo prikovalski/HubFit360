@@ -1,75 +1,58 @@
 
-import { useState, useEffect } from 'react';
 import { UserProfile, PatientProfile } from "@/types/report";
-import { supabase } from '@/integrations/supabase/client';
 
 interface PersonalInfoSectionProps {
   userProfile: UserProfile | null;
   patientProfile: PatientProfile | null;
   displayAge: number | string;
+  patientName?: string | null;
 }
 
-const PersonalInfoSection = ({ userProfile, patientProfile, displayAge }: PersonalInfoSectionProps) => {
-  const [cityName, setCityName] = useState<string>('N/A');
-
-  useEffect(() => {
-    const fetchCityName = async () => {
-      if (patientProfile?.city_id) {
-        try {
-          const { data, error } = await supabase
-            .from('cidades')
-            .select('nome')
-            .eq('id', patientProfile.city_id)
-            .maybeSingle();
-
-          if (!error && data) {
-            setCityName(data.nome);
-          }
-        } catch (error) {
-          console.error('Erro ao buscar nome da cidade:', error);
-        }
-      }
-    };
-
-    fetchCityName();
-  }, [patientProfile?.city_id]);
-
-  const formatGender = (gender: string | null | undefined) => {
-    if (!gender) return 'N/A';
-    return gender === 'Masculino' ? 'Masculino' : 'Feminino';
-  };
+const PersonalInfoSection = ({ 
+  userProfile, 
+  patientProfile, 
+  displayAge, 
+  patientName 
+}: PersonalInfoSectionProps) => {
+  // Determinar qual nome usar (priorizar patientName se existir)
+  const displayName = patientName || userProfile?.name || 'Não informado';
 
   return (
     <div className="mb-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mb-6">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">
+        Dados Pessoais
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
         <div>
-          <span className="text-gray-600 font-medium">Nome:</span>
-          <div className="text-gray-800 font-semibold text-lg">{userProfile?.name || 'N/A'}</div>
+          <span className="font-medium text-gray-600">Nome:</span>
+          <span className="ml-2 text-gray-800">{displayName}</span>
         </div>
         <div>
-          <span className="text-gray-600 font-medium">Cidade:</span>
-          <div className="text-gray-800 font-semibold text-lg">{cityName}</div>
+          <span className="font-medium text-gray-600">Idade:</span>
+          <span className="ml-2 text-gray-800">{displayAge} anos</span>
         </div>
         <div>
-          <span className="text-gray-600 font-medium">Idade:</span>
-          <div className="text-gray-800 font-semibold text-lg">{displayAge} anos</div>
+          <span className="font-medium text-gray-600">Gênero:</span>
+          <span className="ml-2 text-gray-800">{userProfile?.gender || 'Não informado'}</span>
         </div>
         <div>
-          <span className="text-gray-600 font-medium">Gênero:</span>
-          <div className="text-gray-800 font-semibold text-lg">{formatGender(userProfile?.gender)}</div>
+          <span className="font-medium text-gray-600">Altura:</span>
+          <span className="ml-2 text-gray-800">
+            {patientProfile?.height ? `${(patientProfile.height / 100).toFixed(2)}m` : 'Não informado'}
+          </span>
         </div>
         <div>
-          <span className="text-gray-600 font-medium">Altura:</span>
-          <div className="text-gray-800 font-semibold text-lg">
-            {patientProfile?.height ? `${(patientProfile.height / 100).toFixed(2)}m` : 'N/A'}
+          <span className="font-medium text-gray-600">Peso:</span>
+          <span className="ml-2 text-gray-800">
+            {patientProfile?.weight ? `${patientProfile.weight}kg` : 'Não informado'}
+          </span>
+        </div>
+        {patientProfile?.goal && (
+          <div>
+            <span className="font-medium text-gray-600">Objetivo:</span>
+            <span className="ml-2 text-gray-800">{patientProfile.goal}</span>
           </div>
-        </div>
-        <div>
-          <span className="text-gray-600 font-medium">Peso:</span>
-          <div className="text-gray-800 font-semibold text-lg">
-            {patientProfile?.weight ? `${patientProfile.weight}kg` : 'N/A'}
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

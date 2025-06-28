@@ -1,125 +1,94 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useUserProfile } from '@/hooks/useUserProfile';
-
-interface AssessmentFormData {
-  frontPhoto: string;
-  sidePhoto: string;
-  backPhoto: string;
-  sex: string;
-  height: number;
-  weight: number;
-  neckCircumference: number;
-  waistCircumference: number;
-  hipCircumference: number;
-}
 
 export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
   const [loading, setLoading] = useState(false);
-  const [photos, setPhotos] = useState<{ front?: string; side?: string; back?: string }>({});
+  const [photos, setPhotos] = useState({
+    front: null as string | null,
+    side: null as string | null,
+    back: null as string | null,
+  });
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [neckCircumference, setNeckCircumference] = useState('');
   const [waistCircumference, setWaistCircumference] = useState('');
   const [hipCircumference, setHipCircumference] = useState('');
-  
+  const [patientName, setPatientName] = useState('');
   const { toast } = useToast();
-  const { userProfile, patientProfile } = useUserProfile();
-
-  // Carregar dados do perfil automaticamente quando disponíveis
-  useEffect(() => {
-    if (patientProfile) {
-      console.log('Carregando dados do perfil do paciente:', patientProfile);
-      
-      if (patientProfile.height) {
-        setHeight(patientProfile.height.toString());
-      }
-      if (patientProfile.weight) {
-        setWeight(patientProfile.weight.toString());
-      }
-      if (patientProfile.neck_circumference) {
-        setNeckCircumference(patientProfile.neck_circumference.toString());
-      }
-      if (patientProfile.waist_circumference) {
-        setWaistCircumference(patientProfile.waist_circumference.toString());
-      }
-      if (patientProfile.hip_circumference) {
-        setHipCircumference(patientProfile.hip_circumference.toString());
-      }
-    }
-  }, [patientProfile]);
 
   const canSubmit = photos.front && photos.side && photos.back && height && weight;
 
-  const handlePhotoUpload = (photoType: string, photoData: string) => {
-    console.log('Upload de foto:', photoType);
+  const handlePhotoUpload = (position: 'front' | 'side' | 'back', photo: string) => {
     setPhotos(prev => ({
       ...prev,
-      [photoType]: photoData
+      [position]: photo
     }));
   };
 
   const handleSubmit = async () => {
-    if (!canSubmit || !userProfile) {
+    if (!canSubmit) {
       toast({
         title: "Erro",
-        description: "Por favor, preencha todos os campos obrigatórios.",
+        description: "Por favor, preencha todos os campos obrigatórios e faça upload das 3 fotos.",
         variant: "destructive"
       });
       return;
     }
 
-    setLoading(true);
-
     try {
-      const assessmentData: AssessmentFormData = {
-        frontPhoto: photos.front!,
-        sidePhoto: photos.side!,
-        backPhoto: photos.back!,
-        sex: userProfile.gender || 'masculino',
-        height: parseInt(height),
-        weight: parseFloat(weight),
-        neckCircumference: parseFloat(neckCircumference) || 0,
-        waistCircumference: parseFloat(waistCircumference) || 0,
-        hipCircumference: parseFloat(hipCircumference) || 0
-      };
+      setLoading(true);
 
-      console.log('Enviando dados para avaliação:', assessmentData);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('Usuário não autenticado');
+      }
+
+      const { data: userData } = await supabase
+        .from('users')
+        .select('id, gender')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (!userData) {
+        throw new Error('Dados do usuário não encontrados');
+      }
 
       const { data, error } = await supabase.functions.invoke('create-assessment', {
         body: {
-          userId: userProfile.id,
-          ...assessmentData
+          userId: userData.id,
+          frontPhoto: photos.front,
+          sidePhoto: photos.side,
+          backPhoto: photos.back,
+          sex: userData.gender || 'Não informado',
+          height: parseFloat(height),
+          weight: parseFloat(weight),
+          patientName: patientName.trim() || null
         }
       });
 
       if (error) {
-        console.error('Erro na função create-assessment:', error);
-        throw error;
+        console.error('Erro na função:', error);
+        throw new Error(error.message || 'Erro ao processar avaliação');
       }
 
       if (!data.success) {
-        throw new Error(data.error || 'Erro ao criar avaliação');
+        throw new Error(data.error || 'Erro desconhecido');
       }
-
-      console.log('Avaliação criada com sucesso:', data);
 
       toast({
         title: "Sucesso!",
-        description: data.tier === 'premium' 
-          ? "Sua avaliação premium foi processada com sucesso!" 
-          : "Sua avaliação básica foi processada! Você pode fazer upgrade para a versão premium.",
+        description: "Avaliação processada com sucesso.",
       });
 
       onSuccess(data.assessment);
 
-    } catch (error: any) {
-      console.error('Erro ao criar avaliação:', error);
+    } catch (error) {
+      console.error('Erro ao processar avaliação:', error);
       toast({
         title: "Erro",
-        description: error.message || "Erro ao processar avaliação. Tente novamente.",
+        description: error instanceof Error ? error.message : "Erro ao processar avaliação",
         variant: "destructive"
       });
     } finally {
@@ -135,12 +104,14 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
     neckCircumference,
     waistCircumference,
     hipCircumference,
+    patientName,
     canSubmit,
     setHeight,
     setWeight,
     setNeckCircumference,
     setWaistCircumference,
     setHipCircumference,
+    setPatientName,
     handlePhotoUpload,
     handleSubmit
   };

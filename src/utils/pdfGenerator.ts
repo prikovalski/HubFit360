@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 import { UserProfile, PatientProfile } from '@/types/report';
 
@@ -51,15 +52,18 @@ export const generateAssessmentPDF = ({ report, userProfile, patientProfile }: G
     return age;
   };
 
+  // Determinar qual nome usar (priorizar patient_name se existir)
+  const displayName = report.patient_name || userProfile?.name || 'Não informado';
+
   // Cabeçalho
   addText('HUBFIT360', 20, true);
   addText('Laudo de Avaliação Física', 16, true);
   addText(`Data: ${new Date(report.date).toLocaleDateString('pt-BR')}`, 12);
   currentY += 10;
 
-  // Dados Pessoais (dados reais do banco)
+  // Dados Pessoais (usar nome determinado acima)
   addText('DADOS PESSOAIS', 14, true);
-  addText(`Nome: ${userProfile?.name || 'Não informado'}`);
+  addText(`Nome: ${displayName}`);
   
   const displayAge = report.age || calculateAge(userProfile?.birth_date || null);
   addText(`Idade: ${displayAge} anos`);
@@ -67,9 +71,6 @@ export const generateAssessmentPDF = ({ report, userProfile, patientProfile }: G
   addText(`Gênero: ${userProfile?.gender || 'Não informado'}`);
   addText(`Altura: ${patientProfile?.height ? `${(patientProfile.height / 100).toFixed(2)}m` : 'Não informado'}`);
   addText(`Peso: ${patientProfile?.weight ? `${patientProfile.weight}kg` : 'Não informado'}`);
-  
-  // Nota: A cidade agora deve ser buscada separadamente usando city_id
-  // Por ora, removemos essa informação do PDF até implementarmos a busca
   
   if (patientProfile?.goal) {
     addText(`Objetivo: ${patientProfile.goal}`);

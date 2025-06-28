@@ -1,8 +1,8 @@
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Camera } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import { User } from "lucide-react";
 
 interface PersonalDataSectionProps {
   height: string;
@@ -10,104 +10,135 @@ interface PersonalDataSectionProps {
   neckCircumference: string;
   waistCircumference: string;
   hipCircumference: string;
+  patientName: string;
   onHeightChange: (value: string) => void;
   onWeightChange: (value: string) => void;
   onNeckCircumferenceChange: (value: string) => void;
   onWaistCircumferenceChange: (value: string) => void;
   onHipCircumferenceChange: (value: string) => void;
+  onPatientNameChange: (value: string) => void;
 }
 
-const PersonalDataSection = ({ 
-  height, 
-  weight, 
+const PersonalDataSection = ({
+  height,
+  weight,
   neckCircumference,
   waistCircumference,
   hipCircumference,
-  onHeightChange, 
+  patientName,
+  onHeightChange,
   onWeightChange,
   onNeckCircumferenceChange,
   onWaistCircumferenceChange,
-  onHipCircumferenceChange
-}: PersonalDataSectionProps) => (
-  <Card className="mb-8 bg-white border-green-200">
-    <CardHeader>
-      <CardTitle className="flex items-center text-green-800">
-        <Camera className="w-5 h-5 mr-2" />
-        Dados para Avaliação
-      </CardTitle>
-      <CardDescription>
-        Confirme ou atualize suas medidas para uma análise mais precisa
-      </CardDescription>
-    </CardHeader>
-    <CardContent>
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <Label htmlFor="height">Altura (cm)</Label>
-          <Input
-            id="height"
-            type="number"
-            placeholder="Ex: 175"
-            value={height}
-            onChange={(e) => onHeightChange(e.target.value)}
-            className="border-green-200 focus:border-green-400"
-          />
-          <p className="text-xs text-gray-500">Insira sua altura em centímetros</p>
+  onHipCircumferenceChange,
+  onPatientNameChange,
+}: PersonalDataSectionProps) => {
+  return (
+    <Card className="mb-8">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <User className="w-5 h-5" />
+          Dados Pessoais
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2">
+            <Label htmlFor="patientName" className="text-sm font-medium">
+              Avaliação de: <span className="text-gray-500 text-xs">(opcional)</span>
+            </Label>
+            <Input
+              id="patientName"
+              type="text"
+              placeholder="Nome do paciente/aluno (deixe em branco para usar seu próprio nome)"
+              value={patientName}
+              onChange={(e) => onPatientNameChange(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="height" className="text-sm font-medium">
+              Altura (cm) <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="height"
+              type="number"
+              placeholder="Ex: 175"
+              value={height}
+              onChange={(e) => onHeightChange(e.target.value)}
+              required
+              className="mt-1"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="weight" className="text-sm font-medium">
+              Peso (kg) <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="weight"
+              type="number"
+              placeholder="Ex: 70"
+              value={weight}
+              onChange={(e) => onWeightChange(e.target.value)}
+              required
+              className="mt-1"
+            />
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="weight">Peso (kg)</Label>
-          <Input
-            id="weight"
-            type="number"
-            step="0.1"
-            placeholder="Ex: 70.5"
-            value={weight}
-            onChange={(e) => onWeightChange(e.target.value)}
-            className="border-green-200 focus:border-green-400"
-          />
-          <p className="text-xs text-gray-500">Insira seu peso em quilogramas</p>
+
+        <div className="border-t pt-6">
+          <h3 className="text-lg font-semibold mb-4 text-gray-700">
+            Circunferências <span className="text-sm font-normal text-gray-500">(opcional)</span>
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="neck" className="text-sm font-medium">
+                Pescoço (cm)
+              </Label>
+              <Input
+                id="neck"
+                type="number"
+                placeholder="Ex: 38"
+                value={neckCircumference}
+                onChange={(e) => onNeckCircumferenceChange(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="waist" className="text-sm font-medium">
+                Cintura (cm)
+              </Label>
+              <Input
+                id="waist"
+                type="number"
+                placeholder="Ex: 85"
+                value={waistCircumference}
+                onChange={(e) => onWaistCircumferenceChange(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="hip" className="text-sm font-medium">
+                Quadril (cm)
+              </Label>
+              <Input
+                id="hip"
+                type="number"
+                placeholder="Ex: 95"
+                value={hipCircumference}
+                onChange={(e) => onHipCircumferenceChange(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="neckCircumference">Circunferência do Pescoço (cm)</Label>
-          <Input
-            id="neckCircumference"
-            type="number"
-            step="0.1"
-            placeholder="Ex: 38.5"
-            value={neckCircumference}
-            onChange={(e) => onNeckCircumferenceChange(e.target.value)}
-            className="border-green-200 focus:border-green-400"
-          />
-          <p className="text-xs text-gray-500">Medida opcional para maior precisão</p>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="waistCircumference">Circunferência da Cintura (cm)</Label>
-          <Input
-            id="waistCircumference"
-            type="number"
-            step="0.1"
-            placeholder="Ex: 85.0"
-            value={waistCircumference}
-            onChange={(e) => onWaistCircumferenceChange(e.target.value)}
-            className="border-green-200 focus:border-green-400"
-          />
-          <p className="text-xs text-gray-500">Medida opcional para maior precisão</p>
-        </div>
-        <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="hipCircumference">Circunferência do Quadril (cm)</Label>
-          <Input
-            id="hipCircumference"
-            type="number"
-            step="0.1"
-            placeholder="Ex: 95.0"
-            value={hipCircumference}
-            onChange={(e) => onHipCircumferenceChange(e.target.value)}
-            className="border-green-200 focus:border-green-400"
-          />
-          <p className="text-xs text-gray-500">Medida opcional para maior precisão</p>
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-);
+      </CardContent>
+    </Card>
+  );
+};
 
 export default PersonalDataSection;

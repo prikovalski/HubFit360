@@ -21,6 +21,7 @@ export type Database = {
           front_photo: string
           id: string
           lean_mass: number | null
+          patient_name: string | null
           side_photo: string
           status: string | null
           tier: string
@@ -38,6 +39,7 @@ export type Database = {
           front_photo: string
           id?: string
           lean_mass?: number | null
+          patient_name?: string | null
           side_photo: string
           status?: string | null
           tier?: string
@@ -55,6 +57,7 @@ export type Database = {
           front_photo?: string
           id?: string
           lean_mass?: number | null
+          patient_name?: string | null
           side_photo?: string
           status?: string | null
           tier?: string
