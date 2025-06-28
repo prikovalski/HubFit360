@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import type { AssessmentRequest, AssessmentResult } from './types.ts';
 import { fetchUserData, calculateAge } from './userDataService.ts';
@@ -154,7 +155,7 @@ serve(async (req) => {
     console.log('Massa magra calculada:', leanMass.toFixed(2) + 'kg');
     console.log('Massa gorda calculada:', fatMass.toFixed(2) + 'kg');
     
-    // Check if user has credits for premium analysis
+    // VALIDAR CRÉDITOS ANTES DE CHAMAR O GPT-4
     const { hasCredits } = await checkUserCredits(parseInt(userId));
     console.log('Usuário tem créditos:', hasCredits);
 
@@ -163,6 +164,8 @@ serve(async (req) => {
 
     if (hasCredits) {
       try {
+        console.log('Usuário tem créditos, gerando análise premium...');
+        
         // Build prompt and call OpenAI for premium analysis - now passing assessmentType
         const prompt = buildAssessmentPrompt(
           userData, 
@@ -177,6 +180,8 @@ serve(async (req) => {
           patientData
         );
         console.log('Prompt enviado para GPT-4:', prompt.substring(0, 500) + '...');
+        
+        // CHAMAR OPENAI APENAS APÓS CONFIRMAR QUE TEM CRÉDITOS
         assessment = await callOpenAI(prompt);
         tier = 'premium';
         console.log('Análise premium gerada com sucesso');
@@ -207,7 +212,7 @@ serve(async (req) => {
       patientData
     );
 
-    // If it was a premium analysis, consume the credit
+    // CONSUMIR CRÉDITO APENAS APÓS SUCESSO DA ANÁLISE PREMIUM
     if (tier === 'premium' && hasCredits) {
       try {
         await consumeCredit(parseInt(userId), assessmentData.id);
