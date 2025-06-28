@@ -93,35 +93,73 @@ serve(async (req) => {
       sex, 
       height, 
       weight,
-      patientName
+      patientName,
+      assessmentType = 'self',
+      patientData
     }: AssessmentRequest = await req.json();
 
-    console.log('Recebendo dados para avaliação:', { userId, sex, height, weight, patientName });
+    console.log('Recebendo dados para avaliação:', { 
+      userId, 
+      sex, 
+      height, 
+      weight, 
+      patientName, 
+      assessmentType,
+      hasPatientData: !!patientData 
+    });
 
-    // Buscar dados do usuário
-    const userData = await fetchUserData(userId);
+    let userData;
+    let calculatedAge;
 
-    // Calcular a idade
-    const calculatedAge = calculateAge(userData?.birth_date);
+    if (assessmentType === 'patient' && patientData) {
+      // For patient assessments, use patient data directly
+      const birth = new Date(patientData.birthDate);
+      const today = new Date();
+      calculatedAge = today.getFullYear() - birth.getFullYear();
+      const monthDiff = today.getMonth() - birth.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        calculatedAge--;
+      }
+      
+      // Create a mock userData structure for patient
+      userData = {
+        id: userId,
+        gender: patientData.gender,
+        birth_date: patientData.birthDate,
+        patient_profiles: [{
+          neck_circumference: patientData.neckCircumference,
+          waist_circumference: patientData.waistCircumference,
+          hip_circumference: patientData.hipCircumference,
+          physical_activity: patientData.physicalActivity,
+          chronic_disease: patientData.chronicDisease,
+          goal: patientData.goal
+        }]
+      };
+    } else {
+      // For self assessments, fetch user data as before
+      userData = await fetchUserData(userId);
+      calculatedAge = calculateAge(userData?.birth_date);
+    }
+
     console.log('Idade calculada:', calculatedAge);
 
-    // Calcular IMC
+    // Calculate BMI
     const heightM = height / 100;
     const bmi = weight / (heightM * heightM);
     
-    // Calcular percentual de gordura corporal usando a fórmula de Deurenberg
+    // Calculate body fat percentage using Deurenberg formula
     const bodyFatPercentage = calculateBodyFatPercentage(weight, height, calculatedAge, sex);
     console.log('Percentual de gordura calculado (Deurenberg):', bodyFatPercentage.toFixed(2) + '%');
     
-    // Calcular massa magra e massa gorda
+    // Calculate lean mass and fat mass
     const leanMass = calculateLeanMass(weight, bodyFatPercentage);
     const fatMass = calculateFatMass(weight, bodyFatPercentage);
     
     console.log('Massa magra calculada:', leanMass.toFixed(2) + 'kg');
     console.log('Massa gorda calculada:', fatMass.toFixed(2) + 'kg');
     
-    // Verificar se o usuário tem créditos para análise premium
-    const { hasCredits } = await checkUserCredits(userData.id);
+    // Check if user has credits for premium analysis
+    const { hasCredits } = await checkUserCredits(parseInt(userId));
     console.log('Usuário tem créditos:', hasCredits);
 
     let assessment = null;
@@ -129,21 +167,21 @@ serve(async (req) => {
 
     if (hasCredits) {
       try {
-        // Construir o prompt e chamar OpenAI para análise premium
+        // Build prompt and call OpenAI for premium analysis
         const prompt = buildAssessmentPrompt(userData, calculatedAge, height, weight, sex, bodyFatPercentage, leanMass, fatMass);
         assessment = await callOpenAI(prompt);
         tier = 'premium';
         console.log('Análise premium gerada com sucesso');
       } catch (error) {
         console.error('Erro ao gerar análise premium:', error);
-        // Se falhar, continua com versão básica
+        // If it fails, continue with basic version
         tier = 'basic';
       }
     } else {
       console.log('Usuário sem créditos, gerando avaliação básica');
     }
 
-    // Salvar avaliação no banco
+    // Save assessment in database
     const assessmentData = await saveAssessment(
       userId,
       frontPhoto,
@@ -156,17 +194,19 @@ serve(async (req) => {
       bmi,
       assessment,
       tier,
-      patientName
+      patientName,
+      assessmentType,
+      patientData
     );
 
-    // Se foi uma análise premium, consumir o crédito
+    // If it was a premium analysis, consume the credit
     if (tier === 'premium' && hasCredits) {
       try {
-        await consumeCredit(userData.id, assessmentData.id);
+        await consumeCredit(parseInt(userId), assessmentData.id);
         console.log('Crédito consumido com sucesso');
       } catch (error) {
         console.error('Erro ao consumir crédito:', error);
-        // Mesmo se falhar ao consumir o crédito, retorna a avaliação
+        // Even if credit consumption fails, return the assessment
       }
     }
 

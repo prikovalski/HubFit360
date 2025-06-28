@@ -1,4 +1,22 @@
 
+export interface PatientData {
+  gender: string;
+  birthDate: string;
+  height: number;
+  weight: number;
+  neckCircumference?: number | null;
+  waistCircumference?: number | null;
+  hipCircumference?: number | null;
+  goal?: string | null;
+  chronicDisease?: string | null;
+  medicalRestriction?: string | null;
+  foodAllergy?: string | null;
+  avoidFood?: string | null;
+  fixedMealTimes?: string | null;
+  mustHaveFood?: string | null;
+  physicalActivity?: string | null;
+}
+
 export interface AssessmentRequest {
   userId: string;
   frontPhoto: string;
@@ -8,6 +26,8 @@ export interface AssessmentRequest {
   height: number;
   weight: number;
   patientName?: string | null;
+  assessmentType?: 'self' | 'patient';
+  patientData?: PatientData;
 }
 
 export interface AssessmentResult {

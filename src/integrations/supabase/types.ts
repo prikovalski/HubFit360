@@ -13,6 +13,7 @@ export type Database = {
         Row: {
           age: number | null
           assessment_text: string | null
+          assessment_type: string | null
           back_photo: string
           bmi: number | null
           body_fat_percentage: number | null
@@ -21,7 +22,25 @@ export type Database = {
           front_photo: string
           id: string
           lean_mass: number | null
+          patient_avoid_food: string | null
+          patient_birth_date: string | null
+          patient_chronic_disease: string | null
+          patient_city_id: string | null
+          patient_estado_id: string | null
+          patient_fixed_meal_times: string | null
+          patient_food_allergy: string | null
+          patient_gender: string | null
+          patient_goal: string | null
+          patient_height: number | null
+          patient_hip_circumference: number | null
+          patient_medical_restriction: string | null
+          patient_must_have_food: string | null
           patient_name: string | null
+          patient_neck_circumference: number | null
+          patient_physical_activities: Json | null
+          patient_physical_activity: string | null
+          patient_waist_circumference: number | null
+          patient_weight: number | null
           side_photo: string
           status: string | null
           tier: string
@@ -31,6 +50,7 @@ export type Database = {
         Insert: {
           age?: number | null
           assessment_text?: string | null
+          assessment_type?: string | null
           back_photo: string
           bmi?: number | null
           body_fat_percentage?: number | null
@@ -39,7 +59,25 @@ export type Database = {
           front_photo: string
           id?: string
           lean_mass?: number | null
+          patient_avoid_food?: string | null
+          patient_birth_date?: string | null
+          patient_chronic_disease?: string | null
+          patient_city_id?: string | null
+          patient_estado_id?: string | null
+          patient_fixed_meal_times?: string | null
+          patient_food_allergy?: string | null
+          patient_gender?: string | null
+          patient_goal?: string | null
+          patient_height?: number | null
+          patient_hip_circumference?: number | null
+          patient_medical_restriction?: string | null
+          patient_must_have_food?: string | null
           patient_name?: string | null
+          patient_neck_circumference?: number | null
+          patient_physical_activities?: Json | null
+          patient_physical_activity?: string | null
+          patient_waist_circumference?: number | null
+          patient_weight?: number | null
           side_photo: string
           status?: string | null
           tier?: string
@@ -49,6 +87,7 @@ export type Database = {
         Update: {
           age?: number | null
           assessment_text?: string | null
+          assessment_type?: string | null
           back_photo?: string
           bmi?: number | null
           body_fat_percentage?: number | null
@@ -57,7 +96,25 @@ export type Database = {
           front_photo?: string
           id?: string
           lean_mass?: number | null
+          patient_avoid_food?: string | null
+          patient_birth_date?: string | null
+          patient_chronic_disease?: string | null
+          patient_city_id?: string | null
+          patient_estado_id?: string | null
+          patient_fixed_meal_times?: string | null
+          patient_food_allergy?: string | null
+          patient_gender?: string | null
+          patient_goal?: string | null
+          patient_height?: number | null
+          patient_hip_circumference?: number | null
+          patient_medical_restriction?: string | null
+          patient_must_have_food?: string | null
           patient_name?: string | null
+          patient_neck_circumference?: number | null
+          patient_physical_activities?: Json | null
+          patient_physical_activity?: string | null
+          patient_waist_circumference?: number | null
+          patient_weight?: number | null
           side_photo?: string
           status?: string | null
           tier?: string

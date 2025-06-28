@@ -1,6 +1,8 @@
 
 import AssessmentHeader from './assessment/AssessmentHeader';
 import PersonalDataSection from './assessment/PersonalDataSection';
+import AssessmentTypeSelector from './assessment/AssessmentTypeSelector';
+import PatientProfileSection from './assessment/PatientProfileSection';
 import InstructionsCard from './assessment/InstructionsCard';
 import PhotoUploadSection from './assessment/PhotoUploadSection';
 import SubmitSection from './assessment/SubmitSection';
@@ -22,6 +24,7 @@ interface AssessmentFormProps {
 const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogout }: AssessmentFormProps) => {
   const {
     loading,
+    assessmentType,
     photos,
     height,
     weight,
@@ -29,7 +32,9 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
     waistCircumference,
     hipCircumference,
     patientName,
+    patientData,
     canSubmit,
+    setAssessmentType,
     setHeight,
     setWeight,
     setNeckCircumference,
@@ -37,6 +42,7 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
     setHipCircumference,
     setPatientName,
     handlePhotoUpload,
+    handlePatientDataChange,
     handleSubmit
   } = useAssessmentForm(handleAssessmentSuccess);
 
@@ -90,20 +96,32 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
             <>
               <AssessmentHeader onBack={onBack} />
 
-              <PersonalDataSection
-                height={height}
-                weight={weight}
-                neckCircumference={neckCircumference}
-                waistCircumference={waistCircumference}
-                hipCircumference={hipCircumference}
-                patientName={patientName}
-                onHeightChange={setHeight}
-                onWeightChange={setWeight}
-                onNeckCircumferenceChange={setNeckCircumference}
-                onWaistCircumferenceChange={setWaistCircumference}
-                onHipCircumferenceChange={setHipCircumference}
-                onPatientNameChange={setPatientName}
+              <AssessmentTypeSelector 
+                assessmentType={assessmentType} 
+                onTypeChange={setAssessmentType} 
               />
+
+              {assessmentType === 'self' ? (
+                <PersonalDataSection
+                  height={height}
+                  weight={weight}
+                  neckCircumference={neckCircumference}
+                  waistCircumference={waistCircumference}
+                  hipCircumference={hipCircumference}
+                  patientName={patientName}
+                  onHeightChange={setHeight}
+                  onWeightChange={setWeight}
+                  onNeckCircumferenceChange={setNeckCircumference}
+                  onWaistCircumferenceChange={setWaistCircumference}
+                  onHipCircumferenceChange={setHipCircumference}
+                  onPatientNameChange={setPatientName}
+                />
+              ) : (
+                <PatientProfileSection
+                  patientData={patientData}
+                  onPatientDataChange={handlePatientDataChange}
+                />
+              )}
 
               <InstructionsCard />
 
