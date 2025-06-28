@@ -1,5 +1,5 @@
 
-import type { UserData, PatientProfile } from './types.ts';
+import type { UserData, PatientProfile, PatientData } from './types.ts';
 
 export function buildAssessmentPrompt(
   userData: UserData,
@@ -9,26 +9,36 @@ export function buildAssessmentPrompt(
   sex: string,
   bodyFatPercentage: number,
   leanMass: number,
-  fatMass: number
+  fatMass: number,
+  patientData?: PatientData
 ): string {
   const heightM = height / 100;
   const bmi = weight / (heightM * heightM);
   const genderForPrompt = sex === 'male' ? 'Masculino' : 'Feminino';
-  const patientProfile = userData.patient_profiles?.[0] || {};
+  
+  // Use patient data if available, otherwise use user profile data
+  const profileData = patientData || userData.patient_profiles?.[0] || {};
 
-  console.log('Dados do perfil do paciente para o prompt:', JSON.stringify(patientProfile, null, 2));
+  console.log('Dados do perfil para o prompt:', JSON.stringify(profileData, null, 2));
 
   // Função para formatar circunferências com valores seguros
-  const formatCircumference = (value: number | null | undefined): string => {
-    if (value === null || value === undefined) {
+  const formatCircumference = (value: number | string | null | undefined): string => {
+    if (value === null || value === undefined || value === '') {
       return 'N/A';
     }
     return `${value}`;
   };
 
-  const neckCirc = formatCircumference(patientProfile.neck_circumference);
-  const waistCirc = formatCircumference(patientProfile.waist_circumference);
-  const hipCirc = formatCircumference(patientProfile.hip_circumference);
+  // Get circumferences from the appropriate source
+  const neckCirc = formatCircumference(
+    patientData?.neckCircumference || profileData.neck_circumference
+  );
+  const waistCirc = formatCircumference(
+    patientData?.waistCircumference || profileData.waist_circumference
+  );
+  const hipCirc = formatCircumference(
+    patientData?.hipCircumference || profileData.hip_circumference
+  );
 
   // Formatar atividades físicas
   const formatPhysicalActivities = (activities: any): string => {
@@ -56,7 +66,15 @@ export function buildAssessmentPrompt(
     return JSON.stringify(activities);
   };
 
-  const physicalActivities = formatPhysicalActivities(patientProfile.physical_activities);
+  // Get physical activities from the appropriate source
+  const physicalActivities = formatPhysicalActivities(
+    patientData?.physicalActivities || profileData.physical_activities
+  );
+
+  // Get other data from the appropriate source
+  const physicalActivity = patientData?.physicalActivity || profileData.physical_activity || 'Não informado';
+  const chronicDisease = patientData?.chronicDisease || profileData.chronic_disease || 'Nenhuma';
+  const goal = patientData?.goal || profileData.goal || 'Não informado';
 
   console.log('Circunferências formatadas:', {
     pescoço: neckCirc,
@@ -65,6 +83,7 @@ export function buildAssessmentPrompt(
   });
 
   console.log('Atividades físicas formatadas:', physicalActivities);
+  console.log('Objetivo usado no prompt:', goal);
 
   console.log('Valores calculados pela fórmula de Deurenberg:', {
     bodyFatPercentage: bodyFatPercentage.toFixed(2) + '%',
@@ -110,9 +129,9 @@ DADOS PESSOAIS:
   * Cintura: ${waistCirc} cm
   * Quadril: ${hipCirc} cm
 - Atividades físicas praticadas: ${physicalActivities}
-- Frequência de atividade física: ${patientProfile.physical_activity || 'Não informado'}
-- Doenças crônicas: ${patientProfile.chronic_disease || 'Nenhuma'}
-- Objetivo: ${patientProfile.goal || 'Não informado'}
+- Frequência de atividade física: ${physicalActivity}
+- Doenças crônicas: ${chronicDisease}
+- Objetivo: ${goal}
 
 IMPORTANTE: Forneça o laudo em formato CSV estruturado exatamente como o exemplo abaixo. Use aspas duplas para valores que contenham vírgulas e mantenha a estrutura rigorosa:
 

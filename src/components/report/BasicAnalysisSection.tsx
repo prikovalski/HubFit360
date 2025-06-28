@@ -9,7 +9,10 @@ import StructuredReportSection from "./sections/StructuredReportSection";
 import AnalysisIncludedSection from "./sections/AnalysisIncludedSection";
 
 interface BasicAnalysisSectionProps {
-  report: Report & { patient_name?: string | null };
+  report: Report & { 
+    patient_name?: string | null;
+    patient_goal?: string | null;
+  };
   userProfile: UserProfile | null;
   patientProfile: PatientProfile | null;
 }
@@ -32,6 +35,7 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
 
   console.log('Dados do report na BasicAnalysisSection:', report);
   console.log('Texto da avaliação:', report.assessmentText);
+  console.log('Objetivo do paciente:', report.patient_goal);
 
   return (
     <Card className="border-0 shadow-lg bg-white mb-6">
@@ -47,6 +51,7 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
           patientProfile={patientProfile}
           displayAge={displayAge}
           patientName={report.patient_name}
+          patientGoal={report.patient_goal}
         />
 
         <EstimatesSection preview={report.preview} />

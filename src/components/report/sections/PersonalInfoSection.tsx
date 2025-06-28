@@ -6,16 +6,21 @@ interface PersonalInfoSectionProps {
   patientProfile: PatientProfile | null;
   displayAge: number | string;
   patientName?: string | null;
+  patientGoal?: string | null;
 }
 
 const PersonalInfoSection = ({ 
   userProfile, 
   patientProfile, 
   displayAge, 
-  patientName 
+  patientName,
+  patientGoal
 }: PersonalInfoSectionProps) => {
   // Determinar qual nome usar (priorizar patientName se existir)
   const displayName = patientName || userProfile?.name || 'Não informado';
+  
+  // Determinar qual objetivo usar (priorizar patientGoal se existir)
+  const displayGoal = patientGoal || patientProfile?.goal;
 
   return (
     <div className="mb-8">
@@ -47,10 +52,10 @@ const PersonalInfoSection = ({
             {patientProfile?.weight ? `${patientProfile.weight}kg` : 'Não informado'}
           </span>
         </div>
-        {patientProfile?.goal && (
+        {displayGoal && (
           <div>
             <span className="font-medium text-gray-600">Objetivo:</span>
-            <span className="ml-2 text-gray-800">{patientProfile.goal}</span>
+            <span className="ml-2 text-gray-800">{displayGoal}</span>
           </div>
         )}
       </div>

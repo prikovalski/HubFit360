@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import type { AssessmentRequest, AssessmentResult } from './types.ts';
 import { fetchUserData, calculateAge } from './userDataService.ts';
@@ -106,7 +105,8 @@ serve(async (req) => {
       patientName, 
       assessmentType,
       hasPatientData: !!patientData,
-      patientDataActivities: patientData?.physicalActivities
+      patientDataActivities: patientData?.physicalActivities,
+      patientGoal: patientData?.goal
     });
 
     let userData;
@@ -171,8 +171,8 @@ serve(async (req) => {
 
     if (hasCredits) {
       try {
-        // Build prompt and call OpenAI for premium analysis
-        const prompt = buildAssessmentPrompt(userData, calculatedAge, height, weight, sex, bodyFatPercentage, leanMass, fatMass);
+        // Build prompt and call OpenAI for premium analysis - now passing patientData
+        const prompt = buildAssessmentPrompt(userData, calculatedAge, height, weight, sex, bodyFatPercentage, leanMass, fatMass, patientData);
         console.log('Prompt enviado para GPT-4:', prompt.substring(0, 500) + '...');
         assessment = await callOpenAI(prompt);
         tier = 'premium';
