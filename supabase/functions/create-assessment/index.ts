@@ -105,7 +105,8 @@ serve(async (req) => {
       weight, 
       patientName, 
       assessmentType,
-      hasPatientData: !!patientData 
+      hasPatientData: !!patientData,
+      patientDataActivities: patientData?.physicalActivities
     });
 
     let userData;
@@ -127,14 +128,17 @@ serve(async (req) => {
         gender: patientData.gender,
         birth_date: patientData.birthDate,
         patient_profiles: [{
-          neck_circumference: patientData.neckCircumference,
-          waist_circumference: patientData.waistCircumference,
-          hip_circumference: patientData.hipCircumference,
+          neck_circumference: patientData.neckCircumference ? parseFloat(patientData.neckCircumference) : null,
+          waist_circumference: patientData.waistCircumference ? parseFloat(patientData.waistCircumference) : null,
+          hip_circumference: patientData.hipCircumference ? parseFloat(patientData.hipCircumference) : null,
           physical_activity: patientData.physicalActivity,
+          physical_activities: patientData.physicalActivities || [],
           chronic_disease: patientData.chronicDisease,
           goal: patientData.goal
         }]
       };
+
+      console.log('Dados estruturados do paciente:', JSON.stringify(userData.patient_profiles[0], null, 2));
     } else {
       // For self assessments, fetch user data as before
       userData = await fetchUserData(userId);
@@ -169,6 +173,7 @@ serve(async (req) => {
       try {
         // Build prompt and call OpenAI for premium analysis
         const prompt = buildAssessmentPrompt(userData, calculatedAge, height, weight, sex, bodyFatPercentage, leanMass, fatMass);
+        console.log('Prompt enviado para GPT-4:', prompt.substring(0, 500) + '...');
         assessment = await callOpenAI(prompt);
         tier = 'premium';
         console.log('Análise premium gerada com sucesso');

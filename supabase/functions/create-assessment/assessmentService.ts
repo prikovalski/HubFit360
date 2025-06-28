@@ -56,6 +56,7 @@ export async function saveAssessment(
     assessmentRecord.patient_fixed_meal_times = patientData.fixedMealTimes;
     assessmentRecord.patient_must_have_food = patientData.mustHaveFood;
     assessmentRecord.patient_physical_activity = patientData.physicalActivity;
+    assessmentRecord.patient_physical_activities = patientData.physicalActivities || [];
   }
 
   const { data: assessmentData, error } = await supabase

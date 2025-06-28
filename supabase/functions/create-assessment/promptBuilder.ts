@@ -30,11 +30,41 @@ export function buildAssessmentPrompt(
   const waistCirc = formatCircumference(patientProfile.waist_circumference);
   const hipCirc = formatCircumference(patientProfile.hip_circumference);
 
+  // Formatar atividades físicas
+  const formatPhysicalActivities = (activities: any): string => {
+    if (!activities || (Array.isArray(activities) && activities.length === 0)) {
+      return 'Nenhuma atividade informada';
+    }
+    
+    if (Array.isArray(activities)) {
+      return activities.map((activity: any) => {
+        if (typeof activity === 'string') {
+          return activity;
+        }
+        if (activity && activity.name) {
+          const frequency = activity.frequency ? ` (${activity.frequency})` : '';
+          return `${activity.name}${frequency}`;
+        }
+        return JSON.stringify(activity);
+      }).join(', ');
+    }
+    
+    if (typeof activities === 'string') {
+      return activities;
+    }
+    
+    return JSON.stringify(activities);
+  };
+
+  const physicalActivities = formatPhysicalActivities(patientProfile.physical_activities);
+
   console.log('Circunferências formatadas:', {
     pescoço: neckCirc,
     cintura: waistCirc,
     quadril: hipCirc
   });
+
+  console.log('Atividades físicas formatadas:', physicalActivities);
 
   console.log('Valores calculados pela fórmula de Deurenberg:', {
     bodyFatPercentage: bodyFatPercentage.toFixed(2) + '%',
@@ -79,7 +109,8 @@ DADOS PESSOAIS:
   * Pescoço: ${neckCirc} cm
   * Cintura: ${waistCirc} cm
   * Quadril: ${hipCirc} cm
-- Atividade física: ${patientProfile.physical_activity || 'Não informado'}
+- Atividades físicas praticadas: ${physicalActivities}
+- Frequência de atividade física: ${patientProfile.physical_activity || 'Não informado'}
 - Doenças crônicas: ${patientProfile.chronic_disease || 'Nenhuma'}
 - Objetivo: ${patientProfile.goal || 'Não informado'}
 

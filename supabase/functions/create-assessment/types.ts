@@ -1,12 +1,17 @@
 
+export interface PhysicalActivity {
+  name: string;
+  frequency?: string;
+}
+
 export interface PatientData {
   gender: string;
   birthDate: string;
   height: number;
   weight: number;
-  neckCircumference?: number | null;
-  waistCircumference?: number | null;
-  hipCircumference?: number | null;
+  neckCircumference?: string | null;
+  waistCircumference?: string | null;
+  hipCircumference?: string | null;
   goal?: string | null;
   chronicDisease?: string | null;
   medicalRestriction?: string | null;
@@ -15,6 +20,7 @@ export interface PatientData {
   fixedMealTimes?: string | null;
   mustHaveFood?: string | null;
   physicalActivity?: string | null;
+  physicalActivities?: PhysicalActivity[];
 }
 
 export interface AssessmentRequest {
@@ -40,4 +46,21 @@ export interface AssessmentResult {
   age?: number;
   tier?: string;
   error?: string;
+}
+
+export interface UserData {
+  id: string;
+  gender?: string;
+  birth_date?: string;
+  patient_profiles?: PatientProfile[];
+}
+
+export interface PatientProfile {
+  neck_circumference?: number | null;
+  waist_circumference?: number | null;
+  hip_circumference?: number | null;
+  physical_activity?: string | null;
+  physical_activities?: PhysicalActivity[];
+  chronic_disease?: string | null;
+  goal?: string | null;
 }
