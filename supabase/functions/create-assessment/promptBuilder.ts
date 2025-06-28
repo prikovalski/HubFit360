@@ -10,35 +10,48 @@ export function buildAssessmentPrompt(
   bodyFatPercentage: number,
   leanMass: number,
   fatMass: number,
+  assessmentType: 'self' | 'patient' = 'self',
   patientData?: PatientData
 ): string {
   const heightM = height / 100;
   const bmi = weight / (heightM * heightM);
   const genderForPrompt = sex === 'male' ? 'Masculino' : 'Feminino';
   
-  // Use patient data if available, otherwise use user profile data
-  const profileData = patientData || userData.patient_profiles?.[0] || {};
+  // Definir qual fonte de dados usar baseado no tipo de avaliação
+  let profileData: any = {};
+  
+  if (assessmentType === 'patient' && patientData) {
+    // Para avaliação de paciente, usar EXCLUSIVAMENTE os dados do paciente
+    console.log('Usando dados exclusivos do paciente para o prompt');
+    profileData = {
+      neck_circumference: patientData.neckCircumference ? parseFloat(patientData.neckCircumference) : null,
+      waist_circumference: patientData.waistCircumference ? parseFloat(patientData.waistCircumference) : null,
+      hip_circumference: patientData.hipCircumference ? parseFloat(patientData.hipCircumference) : null,
+      physical_activity: patientData.physicalActivity || null,
+      physical_activities: patientData.physicalActivities || [],
+      chronic_disease: patientData.chronicDisease || null,
+      goal: patientData.goal || null
+    };
+  } else {
+    // Para autoavaliação, usar dados do perfil do usuário
+    console.log('Usando dados do perfil do usuário para o prompt');
+    profileData = userData.patient_profiles?.[0] || {};
+  }
 
   console.log('Dados do perfil para o prompt:', JSON.stringify(profileData, null, 2));
 
   // Função para formatar circunferências com valores seguros
   const formatCircumference = (value: number | string | null | undefined): string => {
     if (value === null || value === undefined || value === '') {
-      return 'N/A';
+      return 'Não informado';
     }
-    return `${value}`;
+    return `${value} cm`;
   };
 
-  // Get circumferences from the appropriate source
-  const neckCirc = formatCircumference(
-    patientData?.neckCircumference || profileData.neck_circumference
-  );
-  const waistCirc = formatCircumference(
-    patientData?.waistCircumference || profileData.waist_circumference
-  );
-  const hipCirc = formatCircumference(
-    patientData?.hipCircumference || profileData.hip_circumference
-  );
+  // Get circumferences from the selected data source
+  const neckCirc = formatCircumference(profileData.neck_circumference);
+  const waistCirc = formatCircumference(profileData.waist_circumference);
+  const hipCirc = formatCircumference(profileData.hip_circumference);
 
   // Formatar atividades físicas
   const formatPhysicalActivities = (activities: any): string => {
@@ -66,24 +79,20 @@ export function buildAssessmentPrompt(
     return JSON.stringify(activities);
   };
 
-  // Get physical activities from the appropriate source
-  const physicalActivities = formatPhysicalActivities(
-    patientData?.physicalActivities || profileData.physical_activities
-  );
+  // Get data from the selected source
+  const physicalActivities = formatPhysicalActivities(profileData.physical_activities);
+  const physicalActivity = profileData.physical_activity || 'Não informado';
+  const chronicDisease = profileData.chronic_disease || 'Nenhuma';
+  const goal = profileData.goal || 'Não informado';
 
-  // Get other data from the appropriate source
-  const physicalActivity = patientData?.physicalActivity || profileData.physical_activity || 'Não informado';
-  const chronicDisease = patientData?.chronicDisease || profileData.chronic_disease || 'Nenhuma';
-  const goal = patientData?.goal || profileData.goal || 'Não informado';
-
-  console.log('Circunferências formatadas:', {
-    pescoço: neckCirc,
-    cintura: waistCirc,
-    quadril: hipCirc
+  console.log('Dados formatados para o prompt:', {
+    circumferencias: { pescoço: neckCirc, cintura: waistCirc, quadril: hipCirc },
+    atividadesFisicas: physicalActivities,
+    frequenciaAtividade: physicalActivity,
+    doencaCronica: chronicDisease,
+    objetivo: goal,
+    tipoAvaliacao: assessmentType
   });
-
-  console.log('Atividades físicas formatadas:', physicalActivities);
-  console.log('Objetivo usado no prompt:', goal);
 
   console.log('Valores calculados pela fórmula de Deurenberg:', {
     bodyFatPercentage: bodyFatPercentage.toFixed(2) + '%',
@@ -125,9 +134,9 @@ DADOS PESSOAIS:
   * Massa Magra: ${leanMass.toFixed(1)} kg
   * Massa Gorda: ${fatMass.toFixed(1)} kg
 - Circunferências: 
-  * Pescoço: ${neckCirc} cm
-  * Cintura: ${waistCirc} cm
-  * Quadril: ${hipCirc} cm
+  * Pescoço: ${neckCirc}
+  * Cintura: ${waistCirc}
+  * Quadril: ${hipCirc}
 - Atividades físicas praticadas: ${physicalActivities}
 - Frequência de atividade física: ${physicalActivity}
 - Doenças crônicas: ${chronicDisease}
