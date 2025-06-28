@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { User, Activity, Heart, Utensils } from "lucide-react";
+import { PhysicalActivitiesSection, PhysicalActivity } from "@/components/PhysicalActivitiesSection";
 
 interface PatientProfileSectionProps {
   patientData: {
@@ -24,8 +25,9 @@ interface PatientProfileSectionProps {
     fixedMealTimes: string;
     mustHaveFood: string;
     physicalActivity: string;
+    physicalActivities: PhysicalActivity[];
   };
-  onPatientDataChange: (field: string, value: string) => void;
+  onPatientDataChange: (field: string, value: string | PhysicalActivity[]) => void;
 }
 
 const PatientProfileSection = ({ patientData, onPatientDataChange }: PatientProfileSectionProps) => {
@@ -167,32 +169,33 @@ const PatientProfileSection = ({ patientData, onPatientDataChange }: PatientProf
               placeholder="Ex: Perda de peso, ganho de massa muscular..."
             />
           </div>
-          <div>
-            <Label htmlFor="patient-activity">Atividade Física</Label>
-            <Input
-              id="patient-activity"
-              value={patientData.physicalActivity}
-              onChange={(e) => onPatientDataChange('physicalActivity', e.target.value)}
-              placeholder="Ex: Sedentário, ativo, muito ativo..."
+          
+          <div className="border-t pt-4">
+            <PhysicalActivitiesSection
+              activities={patientData.physicalActivities || []}
+              onChange={(activities) => onPatientDataChange('physicalActivities', activities)}
             />
           </div>
-          <div>
-            <Label htmlFor="patient-chronic">Doenças Crônicas</Label>
-            <Textarea
-              id="patient-chronic"
-              value={patientData.chronicDisease}
-              onChange={(e) => onPatientDataChange('chronicDisease', e.target.value)}
-              placeholder="Diabetes, hipertensão, etc."
-            />
-          </div>
-          <div>
-            <Label htmlFor="patient-medical">Restrições Médicas</Label>
-            <Textarea
-              id="patient-medical"
-              value={patientData.medicalRestriction}
-              onChange={(e) => onPatientDataChange('medicalRestriction', e.target.value)}
-              placeholder="Restrições de exercícios, medicamentos, etc."
-            />
+          
+          <div className="border-t pt-4">
+            <div>
+              <Label htmlFor="patient-chronic">Doenças Crônicas</Label>
+              <Textarea
+                id="patient-chronic"
+                value={patientData.chronicDisease}
+                onChange={(e) => onPatientDataChange('chronicDisease', e.target.value)}
+                placeholder="Diabetes, hipertensão, etc."
+              />
+            </div>
+            <div>
+              <Label htmlFor="patient-medical">Restrições Médicas</Label>
+              <Textarea
+                id="patient-medical"
+                value={patientData.medicalRestriction}
+                onChange={(e) => onPatientDataChange('medicalRestriction', e.target.value)}
+                placeholder="Restrições de exercícios, medicamentos, etc."
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

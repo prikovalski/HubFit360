@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { PhysicalActivity } from '@/components/PhysicalActivitiesSection';
 
 export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
   const [loading, setLoading] = useState(false);
@@ -36,6 +37,7 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
     fixedMealTimes: '',
     mustHaveFood: '',
     physicalActivity: '',
+    physicalActivities: [] as PhysicalActivity[],
   });
 
   const { toast } = useToast();
@@ -54,7 +56,7 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
     }));
   };
 
-  const handlePatientDataChange = (field: string, value: string) => {
+  const handlePatientDataChange = (field: string, value: string | PhysicalActivity[]) => {
     setPatientData(prev => ({
       ...prev,
       [field]: value
@@ -125,6 +127,7 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
             fixedMealTimes: patientData.fixedMealTimes || null,
             mustHaveFood: patientData.mustHaveFood || null,
             physicalActivity: patientData.physicalActivity || null,
+            physicalActivities: patientData.physicalActivities || [],
           }
         })
       };
