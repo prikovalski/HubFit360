@@ -58,14 +58,6 @@ const IdealRangesSection = ({ userProfile, patientProfile }: IdealRangesSectionP
             {calculateIdealBMI()}
           </div>
         </div>
-        {patientProfile?.goal && (
-          <div>
-            <span className="text-gray-600 font-medium">Seu Objetivo:</span>
-            <div className="text-blue-600 font-semibold text-lg">
-              {patientProfile.goal}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
