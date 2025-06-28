@@ -13,72 +13,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-async function checkUserCredits(userId: number) {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  
-  if (!supabaseUrl || !supabaseKey) {
-    return { hasCredits: false, balance: 0 };
-  }
-
-  const supabase = createClient(supabaseUrl, supabaseKey);
-  
-  const { data: credits } = await supabase
-    .from('user_credits')
-    .select('balance')
-    .eq('user_id', userId)
-    .single();
-
-  const balance = credits?.balance || 0;
-  return { hasCredits: balance > 0, balance };
-}
-
-async function consumeCredit(userId: number, assessmentId: string) {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Configuração do Supabase incompleta');
-  }
-
-  const supabase = createClient(supabaseUrl, supabaseKey);
-  
-  // Buscar créditos atuais
-  const { data: credits } = await supabase
-    .from('user_credits')
-    .select('balance')
-    .eq('user_id', userId)
-    .single();
-
-  const currentBalance = credits?.balance || 0;
-
-  if (currentBalance < 1) {
-    throw new Error('Créditos insuficientes');
-  }
-
-  // Consumir 1 crédito
-  const newBalance = currentBalance - 1;
-  
-  await supabase
-    .from('user_credits')
-    .update({ balance: newBalance })
-    .eq('user_id', userId);
-
-  // Registrar transação
-  await supabase
-    .from('credit_transactions')
-    .insert({
-      user_id: userId,
-      type: 'usage',
-      amount: -1,
-      source: 'system',
-      description: 'Crédito usado para análise premium',
-      assessment_id: assessmentId
-    });
-
-  return newBalance;
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -155,46 +89,13 @@ serve(async (req) => {
     console.log('Massa magra calculada:', leanMass.toFixed(2) + 'kg');
     console.log('Massa gorda calculada:', fatMass.toFixed(2) + 'kg');
     
-    // VALIDAR CRÉDITOS ANTES DE CHAMAR O GPT-4
-    const { hasCredits } = await checkUserCredits(parseInt(userId));
-    console.log('Usuário tem créditos:', hasCredits);
+    // SEMPRE RETORNA AVALIAÇÃO BÁSICA PRIMEIRO
+    // O upgrade será feito através da função upgrade-assessment
+    console.log('Gerando avaliação básica (sem consumir créditos)');
+    const tier = 'basic';
+    const assessment = null; // Avaliação básica não tem análise de texto
 
-    let assessment = null;
-    let tier = 'basic';
-
-    if (hasCredits) {
-      try {
-        console.log('Usuário tem créditos, gerando análise premium...');
-        
-        // Build prompt and call OpenAI for premium analysis - now passing assessmentType
-        const prompt = buildAssessmentPrompt(
-          userData, 
-          calculatedAge, 
-          height, 
-          weight, 
-          sex, 
-          bodyFatPercentage, 
-          leanMass, 
-          fatMass, 
-          assessmentType,
-          patientData
-        );
-        console.log('Prompt enviado para GPT-4:', prompt.substring(0, 500) + '...');
-        
-        // CHAMAR OPENAI APENAS APÓS CONFIRMAR QUE TEM CRÉDITOS
-        assessment = await callOpenAI(prompt);
-        tier = 'premium';
-        console.log('Análise premium gerada com sucesso');
-      } catch (error) {
-        console.error('Erro ao gerar análise premium:', error);
-        // If it fails, continue with basic version
-        tier = 'basic';
-      }
-    } else {
-      console.log('Usuário sem créditos, gerando avaliação básica');
-    }
-
-    // Save assessment in database
+    // Save assessment in database (always as basic)
     const assessmentData = await saveAssessment(
       userId,
       frontPhoto,
@@ -205,23 +106,14 @@ serve(async (req) => {
       leanMass,
       fatMass,
       bmi,
-      assessment,
-      tier,
+      assessment, // null para avaliação básica
+      tier, // sempre 'basic'
       patientName,
       assessmentType,
       patientData
     );
 
-    // CONSUMIR CRÉDITO APENAS APÓS SUCESSO DA ANÁLISE PREMIUM
-    if (tier === 'premium' && hasCredits) {
-      try {
-        await consumeCredit(parseInt(userId), assessmentData.id);
-        console.log('Crédito consumido com sucesso');
-      } catch (error) {
-        console.error('Erro ao consumir crédito:', error);
-        // Even if credit consumption fails, return the assessment
-      }
-    }
+    console.log('Avaliação básica salva com sucesso:', assessmentData.id);
 
     const result: AssessmentResult = {
       success: true, 
@@ -231,7 +123,7 @@ serve(async (req) => {
       fatMass: parseFloat(fatMass.toFixed(2)),
       bmi: parseFloat(bmi.toFixed(2)),
       age: calculatedAge,
-      tier: tier
+      tier: tier // sempre 'basic'
     };
 
     return new Response(JSON.stringify(result), {
