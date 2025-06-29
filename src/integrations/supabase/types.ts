@@ -589,6 +589,7 @@ export type Database = {
           gender: string | null
           id: number
           name: string
+          profession: Database["public"]["Enums"]["profession_type"] | null
           role: Database["public"]["Enums"]["user_role"]
         }
         Insert: {
@@ -599,6 +600,7 @@ export type Database = {
           gender?: string | null
           id?: number
           name: string
+          profession?: Database["public"]["Enums"]["profession_type"] | null
           role?: Database["public"]["Enums"]["user_role"]
         }
         Update: {
@@ -609,6 +611,7 @@ export type Database = {
           gender?: string | null
           id?: number
           name?: string
+          profession?: Database["public"]["Enums"]["profession_type"] | null
           role?: Database["public"]["Enums"]["user_role"]
         }
         Relationships: []
@@ -621,7 +624,23 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      user_role: "PATIENT" | "ADMIN" | "NUTRITIONIST" | "TRAINER"
+      profession_type:
+        | "NUTRICIONISTA"
+        | "MEDICO"
+        | "EDUCADOR_FISICO"
+        | "FISIOTERAPEUTA"
+        | "ENFERMEIRO"
+        | "PSICOLOGO"
+        | "FARMACEUTICO"
+        | "BIOMEDICO"
+        | "DENTISTA"
+        | "TERAPEUTA_OCUPACIONAL"
+      user_role:
+        | "PATIENT"
+        | "ADMIN"
+        | "NUTRITIONIST"
+        | "TRAINER"
+        | "PROFESSIONAL"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -737,7 +756,25 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      user_role: ["PATIENT", "ADMIN", "NUTRITIONIST", "TRAINER"],
+      profession_type: [
+        "NUTRICIONISTA",
+        "MEDICO",
+        "EDUCADOR_FISICO",
+        "FISIOTERAPEUTA",
+        "ENFERMEIRO",
+        "PSICOLOGO",
+        "FARMACEUTICO",
+        "BIOMEDICO",
+        "DENTISTA",
+        "TERAPEUTA_OCUPACIONAL",
+      ],
+      user_role: [
+        "PATIENT",
+        "ADMIN",
+        "NUTRITIONIST",
+        "TRAINER",
+        "PROFESSIONAL",
+      ],
     },
   },
 } as const

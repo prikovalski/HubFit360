@@ -7,6 +7,8 @@ export const useFormData = () => {
     email: '',
     password: '',
     name: '',
+    userType: 'patient',
+    profession: '',
     gender: '',
     birthDate: '',
     weight: '',
@@ -30,19 +32,20 @@ export const useFormData = () => {
   });
 
   const handleInputChange = (field: string, value: string | PhysicalActivity[]) => {
-    
-    setFormData(prev => {
-      const newData = { ...prev, [field]: value };
-      
-      return newData;
-    });
+    console.log(`Alterando campo ${field} para:`, value);
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
-  const resetFormData = () => {
+  const resetForm = () => {
     setFormData({
       email: '',
       password: '',
       name: '',
+      userType: 'patient',
+      profession: '',
       gender: '',
       birthDate: '',
       weight: '',
@@ -68,8 +71,7 @@ export const useFormData = () => {
 
   return {
     formData,
-    setFormData,
     handleInputChange,
-    resetFormData
+    resetForm
   };
 };

@@ -8,6 +8,8 @@ export interface FormData {
   email: string;
   password: string;
   name: string;
+  userType: 'patient' | 'professional';
+  profession?: string;
   gender: string;
   birthDate: string;
   weight: string;

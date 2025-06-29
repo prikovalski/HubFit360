@@ -7,7 +7,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, User, Heart, Activity, Shield, Utensils, Ruler } from "lucide-react";
+import { CalendarIcon, User, Heart, Activity, Shield, Utensils, Ruler, Briefcase } from "lucide-react";
 import { format, parse } from "date-fns";
 import { getEstados, Estado } from '@/services/stateService';
 import { getCidadesByEstado, Cidade } from '@/services/cityService';
@@ -40,25 +40,35 @@ const SignupFormSteps = ({
   const [loadingCidades, setLoadingCidades] = useState(false);
   const [birthDateInput, setBirthDateInput] = useState('');
 
-  const stepTitles = [
-    'Conta',
-    'Pessoais',
-    'Físicos',
-    'Atividades',
-    'Saúde',
-    'Alimentação',
-    'Medidas'
-  ];
+  const isProfessional = formData.userType === 'professional';
+  const maxSteps = isProfessional ? 2 : 7;
+  
+  const stepTitles = isProfessional 
+    ? ['Conta', 'Pessoais']
+    : ['Conta', 'Pessoais', 'Físicos', 'Atividades', 'Saúde', 'Alimentação', 'Medidas'];
 
   const stepIcons = {
     1: <User className="w-6 h-6 text-[#019f80]" />,
-    2: <User className="w-6 h-6 text-[#019f80]" />,
+    2: isProfessional ? <Briefcase className="w-6 h-6 text-[#019f80]" /> : <User className="w-6 h-6 text-[#019f80]" />,
     3: <Heart className="w-6 h-6 text-[#019f80]" />,
     4: <Activity className="w-6 h-6 text-[#019f80]" />,
     5: <Shield className="w-6 h-6 text-[#019f80]" />,
     6: <Utensils className="w-6 h-6 text-[#019f80]" />,
     7: <Ruler className="w-6 h-6 text-[#019f80]" />
   };
+
+  const professionOptions = [
+    { value: 'NUTRICIONISTA', label: 'Nutricionista' },
+    { value: 'MEDICO', label: 'Médico' },
+    { value: 'EDUCADOR_FISICO', label: 'Educador Físico' },
+    { value: 'FISIOTERAPEUTA', label: 'Fisioterapeuta' },
+    { value: 'ENFERMEIRO', label: 'Enfermeiro' },
+    { value: 'PSICOLOGO', label: 'Psicólogo' },
+    { value: 'FARMACEUTICO', label: 'Farmacêutico' },
+    { value: 'BIOMEDICO', label: 'Biomédico' },
+    { value: 'DENTISTA', label: 'Dentista' },
+    { value: 'TERAPEUTA_OCUPACIONAL', label: 'Terapeuta Ocupacional' }
+  ];
 
   useEffect(() => {
     fetchEstados();
@@ -154,11 +164,14 @@ const SignupFormSteps = ({
     switch (step) {
       case 1:
         const { isValid: isPasswordValid } = validatePassword(formData.password);
-        return formData.email && formData.password && isPasswordValid;
+        return formData.email && formData.password && isPasswordValid && formData.userType;
       case 2:
+        if (isProfessional) {
+          return formData.name && formData.gender && formData.birthDate && formData.profession;
+        }
         return formData.name && formData.gender && formData.birthDate;
       case 3:
-        return formData.weight && formData.height && formData.state && formData.city && formData.goal;
+        return !isProfessional && (formData.weight && formData.height && formData.state && formData.city && formData.goal);
       default:
         return true;
     }
@@ -168,8 +181,8 @@ const SignupFormSteps = ({
     e.preventDefault();
     console.log('=== SUBMIT DO FORMULÁRIO ===');
     console.log('FormData completo no submit:', JSON.stringify(formData, null, 2));
-    console.log('Atividades físicas no submit:', formData.physicalActivities);
-    console.log('Quantidade de atividades no submit:', formData.physicalActivities?.length || 0);
+    console.log('Tipo de usuário:', formData.userType);
+    console.log('Profissão:', formData.profession);
     onSubmit();
   };
 
@@ -177,7 +190,7 @@ const SignupFormSteps = ({
     <div className="max-w-4xl mx-auto">
       <StepProgressIndicator
         currentStep={step}
-        totalSteps={7}
+        totalSteps={maxSteps}
         stepTitles={stepTitles}
         onStepClick={(newStep) => {
           if (newStep <= step) {
@@ -195,6 +208,20 @@ const SignupFormSteps = ({
           >
             <div className="grid grid-cols-1 gap-6">
               <FormField
+                label="Tipo de Usuário"
+                value={formData.userType || ''}
+                onChange={(value) => onInputChange('userType', value)}
+                disabled={loading}
+                required
+                options={[
+                  { value: 'patient', label: 'Paciente - Busco avaliação para mim' },
+                  { value: 'professional', label: 'Profissional - Vou avaliar pacientes' }
+                ]}
+                placeholder="Selecione o tipo de usuário"
+                tooltip="Escolha se você é um paciente buscando avaliação ou um profissional que irá avaliar pacientes"
+              />
+              
+              <FormField
                 label="Email"
                 type="email"
                 value={formData.email}
@@ -204,6 +231,7 @@ const SignupFormSteps = ({
                 required
                 tooltip="Usaremos este email para comunicação e login"
               />
+              
               <FormField
                 label="Senha"
                 type="password"
@@ -227,8 +255,8 @@ const SignupFormSteps = ({
 
         {step === 2 && (
           <FormSection
-            title="Dados Pessoais"
-            description="Conte-nos um pouco sobre você"
+            title={isProfessional ? "Dados Profissionais" : "Dados Pessoais"}
+            description={isProfessional ? "Informações sobre você como profissional" : "Conte-nos um pouco sobre você"}
             icon={stepIcons[2]}
           >
             <div className="grid grid-cols-1 gap-6">
@@ -240,6 +268,19 @@ const SignupFormSteps = ({
                 disabled={loading}
                 required
               />
+              
+              {isProfessional && (
+                <FormField
+                  label="Profissão"
+                  value={formData.profession || ''}
+                  onChange={(value) => onInputChange('profession', value)}
+                  disabled={loading}
+                  required
+                  options={professionOptions}
+                  placeholder="Selecione sua profissão"
+                  tooltip="Selecione sua área de atuação profissional"
+                />
+              )}
               
               <FormField
                 label="Gênero"
@@ -299,14 +340,16 @@ const SignupFormSteps = ({
 
             <NavigationButtons
               onPrevious={() => setStep(1)}
-              onNext={() => setStep(3)}
+              onNext={isProfessional ? undefined : () => setStep(3)}
+              onSubmit={isProfessional ? onSubmit : undefined}
               loading={loading}
               canGoNext={canGoNext()}
+              isLastStep={isProfessional}
             />
           </FormSection>
         )}
 
-        {step === 3 && (
+        {!isProfessional && step === 3 && (
           <FormSection
             title="Informações Físicas"
             description="Seus dados físicos e localização"
@@ -391,7 +434,7 @@ const SignupFormSteps = ({
           </FormSection>
         )}
 
-        {step === 4 && (
+        {!isProfessional && step === 4 && (
           <FormSection
             title="Atividade Física"
             description="Conte sobre sua rotina de exercícios"
@@ -417,7 +460,7 @@ const SignupFormSteps = ({
           </FormSection>
         )}
 
-        {step === 5 && (
+        {!isProfessional && step === 5 && (
           <FormSection
             title="Saúde e Restrições"
             description="Informações sobre sua saúde e restrições médicas"
@@ -469,7 +512,7 @@ const SignupFormSteps = ({
           </FormSection>
         )}
 
-        {step === 6 && (
+        {!isProfessional && step === 6 && (
           <FormSection
             title="Preferências Alimentares"
             description="Suas preferências e horários de alimentação"
@@ -503,7 +546,7 @@ const SignupFormSteps = ({
           </FormSection>
         )}
 
-        {step === 7 && (
+        {!isProfessional && step === 7 && (
           <FormSection
             title="Medidas Corporais"
             description="Informações adicionais para uma análise mais precisa"
