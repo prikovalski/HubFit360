@@ -1,4 +1,6 @@
 
+import PhotoUploadCard from './PhotoUploadCard';
+
 interface PhotoUploadSectionProps {
   photos: {
     front: string | null;
