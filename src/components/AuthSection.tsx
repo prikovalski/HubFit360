@@ -47,15 +47,6 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
     return 'Preencha seus dados';
   };
 
-  // Wrapper function that matches the expected signature
-  const handleFormSubmit = () => {
-    // Create a synthetic event for the handleSubmit function
-    const syntheticEvent = {
-      preventDefault: () => {}
-    } as React.FormEvent;
-    handleSubmit(syntheticEvent);
-  };
-
   return (
     <div className="py-12 px-4">
       <div className="container mx-auto max-w-2xl py-8">
@@ -94,7 +85,7 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
                   formData={formData}
                   loading={loading}
                   onInputChange={handleInputChange}
-                  onSubmit={handleFormSubmit}
+                  onSubmit={handleSubmit}
                   onSocialLogin={handleSocialLogin}
                   onSwitchToSignup={() => setIsLogin(false)}
                   onForgotPassword={handleForgotPassword}
@@ -104,7 +95,7 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
                   formData={formData}
                   loading={loading}
                   onInputChange={handleInputChange}
-                  onSubmit={handleFormSubmit}
+                  onSubmit={handleSubmit}
                   onSwitchToLogin={() => setIsLogin(true)}
                 />
               )}

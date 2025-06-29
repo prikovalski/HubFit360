@@ -87,44 +87,31 @@ export const useAuthSubmit = () => {
   const handleSubmit = async (formData: any, isLogin: boolean) => {
     try {
       if (isLogin) {
-        const { user, session, error } = await submitLogin(formData.email, formData.password);
+        const data = await submitLogin(formData.email, formData.password);
         
-        if (error) {
-          toast({
-            title: "Erro no login",
-            description: error.message,
-            variant: "destructive",
-          });
-          return;
-        }
-
         toast({
           title: "Login realizado com sucesso!",
           description: "Bem-vindo de volta!",
         });
-      } else {
-        const { user, session, error } = await submitSignup(formData);
         
-        if (error) {
-          toast({
-            title: "Erro no cadastro",
-            description: error.message,
-            variant: "destructive",
-          });
-          return;
-        }
-
+        return data;
+      } else {
+        const data = await submitSignup(formData);
+        
         toast({
           title: "Cadastro realizado com sucesso!",
           description: "Verifique seu email para confirmar a conta.",
         });
+        
+        return data;
       }
     } catch (error: any) {
       toast({
-        title: "Erro",
+        title: isLogin ? "Erro no login" : "Erro no cadastro",
         description: error.message || "Ocorreu um erro inesperado",
         variant: "destructive",
       });
+      throw error;
     }
   };
 
