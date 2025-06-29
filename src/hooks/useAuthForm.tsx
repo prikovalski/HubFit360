@@ -8,19 +8,22 @@ import { useAuthSubmit } from '@/hooks/useAuthSubmit';
 export const useAuthForm = (onLogin: (user: any) => void) => {
   const { showPasswordReset, setShowPasswordReset, handleForgotPassword, handlePasswordReset } = usePasswordReset();
   const { formData, setFormData, handleInputChange } = useFormData();
+  const { handleSubmit: submitForm } = useAuthSubmit();
   
   const [isLogin, setIsLogin] = useState(true);
-
   const [loading, setLoading] = useState(false);
   const [emailExists, setEmailExists] = useState(false);
 
-  const { handleSubmit } = useAuthSubmit({
-    isLogin,
-    formData,
-    emailExists,
-    setEmailExists,
-    setLoading
-  });
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      await submitForm(formData, isLogin);
+    } catch (error) {
+      console.error('Auth error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSocialLogin = (provider: string) => {
     toast({

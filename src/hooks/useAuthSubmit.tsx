@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from "@/hooks/use-toast";
 
 export const useAuthSubmit = () => {
   const submitSignup = async (formData: any) => {
@@ -83,8 +84,53 @@ export const useAuthSubmit = () => {
     return data;
   };
 
+  const handleSubmit = async (formData: any, isLogin: boolean) => {
+    try {
+      if (isLogin) {
+        const { user, session, error } = await submitLogin(formData.email, formData.password);
+        
+        if (error) {
+          toast({
+            title: "Erro no login",
+            description: error.message,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        toast({
+          title: "Login realizado com sucesso!",
+          description: "Bem-vindo de volta!",
+        });
+      } else {
+        const { user, session, error } = await submitSignup(formData);
+        
+        if (error) {
+          toast({
+            title: "Erro no cadastro",
+            description: error.message,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        toast({
+          title: "Cadastro realizado com sucesso!",
+          description: "Verifique seu email para confirmar a conta.",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: error.message || "Ocorreu um erro inesperado",
+        variant: "destructive",
+      });
+    }
+  };
+
   return {
     submitSignup,
-    submitLogin
+    submitLogin,
+    handleSubmit
   };
 };

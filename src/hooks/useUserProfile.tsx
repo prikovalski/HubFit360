@@ -11,7 +11,8 @@ interface UserProfile {
   gender: string | null;
   birth_date: string | null;
   email: string;
-  role: "PATIENT" | "ADMIN" | "NUTRITIONIST" | "TRAINER";
+  role: "PATIENT" | "ADMIN" | "NUTRITIONIST" | "TRAINER" | "PROFESSIONAL";
+  profession?: "NUTRICIONISTA" | "MEDICO" | "EDUCADOR_FISICO" | "FISIOTERAPEUTA" | "ENFERMEIRO" | "PSICOLOGO" | "FARMACEUTICO" | "BIOMEDICO" | "DENTISTA" | "TERAPEUTA_OCUPACIONAL" | null;
   created_at: string;
 }
 
@@ -67,7 +68,7 @@ export const useUserProfile = () => {
         .single();
 
       if (userError) throw userError;
-      setUserProfile(userData);
+      setUserProfile(userData as UserProfile);
 
       // Fetch patient profile if exists
       if (userData) {

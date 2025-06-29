@@ -71,6 +71,7 @@ export const useFormData = () => {
 
   return {
     formData,
+    setFormData,
     handleInputChange,
     resetForm
   };
