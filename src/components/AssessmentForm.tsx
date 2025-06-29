@@ -49,11 +49,11 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
   const [prompt, setPrompt] = useState<string | null>(null);
   const [formReady, setFormReady] = useState(true);
 
-  // Convert photos object to match PhotoUploadSection expectations
+  // Passar as fotos diretamente (elas já são strings base64 ou null)
   const adaptedPhotos = {
-    front: photos.front ? new File([], 'front.jpg') : null,
-    side: photos.side ? new File([], 'side.jpg') : null,
-    back: photos.back ? new File([], 'back.jpg') : null,
+    front: photos.front,
+    side: photos.side,
+    back: photos.back,
   };
 
   const handlePhotoUploadAdapter = (position: 'front' | 'side' | 'back', file: File) => {

@@ -1,11 +1,9 @@
 
-import PhotoUploadCard from './PhotoUploadCard';
-
 interface PhotoUploadSectionProps {
   photos: {
-    front: File | null;
-    side: File | null;
-    back: File | null;
+    front: string | null;
+    side: string | null;
+    back: string | null;
   };
   onPhotoUpload: (position: 'front' | 'side' | 'back', file: File) => void;
 }
