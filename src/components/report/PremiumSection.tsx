@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,27 +19,29 @@ const PremiumSection = ({ report, isPaid, onPaymentSuccess }: PremiumSectionProp
   const [assessmentProduct, setAssessmentProduct] = useState<any>(null);
   const { userProfile, patientProfile } = useUserProfile();
 
-  // Buscar o produto de avaliação
+  // Buscar o produto de avaliação apenas se não estiver pago
   useEffect(() => {
-    const fetchAssessmentProduct = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .eq('type', 'assessment')
-          .eq('status', 'active')
-          .single();
+    if (!isPaid) {
+      const fetchAssessmentProduct = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('products')
+            .select('*')
+            .eq('type', 'assessment')
+            .eq('status', 'active')
+            .single();
 
-        if (!error && data) {
-          setAssessmentProduct(data);
+          if (!error && data) {
+            setAssessmentProduct(data);
+          }
+        } catch (error) {
+          console.error('Erro ao buscar produto de avaliação:', error);
         }
-      } catch (error) {
-        console.error('Erro ao buscar produto de avaliação:', error);
-      }
-    };
+      };
 
-    fetchAssessmentProduct();
-  }, []);
+      fetchAssessmentProduct();
+    }
+  }, [isPaid]);
 
   const handlePaymentSuccess = () => {
     setShowPaymentModal(false);

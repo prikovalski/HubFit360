@@ -16,6 +16,8 @@ interface Report {
   tier: string;
   age: number;
   assessmentText: string;
+  payment_status?: string;
+  upgrade_via_credits?: boolean;
   preview: {
     leanMass: string;
     bodyFat: string;
@@ -72,7 +74,8 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
     // Atualizar o report para premium
     setCurrentReport({
       ...currentReport,
-      tier: 'premium'
+      tier: 'premium',
+      payment_status: 'paid'
     });
     
     // Recarregar a página para buscar os novos dados
@@ -82,7 +85,11 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
   };
 
   const userName = userProfile?.name || 'Usuário';
-  const isPremium = currentReport.tier === 'premium';
+  
+  // Verificar se o relatório está pago - considerando tanto pagamento quanto upgrade via créditos
+  const isPaid = (currentReport.tier === 'premium') && 
+    (currentReport.payment_status === 'paid' || currentReport.upgrade_via_credits === true);
+  
   const isBasic = currentReport.tier === 'basic';
 
   return (
@@ -98,7 +105,7 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
             report={currentReport}
             userProfile={userProfile}
             patientProfile={patientProfile}
-            isPaid={isPremium}
+            isPaid={isPaid}
             onBack={onBack}
           />
           
@@ -109,7 +116,7 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
               patientProfile={patientProfile}
             />
 
-            {isPremium ? (
+            {isPaid ? (
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">
                   Análise Completa
@@ -157,7 +164,7 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
             ) : (
               <PremiumSection 
                 report={currentReport}
-                isPaid={isPremium}
+                isPaid={isPaid}
                 onPaymentSuccess={() => window.location.reload()}
               />
             )}

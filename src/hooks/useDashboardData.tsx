@@ -14,6 +14,9 @@ interface Assessment {
   fat_mass: number;
   status: string;
   assessment_text: string;
+  tier: string;
+  payment_status?: string;
+  upgrade_via_credits?: boolean;
 }
 
 interface DashboardData {
@@ -37,22 +40,36 @@ export const useDashboardData = (): DashboardData => {
       setAssessmentsLoading(true);
       setAssessmentsError(null);
 
-      // Optimized query: select only needed fields and limit results
+      // Optimized query with payment information
       const { data, error } = await supabase
         .from('assessments')
         .select(`
           id,
           created_at,
+          age,
           body_fat_percentage,
           lean_mass,
           bmi,
           fat_mass,
           status,
-          assessment_text
+          assessment_text,
+          tier,
+          patient_name,
+          patient_goal,
+          payments!left (
+            id,
+            status,
+            paid_at
+          ),
+          credit_transactions!left (
+            id,
+            type,
+            amount
+          )
         `)
         .eq('user_id', userProfile.id)
         .order('created_at', { ascending: false })
-        .limit(20); // Limit to 20 most recent assessments
+        .limit(20);
 
       if (error) {
         console.error('Erro ao buscar avaliações:', error);
@@ -65,18 +82,27 @@ export const useDashboardData = (): DashboardData => {
         return;
       }
 
-      // Transform data efficiently
-      const transformedAssessments = (data || []).map(assessment => ({
-        ...assessment,
-        assessmentText: assessment.assessment_text,
-        preview: {
-          leanMass: assessment.lean_mass ? `${assessment.lean_mass.toFixed(1)}kg` : 'N/A',
-          bodyFat: assessment.body_fat_percentage ? `${assessment.body_fat_percentage.toFixed(1)}%` : 'N/A',
-          bmi: assessment.bmi ? assessment.bmi.toFixed(1) : 'N/A',
-          fatMass: assessment.fat_mass ? `${assessment.fat_mass.toFixed(1)}kg` : 'N/A',
-          summary: assessment.assessment_text || ''
-        }
-      }));
+      // Transform data with payment status
+      const transformedAssessments = (data || []).map(assessment => {
+        const hasPayment = assessment.payments && assessment.payments.length > 0;
+        const hasPaidPayment = hasPayment && assessment.payments.some((p: any) => p.status === 'paid');
+        const hasUpgradeCredits = assessment.credit_transactions && 
+          assessment.credit_transactions.some((t: any) => t.type === 'debit' && t.amount > 0);
+
+        return {
+          ...assessment,
+          assessmentText: assessment.assessment_text,
+          payment_status: hasPaidPayment ? 'paid' : (hasPayment ? 'pending' : null),
+          upgrade_via_credits: hasUpgradeCredits,
+          preview: {
+            leanMass: assessment.lean_mass ? `${assessment.lean_mass.toFixed(1)}kg` : 'N/A',
+            bodyFat: assessment.body_fat_percentage ? `${assessment.body_fat_percentage.toFixed(1)}%` : 'N/A',
+            bmi: assessment.bmi ? assessment.bmi.toFixed(1) : 'N/A',
+            fatMass: assessment.fat_mass ? `${assessment.fat_mass.toFixed(1)}kg` : 'N/A',
+            summary: assessment.assessment_text || ''
+          }
+        };
+      });
       
       setAssessments(transformedAssessments);
     } catch (error) {
