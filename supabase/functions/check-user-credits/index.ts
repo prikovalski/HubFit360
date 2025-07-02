@@ -35,31 +35,29 @@ serve(async (req) => {
       throw new Error('Usuário não autenticado');
     }
 
-    // Buscar usuário no banco
-    const { data: dbUser, error: userError } = await supabase
+    // Optimized query: Get user and credits in a single query with JOIN
+    const { data: userData, error: userError } = await supabase
       .from('users')
-      .select('id')
+      .select(`
+        id,
+        user_credits (
+          balance
+        )
+      `)
       .eq('auth_user_id', user.id)
       .single();
 
-    if (userError || !dbUser) {
+    if (userError || !userData) {
       throw new Error('Usuário não encontrado');
     }
 
-    // Buscar créditos
-    const { data: credits, error: creditsError } = await supabase
-      .from('user_credits')
-      .select('balance')
-      .eq('user_id', dbUser.id)
-      .single();
+    const balance = userData.user_credits?.balance || 0;
 
-    const balance = credits?.balance || 0;
-
-    // Buscar histórico recente
+    // Get recent transactions with optimized query (limit to 10)
     const { data: transactions, error: transactionsError } = await supabase
       .from('credit_transactions')
-      .select('*')
-      .eq('user_id', dbUser.id)
+      .select('id, type, amount, source, description, created_at')
+      .eq('user_id', userData.id)
       .order('created_at', { ascending: false })
       .limit(10);
 

@@ -1,16 +1,16 @@
+
 import { useEffect, useState } from 'react';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useUserCredits } from '@/hooks/useUserCredits';
-import { useToast } from "@/hooks/use-toast";
+import { useDashboardData } from '@/hooks/useDashboardData';
 import { useNavigate } from 'react-router-dom';
 import LoggedPageLayout from '@/components/layout/LoggedPageLayout';
 import DashboardHeader from './dashboard/DashboardHeader';
-import DashboardStats from './dashboard/DashboardStats';
-import AssessmentsList from './dashboard/AssessmentsList';
+import OptimizedDashboardStats from './dashboard/OptimizedDashboardStats';
+import OptimizedAssessmentsList from './dashboard/OptimizedAssessmentsList';
 import CreditsModal from './credits/CreditsModal';
 import CreditUserForm from './admin/CreditUserForm';
 import { DashboardStatsSkeleton } from '@/components/ui/dashboard-skeleton';
-import { supabase } from '@/integrations/supabase/client';
 
 interface UserDashboardProps {
   onNewAssessment: () => void;
@@ -21,66 +21,22 @@ interface UserDashboardProps {
 }
 
 const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileClick, onLogout }: UserDashboardProps) => {
-  const [assessments, setAssessments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [creditsModalOpen, setCreditsModalOpen] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const { userProfile } = useUserProfile();
-  const { credits, fetchCredits } = useUserCredits();
-  const { toast } = useToast();
+  
+  // Parallel data loading - all hooks start loading simultaneously
+  const { userProfile, loading: profileLoading } = useUserProfile();
+  const { credits, loading: creditsLoading } = useUserCredits();
+  const { assessments, assessmentsLoading, assessmentsError, refetchAssessments } = useDashboardData();
+  
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Verificar se é admin para mostrar painel administrativo
+    // Check admin status when user profile loads
     if (userProfile?.role === 'ADMIN') {
       setShowAdminPanel(true);
     }
   }, [userProfile]);
-
-  const fetchAssessments = async () => {
-    if (!userProfile?.id) return;
-
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('assessments')
-        .select('*')
-        .eq('user_id', userProfile.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Erro ao buscar avaliações:', error);
-        toast({
-          title: "Erro",
-          description: "Falha ao carregar avaliações. Tente novamente.",
-          variant: "destructive"
-        });
-      } else {
-        const transformedAssessments = (data || []).map(assessment => ({
-          ...assessment,
-          assessmentText: assessment.assessment_text, // Adicionar campo no nível principal
-          preview: {
-            leanMass: assessment.lean_mass ? `${assessment.lean_mass.toFixed(1)}kg` : 'N/A',
-            bodyFat: assessment.body_fat_percentage ? `${assessment.body_fat_percentage.toFixed(1)}%` : 'N/A',
-            bmi: assessment.bmi ? assessment.bmi.toFixed(1) : 'N/A',
-            fatMass: assessment.fat_mass ? `${assessment.fat_mass.toFixed(1)}kg` : 'N/A',
-            summary: assessment.assessment_text || ''
-          }
-        }));
-        
-        console.log('Avaliações transformadas:', transformedAssessments);
-        setAssessments(transformedAssessments);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (userProfile?.id) {
-      fetchAssessments();
-    }
-  }, [userProfile?.id, toast]);
 
   const handleNewAssessment = () => {
     console.log('Iniciando nova avaliação - sempre permitido agora');
@@ -97,10 +53,11 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
     setCreditsModalOpen(true);
   };
 
-  if (loading) {
+  // Show loading only when essential data (profile) is loading
+  if (profileLoading) {
     return (
       <LoggedPageLayout
-        userName={userProfile?.name || 'Usuário'}
+        userName="Carregando..."
         onLogoClick={onLogoClick}
         onProfileClick={onProfileClick}
         onLogout={onLogout}
@@ -130,7 +87,8 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
             onBuyCredits={handleBuyCredits}
           />
           
-          <DashboardStats assessments={assessments} />
+          {/* Stats load immediately with available data */}
+          <OptimizedDashboardStats assessments={assessments} />
           
           {showAdminPanel && (
             <div className="mb-8">
@@ -139,9 +97,11 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
             </div>
           )}
           
-          <AssessmentsList 
+          {/* Assessments list with independent loading state */}
+          <OptimizedAssessmentsList 
             assessments={assessments}
-            loading={loading}
+            loading={assessmentsLoading}
+            error={assessmentsError}
             onReportClick={handleViewReport}
             onNewAssessment={handleNewAssessment}
           />
