@@ -27,20 +27,14 @@ export const useAuthSubmit = () => {
       userMetadata.profession = formData.profession;
     }
 
-    // Para pacientes, incluir todos os dados de saúde
+    // Para pacientes, incluir dados físicos e medidas
     if (formData.userType === 'patient') {
       userMetadata.weight = formData.weight;
       userMetadata.height = formData.height;
       userMetadata.city = formData.city;
       userMetadata.state = formData.state;
       userMetadata.goal = formData.goal;
-      userMetadata.chronic_disease = formData.chronicDisease;
-      userMetadata.medical_restriction = formData.medicalRestriction;
-      userMetadata.food_allergy = formData.foodAllergy;
-      userMetadata.avoid_food = formData.avoidFood;
       userMetadata.physical_activities = formData.physicalActivities;
-      userMetadata.fixed_meal_times = formData.fixedMealTimes;
-      userMetadata.must_have_food = formData.mustHaveFood;
       userMetadata.neck_circumference = formData.neckCircumference;
       userMetadata.waist_circumference = formData.waistCircumference;
       userMetadata.hip_circumference = formData.hipCircumference;

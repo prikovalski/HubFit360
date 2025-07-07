@@ -7,7 +7,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, User, Heart, Activity, Shield, Utensils, Ruler, Briefcase } from "lucide-react";
+import { CalendarIcon, User, Heart, Activity, Ruler, Briefcase } from "lucide-react";
 import { format, parse } from "date-fns";
 import { getEstados, Estado } from '@/services/stateService';
 import { getCidadesByEstado, Cidade } from '@/services/cityService';
@@ -41,20 +41,18 @@ const SignupFormSteps = ({
   const [birthDateInput, setBirthDateInput] = useState('');
 
   const isProfessional = formData.userType === 'professional';
-  const maxSteps = isProfessional ? 2 : 7;
+  const maxSteps = isProfessional ? 2 : 5; // Reduzido de 7 para 5 (removendo saúde e alimentação)
   
   const stepTitles = isProfessional 
     ? ['Conta', 'Pessoais']
-    : ['Conta', 'Pessoais', 'Físicos', 'Atividades', 'Saúde', 'Alimentação', 'Medidas'];
+    : ['Conta', 'Pessoais', 'Físicos', 'Atividades', 'Medidas']; // Removido 'Saúde' e 'Alimentação'
 
   const stepIcons = {
     1: <User className="w-6 h-6 text-[#019f80]" />,
     2: isProfessional ? <Briefcase className="w-6 h-6 text-[#019f80]" /> : <User className="w-6 h-6 text-[#019f80]" />,
     3: <Heart className="w-6 h-6 text-[#019f80]" />,
     4: <Activity className="w-6 h-6 text-[#019f80]" />,
-    5: <Shield className="w-6 h-6 text-[#019f80]" />,
-    6: <Utensils className="w-6 h-6 text-[#019f80]" />,
-    7: <Ruler className="w-6 h-6 text-[#019f80]" />
+    5: <Ruler className="w-6 h-6 text-[#019f80]" />
   };
 
   const professionOptions = [
@@ -462,95 +460,9 @@ const SignupFormSteps = ({
 
         {!isProfessional && step === 5 && (
           <FormSection
-            title="Saúde e Restrições"
-            description="Informações sobre sua saúde e restrições médicas"
-            icon={stepIcons[5]}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                label="Doenças Crônicas"
-                value={formData.chronicDisease}
-                onChange={(value) => onInputChange('chronicDisease', value)}
-                placeholder="Ex: Diabetes, hipertensão, tireoide..."
-                disabled={loading}
-                tooltip="Informe condições médicas permanentes que possui"
-              />
-              
-              <FormField
-                label="Restrições Médicas"
-                value={formData.medicalRestriction}
-                onChange={(value) => onInputChange('medicalRestriction', value)}
-                placeholder="Ex: Cirurgia recente, lesão, limitações..."
-                disabled={loading}
-                tooltip="Qualquer limitação física ou médica atual"
-              />
-              
-              <FormField
-                label="Alergias Alimentares"
-                value={formData.foodAllergy}
-                onChange={(value) => onInputChange('foodAllergy', value)}
-                placeholder="Ex: Glúten, lactose, amendoim, frutos do mar..."
-                disabled={loading}
-                tooltip="Alimentos que causam reações alérgicas"
-              />
-              
-              <FormField
-                label="Alimentos a Evitar"
-                value={formData.avoidFood}
-                onChange={(value) => onInputChange('avoidFood', value)}
-                placeholder="Ex: Frituras, açúcar, carne vermelha..."
-                disabled={loading}
-                tooltip="Alimentos que prefere evitar por qualquer motivo"
-              />
-            </div>
-
-            <NavigationButtons
-              onPrevious={() => setStep(4)}
-              onNext={() => setStep(6)}
-              loading={loading}
-            />
-          </FormSection>
-        )}
-
-        {!isProfessional && step === 6 && (
-          <FormSection
-            title="Preferências Alimentares"
-            description="Suas preferências e horários de alimentação"
-            icon={stepIcons[6]}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                label="Horários Fixos de Refeição"
-                value={formData.fixedMealTimes}
-                onChange={(value) => onInputChange('fixedMealTimes', value)}
-                placeholder="Ex: 7h (café), 12h (almoço), 19h (jantar)..."
-                disabled={loading}
-                tooltip="Horários em que costuma fazer suas refeições principais"
-              />
-              
-              <FormField
-                label="Alimentos Indispensáveis"
-                value={formData.mustHaveFood}
-                onChange={(value) => onInputChange('mustHaveFood', value)}
-                placeholder="Ex: Café, arroz, feijão, pão..."
-                disabled={loading}
-                tooltip="Alimentos que não pode ficar sem no dia a dia"
-              />
-            </div>
-
-            <NavigationButtons
-              onPrevious={() => setStep(5)}
-              onNext={() => setStep(7)}
-              loading={loading}
-            />
-          </FormSection>
-        )}
-
-        {!isProfessional && step === 7 && (
-          <FormSection
             title="Medidas Corporais"
             description="Informações adicionais para uma análise mais precisa"
-            icon={stepIcons[7]}
+            icon={stepIcons[5]}
           >
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <FormField
@@ -585,7 +497,7 @@ const SignupFormSteps = ({
             </div>
 
             <NavigationButtons
-              onPrevious={() => setStep(6)}
+              onPrevious={() => setStep(4)}
               onSubmit={onSubmit}
               loading={loading}
               isLastStep={true}

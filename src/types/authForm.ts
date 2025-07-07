@@ -18,15 +18,9 @@ export interface FormData {
   state: string;
   goal: string;
   intensity: string;
-  chronicDisease: string;
-  medicalRestriction: string;
-  foodAllergy: string;
-  avoidFood: string;
   physicalActivity: string;
   activityFrequency: string;
   physicalActivities: PhysicalActivity[];
-  fixedMealTimes: string;
-  mustHaveFood: string;
   neckCircumference: string;
   waistCircumference: string;
   hipCircumference: string;
