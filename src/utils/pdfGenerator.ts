@@ -1,6 +1,7 @@
 
 import jsPDF from 'jspdf';
 import { UserProfile, PatientProfile } from '@/types/report';
+import { mapGenderFromDB } from '@/utils/genderMapping';
 
 interface GeneratePDFProps {
   report: any;
@@ -55,6 +56,9 @@ export const generateAssessmentPDF = ({ report, userProfile, patientProfile }: G
   // Determinar qual nome usar (priorizar patient_name se existir)
   const displayName = report.patient_name || userProfile?.name || 'Não informado';
 
+  // Mapear o gênero para português
+  const displayGender = mapGenderFromDB(userProfile?.gender);
+
   // Cabeçalho
   addText('HUBFIT360', 20, true);
   addText('Laudo de Avaliação Física', 16, true);
@@ -68,7 +72,7 @@ export const generateAssessmentPDF = ({ report, userProfile, patientProfile }: G
   const displayAge = report.age || calculateAge(userProfile?.birth_date || null);
   addText(`Idade: ${displayAge} anos`);
   
-  addText(`Gênero: ${userProfile?.gender || 'Não informado'}`);
+  addText(`Gênero: ${displayGender || 'Não informado'}`);
   addText(`Altura: ${patientProfile?.height ? `${(patientProfile.height / 100).toFixed(2)}m` : 'Não informado'}`);
   addText(`Peso: ${patientProfile?.weight ? `${patientProfile.weight}kg` : 'Não informado'}`);
   

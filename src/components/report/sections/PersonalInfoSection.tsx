@@ -1,5 +1,6 @@
 
 import { UserProfile, PatientProfile } from "@/types/report";
+import { mapGenderFromDB } from "@/utils/genderMapping";
 
 interface PersonalInfoSectionProps {
   userProfile: UserProfile | null;
@@ -22,6 +23,9 @@ const PersonalInfoSection = ({
   // Determinar qual objetivo usar (priorizar patientGoal se existir)
   const displayGoal = patientGoal || patientProfile?.goal;
 
+  // Mapear o gênero para português
+  const displayGender = mapGenderFromDB(userProfile?.gender);
+
   return (
     <div className="mb-8">
       <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">
@@ -38,7 +42,7 @@ const PersonalInfoSection = ({
         </div>
         <div>
           <span className="font-medium text-gray-600">Gênero:</span>
-          <span className="ml-2 text-gray-800">{userProfile?.gender || 'Não informado'}</span>
+          <span className="ml-2 text-gray-800">{displayGender || 'Não informado'}</span>
         </div>
         <div>
           <span className="font-medium text-gray-600">Altura:</span>
