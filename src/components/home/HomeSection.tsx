@@ -11,19 +11,19 @@ const HomeSection = ({ setCurrentSection }: HomeSectionProps) => {
   return (
     <main className="relative overflow-hidden">
       {/* Floating shapes background */}
-      <div className="floating-shape"></div>
-      <div className="floating-shape"></div>
-      <div className="floating-shape"></div>
-      <div className="floating-shape"></div>
+      <div className="floating-shape-green"></div>
+      <div className="floating-shape-green"></div>
+      <div className="floating-shape-green"></div>
+      <div className="floating-shape-green"></div>
       
       {/* Hero Section */}
-      <section className="py-20 px-4 relative bg-gradient-to-br from-indigo-50 via-white to-cyan-50 grid-bg" aria-labelledby="hero-title">
+      <section className="py-20 px-4 relative bg-gradient-to-br from-green-50 via-white to-emerald-50 grid-bg" aria-labelledby="hero-title">
         <div className="container mx-auto text-center relative z-10">
           <div className="max-w-5xl mx-auto">
             {/* Badge animado */}
-            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 backdrop-blur-sm border border-indigo-200 rounded-full px-4 py-2 mb-8 animate-fade-in-scale">
-              <Zap className="w-4 h-4 text-indigo-600" />
-              <span className="text-sm font-medium text-indigo-700">Tecnologia de Ponta em IA</span>
+            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-green-500/10 to-emerald-500/10 backdrop-blur-sm border border-green-200 rounded-full px-4 py-2 mb-8 animate-fade-in-scale">
+              <Zap className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-green-700">Tecnologia de Ponta em IA</span>
             </div>
             
             <h1 
@@ -32,13 +32,13 @@ const HomeSection = ({ setCurrentSection }: HomeSectionProps) => {
               style={{ animationDelay: '0.2s' }}
             >
               Descubra Seu
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-600 animate-gradient"> 
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 animate-gradient"> 
                 Potencial Máximo
               </span>
               <div className="flex items-center justify-center space-x-3 mt-2">
-                <Brain className="w-12 h-12 text-indigo-500 animate-pulse" />
+                <Brain className="w-12 h-12 text-green-500 animate-pulse" />
                 <span className="text-4xl md:text-6xl">Físico</span>
-                <TrendingUp className="w-10 h-10 text-cyan-500 animate-bounce" />
+                <TrendingUp className="w-10 h-10 text-emerald-500 animate-bounce" />
               </div>
             </h1>
             
@@ -46,8 +46,8 @@ const HomeSection = ({ setCurrentSection }: HomeSectionProps) => {
               className="text-xl md:text-2xl text-gray-700 mb-12 leading-relaxed max-w-3xl mx-auto animate-slide-up"
               style={{ animationDelay: '0.4s' }}
             >
-              <span className="font-semibold text-indigo-600">Avaliação física revolucionária</span> com 
-              <span className="bg-gradient-to-r from-purple-600 to-cyan-600 bg-clip-text text-transparent font-bold"> Inteligência Artificial avançada</span>. 
+              <span className="font-semibold text-green-600">Avaliação física revolucionária</span> com 
+              <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent font-bold"> Inteligência Artificial avançada</span>. 
               Transforme seu corpo com direcionamento personalizado de treinos e dieta.
             </p>
             
@@ -61,11 +61,11 @@ const HomeSection = ({ setCurrentSection }: HomeSectionProps) => {
                 <span className="text-gray-600 font-medium">Análise Precisa em 3min</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                <div className="w-3 h-3 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
                 <span className="text-gray-600 font-medium">+99% de Precisão</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+                <div className="w-3 h-3 bg-gradient-to-r from-teal-400 to-teal-600 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
                 <span className="text-gray-600 font-medium">Resultados Instantâneos</span>
               </div>
             </div>
@@ -76,7 +76,7 @@ const HomeSection = ({ setCurrentSection }: HomeSectionProps) => {
             >
               <Button 
                 onClick={() => setCurrentSection('auth')}
-                className="btn-modern text-white px-10 py-4 text-xl rounded-full transition-all duration-300 hover:shadow-2xl hover:scale-105 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 font-bold group neon-accent"
+                className="btn-modern-green text-white px-10 py-4 text-xl rounded-full transition-all duration-300 hover:shadow-2xl hover:scale-105 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-bold group neon-accent-green"
                 aria-label="Começar avaliação física gratuita agora"
               >
                 <Zap className="mr-3 w-6 h-6 group-hover:animate-spin" />
@@ -87,7 +87,7 @@ const HomeSection = ({ setCurrentSection }: HomeSectionProps) => {
               <Button 
                 onClick={() => setCurrentSection('about')}
                 variant="outline" 
-                className="glass border-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-800 px-10 py-4 text-xl rounded-full transition-all duration-300 hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 font-semibold group"
+                className="glass border-2 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 hover:text-green-800 px-10 py-4 text-xl rounded-full transition-all duration-300 hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-semibold group"
                 aria-label="Saber mais sobre nossos serviços"
               >
                 Descubra Mais
@@ -102,8 +102,8 @@ const HomeSection = ({ setCurrentSection }: HomeSectionProps) => {
         </div>
         
         {/* Decorative elements */}
-        <div className="absolute top-20 left-10 w-20 h-20 bg-gradient-to-br from-indigo-400/20 to-purple-400/20 rounded-full blur-xl animate-float"></div>
-        <div className="absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-br from-cyan-400/20 to-blue-400/20 rounded-full blur-xl animate-float" style={{ animationDelay: '-3s' }}></div>
+        <div className="absolute top-20 left-10 w-20 h-20 bg-gradient-to-br from-green-400/20 to-emerald-400/20 rounded-full blur-xl animate-float"></div>
+        <div className="absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-br from-teal-400/20 to-emerald-400/20 rounded-full blur-xl animate-float" style={{ animationDelay: '-3s' }}></div>
       </section>
     </main>
   );

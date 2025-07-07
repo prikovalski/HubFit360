@@ -13,7 +13,7 @@ const Header = ({ setCurrentSection }: HeaderProps) => {
       <div className="container mx-auto px-4 py-4">
         <nav className="flex items-center justify-between" role="navigation" aria-label="Navegação principal">
           <div 
-            className="flex items-center space-x-3 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-xl p-3 -m-3 hover:bg-white/10 transition-all duration-300 group"
+            className="flex items-center space-x-3 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 rounded-xl p-3 -m-3 hover:bg-white/10 transition-all duration-300 group"
             onClick={() => setCurrentSection('home')}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
@@ -34,9 +34,9 @@ const Header = ({ setCurrentSection }: HeaderProps) => {
                 height="64"
                 loading="eager"
               />
-              <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-indigo-400 animate-pulse opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-green-400 animate-pulse opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
               HubFit360
             </span>
           </div>
@@ -44,16 +44,16 @@ const Header = ({ setCurrentSection }: HeaderProps) => {
           <div className="hidden md:flex items-center space-x-6">
             <button 
               onClick={() => setCurrentSection('about')}
-              className="text-gray-700 hover:text-indigo-600 transition-all duration-300 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-lg px-4 py-2 hover:bg-white/10 relative group"
+              className="text-gray-700 hover:text-green-600 transition-all duration-300 font-medium focus:outline-none focus:ring-2 focus:ring-green-500 rounded-lg px-4 py-2 hover:bg-white/10 relative group"
               aria-label="Ir para página sobre a empresa"
             >
               Sobre
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-300 group-hover:w-full"></span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-300 group-hover:w-full"></span>
             </button>
             <InstallPWAButton />
             <Button 
               onClick={() => setCurrentSection('auth')}
-              className="btn-modern text-white px-6 py-2 rounded-full transition-all duration-300 hover:shadow-lg focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 font-semibold"
+              className="btn-modern-green text-white px-6 py-2 rounded-full transition-all duration-300 hover:shadow-lg focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-semibold"
               aria-label="Fazer avaliação física gratuita"
             >
               Faça Sua Avaliação
@@ -66,7 +66,7 @@ const Header = ({ setCurrentSection }: HeaderProps) => {
             <Button 
               onClick={() => setCurrentSection('auth')}
               size="sm"
-              className="btn-modern text-white rounded-full font-semibold"
+              className="btn-modern-green text-white rounded-full font-semibold"
               aria-label="Fazer avaliação física"
             >
               Avaliação
