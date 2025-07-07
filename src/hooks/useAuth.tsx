@@ -1,3 +1,4 @@
+
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -88,25 +89,79 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return { data: authData, error: authError };
     }
 
-    // If user was created successfully, update the users table with birth_date and gender
+    // If user was created successfully, wait for the trigger to create the user record and then update it
     if (authData.user) {
       try {
-        console.log('Updating user profile with metadata:', metadata);
-        const { error: updateError } = await supabase
-          .from('users')
-          .update({
-            birth_date: metadata.birth_date,
-            gender: metadata.gender
-          })
-          .eq('auth_user_id', authData.user.id);
+        console.log('Aguardando criação do usuário na tabela users...');
+        
+        // Aguardar um pouco para garantir que o trigger criou o usuário
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Buscar o usuário criado pelo trigger e atualizar com os dados completos
+        let attempts = 0;
+        const maxAttempts = 5;
+        
+        while (attempts < maxAttempts) {
+          console.log(`Tentativa ${attempts + 1} de atualizar dados do usuário`);
+          
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('id')
+            .eq('auth_user_id', authData.user.id)
+            .single();
+          
+          if (userData && !userError) {
+            console.log('Usuário encontrado, atualizando dados:', userData);
+            
+            // Atualizar com os dados completos
+            const updateData: any = {};
+            
+            if (metadata.birth_date) {
+              updateData.birth_date = metadata.birth_date;
+            }
+            
+            if (metadata.gender) {
+              updateData.gender = metadata.gender;
+            }
+            
+            if (metadata.name) {
+              updateData.name = metadata.name;
+            }
+            
+            if (metadata.profession) {
+              updateData.profession = metadata.profession;
+            }
+            
+            if (metadata.role) {
+              updateData.role = metadata.role;
+            }
+            
+            console.log('Dados para atualização:', updateData);
+            
+            const { error: updateError } = await supabase
+              .from('users')
+              .update(updateData)
+              .eq('auth_user_id', authData.user.id);
 
-        if (updateError) {
-          console.error('Error updating user profile:', updateError);
-        } else {
-          console.log('User profile updated successfully');
+            if (updateError) {
+              console.error('Erro ao atualizar dados do usuário:', updateError);
+            } else {
+              console.log('Dados do usuário atualizados com sucesso');
+              break;
+            }
+          } else {
+            console.log('Usuário ainda não criado pelo trigger, aguardando...');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            attempts++;
+          }
         }
+        
+        if (attempts >= maxAttempts) {
+          console.error('Não foi possível atualizar os dados do usuário após várias tentativas');
+        }
+        
       } catch (error) {
-        console.error('Error updating user profile:', error);
+        console.error('Erro ao atualizar dados do usuário:', error);
       }
     }
 

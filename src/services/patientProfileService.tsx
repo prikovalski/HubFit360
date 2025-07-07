@@ -134,7 +134,7 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
     console.log('Atividades convertidas para JSON:', physicalActivitiesJson);
     console.log('Tipo das atividades convertidas:', typeof physicalActivitiesJson);
 
-    // Criar o objeto de dados do paciente com validação
+    // Criar o objeto de dados do paciente com validação - removendo campos que não existem mais
     const patientData = {
       user_id: userProfile.id,
       height: formData.height ? parseFloat(formData.height) : null,
@@ -142,15 +142,9 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
       city_id: cityId,
       estado_id: estadoId,
       goal: formData.goal || null,
-      chronic_disease: formData.chronicDisease || null,
-      medical_restriction: formData.medicalRestriction || null,
-      food_allergy: formData.foodAllergy || null,
-      avoid_food: formData.avoidFood || null,
       physical_activity: formData.physicalActivity || null,
       activity_frequency: formData.activityFrequency || null,
       physical_activities: physicalActivitiesJson as any, // Cast explícito para Json
-      fixed_meal_times: formData.fixedMealTimes || null,
-      must_have_food: formData.mustHaveFood || null,
       neck_circumference: formData.neckCircumference ? parseFloat(formData.neckCircumference) : null,
       waist_circumference: formData.waistCircumference ? parseFloat(formData.waistCircumference) : null,
       hip_circumference: formData.hipCircumference ? parseFloat(formData.hipCircumference) : null
