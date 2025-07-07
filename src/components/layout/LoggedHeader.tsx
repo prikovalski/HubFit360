@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { User, LogOut } from 'lucide-react';
+import { User, LogOut, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/hooks/use-toast";
 
@@ -25,7 +25,6 @@ const LoggedHeader = ({ userName, onLogoClick, onProfileClick, onLogout }: Logge
         description: "Você foi desconectado com sucesso!"
       });
       
-      // Chamar a função de callback após o logout
       onLogout();
       
       console.log('Logout realizado com sucesso');
@@ -40,37 +39,53 @@ const LoggedHeader = ({ userName, onLogoClick, onProfileClick, onLogout }: Logge
   };
 
   return (
-    <header className="bg-white/80 backdrop-blur-md border-b border-green-100 sticky top-0 z-50">
+    <header className="glass backdrop-blur-md border-b border-white/20 sticky top-0 z-50 grid-bg" role="banner">
       <div className="container mx-auto px-4 py-4">
-        <nav className="flex items-center justify-between">
+        <nav className="flex items-center justify-between" role="navigation">
           {/* Logo Section */}
           <div 
-            className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity"
+            className="flex items-center space-x-3 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 rounded-xl p-3 -m-3 hover:bg-white/10 transition-all duration-300 group"
             onClick={onLogoClick}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onLogoClick();
+              }
+            }}
+            tabIndex={0}
+            role="button"
+            aria-label="Ir para dashboard"
           >
-            <img 
-              src="/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.webp" 
-              alt="HubFit360 Logo" 
-              className="w-12 h-12"
-            />
-            <span className="text-xl font-bold text-gray-800">HubFit360</span>
+            <div className="relative">
+              <img 
+                src="/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.webp" 
+                alt="HubFit360 - Logotipo da empresa" 
+                className="w-12 h-12 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
+                width="48"
+                height="48"
+                loading="eager"
+              />
+              <Sparkles className="absolute -top-1 -right-1 w-3 h-3 text-green-400 animate-pulse opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </div>
+            <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+              HubFit360
+            </span>
           </div>
           
           {/* User Actions */}
           <div className="flex items-center space-x-3">
             {userName && (
-              <span className="hidden sm:block text-sm text-gray-600 mr-2">
+              <span className="hidden sm:block text-sm text-gray-600 mr-2 font-medium">
                 Olá, {userName}
               </span>
             )}
             
             <Button
               onClick={onProfileClick}
-              variant="outline"
+              className="glass border-2 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 hover:text-green-800 transition-all duration-300 hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-medium group"
               size="sm"
-              className="flex items-center space-x-2 border-[#019f80] text-[#019f80] hover:bg-[#019f80] hover:text-white"
             >
-              <User className="w-4 h-4" />
+              <User className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
               <span className="hidden sm:inline">Meu Perfil</span>
             </Button>
             
@@ -78,9 +93,9 @@ const LoggedHeader = ({ userName, onLogoClick, onProfileClick, onLogout }: Logge
               onClick={handleLogout}
               variant="outline"
               size="sm"
-              className="flex items-center space-x-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+              className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-all duration-300 hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 font-medium group"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-4 h-4 group-hover:-rotate-12 transition-transform duration-300" />
               <span className="hidden sm:inline">Sair</span>
             </Button>
           </div>

@@ -11,6 +11,7 @@ import OptimizedAssessmentsList from './dashboard/OptimizedAssessmentsList';
 import CreditsModal from './credits/CreditsModal';
 import CreditUserForm from './admin/CreditUserForm';
 import { DashboardStatsSkeleton } from '@/components/ui/dashboard-skeleton';
+import { Activity, Sparkles } from 'lucide-react';
 
 interface UserDashboardProps {
   onNewAssessment: () => void;
@@ -64,7 +65,17 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
       >
         <div className="py-12 px-4">
           <div className="container mx-auto max-w-6xl">
-            <DashboardStatsSkeleton />
+            <div className="glass rounded-3xl p-12 backdrop-blur-xl border border-white/20 shadow-2xl text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
+                <Activity className="w-10 h-10 text-white" />
+              </div>
+              <p className="text-gray-600 text-lg font-medium">Carregando dashboard...</p>
+              <div className="mt-4 flex justify-center space-x-1">
+                {[1,2,3].map((i) => (
+                  <div key={i} className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.1}s` }}></div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </LoggedPageLayout>
@@ -91,8 +102,13 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
           <OptimizedDashboardStats assessments={assessments} />
           
           {showAdminPanel && (
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold mb-4">Painel Administrativo</h3>
+            <div className="mb-8 glass rounded-3xl p-6 backdrop-blur-xl border border-white/20 shadow-xl">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-white" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900">Painel Administrativo</h3>
+              </div>
               <CreditUserForm />
             </div>
           )}

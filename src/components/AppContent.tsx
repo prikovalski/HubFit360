@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Activity } from 'lucide-react';
+import { Activity, Sparkles } from 'lucide-react';
 import AboutSection from '@/components/AboutSection';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -73,16 +73,28 @@ const AppContent = () => {
     if (user) {
       if (loading) {
         return (
-          <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow">
-                <Activity className="w-10 h-10 text-white" />
-              </div>
-              <p className="text-gray-600 text-lg">Carregando dashboard...</p>
-              <div className="mt-4 flex justify-center space-x-1">
-                {[1,2,3].map((i) => (
-                  <div key={i} className="w-2 h-2 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.1}s` }}></div>
-                ))}
+          <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center relative overflow-hidden">
+            {/* Background decorative elements */}
+            <div className="absolute inset-0">
+              <div className="absolute top-20 left-20 w-64 h-64 bg-gradient-to-br from-green-200/30 to-emerald-200/30 rounded-full blur-3xl animate-float"></div>
+              <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-br from-teal-200/20 to-green-200/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '-3s' }}></div>
+            </div>
+            
+            {/* Grid pattern overlay */}
+            <div className="absolute inset-0 grid-bg opacity-30"></div>
+            
+            <div className="text-center relative z-10">
+              <div className="glass rounded-3xl p-12 backdrop-blur-xl border border-white/20 shadow-2xl">
+                <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-glow relative">
+                  <Activity className="w-10 h-10 text-white" />
+                  <Sparkles className="absolute -top-2 -right-2 w-5 h-5 text-green-300 animate-pulse" />
+                </div>
+                <p className="text-gray-700 text-lg font-medium mb-4">Carregando dashboard...</p>
+                <div className="flex justify-center space-x-1">
+                  {[1,2,3].map((i) => (
+                    <div key={i} className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.1}s` }}></div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -145,7 +157,7 @@ const AppContent = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
       {/* Header - apenas para usuários não logados */}
       {!user && (
         <Header setCurrentSection={setCurrentSection} />
