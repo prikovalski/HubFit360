@@ -18,6 +18,7 @@ interface Assessment {
   fat_mass: number;
   status: string;
   assessment_text: string;
+  patient_name?: string;
   preview?: {
     leanMass: string;
     bodyFat: string;
@@ -44,6 +45,10 @@ const OptimizedAssessmentsList = memo(({
 }: OptimizedAssessmentsListProps) => {
   const { toast } = useToast();
   const { userProfile, patientProfile } = useUserProfile();
+
+  const getDisplayName = (assessment: Assessment) => {
+    return assessment.patient_name || userProfile?.name || 'Usuário';
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -135,12 +140,16 @@ const OptimizedAssessmentsList = memo(({
               >
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
                   <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
+                    <div className="flex items-center space-x-3 mb-1">
                       <h3 className="text-lg font-semibold text-gray-800">
-                        Avaliação de {new Date(assessment.created_at).toLocaleDateString('pt-BR')}
+                        {getDisplayName(assessment)}
                       </h3>
                       {getStatusBadge(assessment.status)}
                     </div>
+                    
+                    <p className="text-sm text-gray-500 mb-3">
+                      Avaliação realizada em {new Date(assessment.created_at).toLocaleDateString('pt-BR')}
+                    </p>
                     
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div>
