@@ -16,11 +16,22 @@ export async function saveAssessment(
   tier: string = 'basic',
   patientName: string | null = null,
   assessmentType: 'self' | 'patient' = 'self',
-  patientData?: PatientData
+  patientData?: PatientData,
+  // Add circumference parameters for all assessment types
+  neckCircumference?: number,
+  waistCircumference?: number,
+  hipCircumference?: number
 ) {
   const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+  console.log('Salvando avaliação com circunferências:', {
+    assessmentType,
+    neckCircumference,
+    waistCircumference,
+    hipCircumference
+  });
 
   const assessmentRecord: any = {
     user_id: userId,
@@ -36,7 +47,11 @@ export async function saveAssessment(
     status: 'completed',
     tier: tier,
     patient_name: patientName,
-    assessment_type: assessmentType
+    assessment_type: assessmentType,
+    // Add circumferences for all assessment types
+    neck_circumference: neckCircumference || null,
+    waist_circumference: waistCircumference || null,
+    hip_circumference: hipCircumference || null
   };
 
   // If it's a patient assessment, add all patient data
@@ -58,6 +73,8 @@ export async function saveAssessment(
     assessmentRecord.patient_physical_activity = patientData.physicalActivity;
     assessmentRecord.patient_physical_activities = patientData.physicalActivities || [];
   }
+
+  console.log('Registro de avaliação a ser salvo:', assessmentRecord);
 
   const { data: assessmentData, error } = await supabase
     .from('assessments')

@@ -1,17 +1,32 @@
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import type { AssessmentRequest, AssessmentResult } from './types.ts';
-import { fetchUserData, calculateAge } from './userDataService.ts';
-import { buildAssessmentPrompt } from './promptBuilder.ts';
-import { callOpenAI } from './openaiService.ts';
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { saveAssessment } from './assessmentService.ts';
 import { calculateBodyFatPercentage, calculateLeanMass, calculateFatMass } from './deurenbergFormula.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { callOpenAI } from './openaiService.ts';
+import { buildAssessmentPrompt } from './promptBuilder.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+interface AssessmentData {
+  userId: string;
+  frontPhoto: string;
+  sidePhoto: string;
+  backPhoto: string;
+  sex: string;
+  height: number;
+  weight: number;
+  assessmentType: 'self' | 'patient';
+  patientName?: string;
+  patientData?: any;
+  // Add circumference fields
+  neckCircumference?: number;
+  waistCircumference?: number;
+  hipCircumference?: number;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -19,124 +34,127 @@ serve(async (req) => {
   }
 
   try {
-    const { 
-      userId, 
-      frontPhoto, 
-      sidePhoto, 
-      backPhoto, 
-      sex, 
-      height, 
-      weight,
-      patientName,
-      assessmentType = 'self',
-      patientData
-    }: AssessmentRequest = await req.json();
-
-    console.log('Recebendo dados para avaliação:', { 
-      userId, 
-      sex, 
-      height, 
-      weight, 
-      patientName, 
-      assessmentType,
-      hasPatientData: !!patientData,
-      patientDataActivities: patientData?.physicalActivities,
-      patientGoal: patientData?.goal
+    const data: AssessmentData = await req.json();
+    
+    console.log('Dados recebidos na create-assessment:', {
+      assessmentType: data.assessmentType,
+      hasCircumferences: {
+        neck: !!data.neckCircumference,
+        waist: !!data.waistCircumference,
+        hip: !!data.hipCircumference
+      },
+      circumferenceValues: {
+        neck: data.neckCircumference,
+        waist: data.waistCircumference,
+        hip: data.hipCircumference
+      }
     });
 
-    let userData;
-    let calculatedAge;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Configuração do Supabase incompleta');
+    }
 
-    if (assessmentType === 'patient' && patientData) {
-      // For patient assessments, use patient data directly
-      const birth = new Date(patientData.birthDate);
-      const today = new Date();
-      calculatedAge = today.getFullYear() - birth.getFullYear();
-      const monthDiff = today.getMonth() - birth.getMonth();
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-        calculatedAge--;
-      }
-      
-      // Create a mock userData structure for patient
-      userData = {
-        id: userId,
-        gender: patientData.gender,
-        birth_date: patientData.birthDate,
-        patient_profiles: [] // Não usar para avaliação de paciente
-      };
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-      console.log('Dados estruturados do paciente:', JSON.stringify(patientData, null, 2));
+    // Get user data
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('*, patient_profiles(*)')
+      .eq('id', data.userId)
+      .single();
+
+    if (userError || !userData) {
+      throw new Error('Usuário não encontrado');
+    }
+
+    // Calculate age based on assessment type
+    let calculatedAge: number;
+    
+    if (data.assessmentType === 'patient' && data.patientData?.birthDate) {
+      const birthDate = new Date(data.patientData.birthDate);
+      calculatedAge = new Date().getFullYear() - birthDate.getFullYear();
+    } else if (userData.birth_date) {
+      const birthDate = new Date(userData.birth_date);
+      calculatedAge = new Date().getFullYear() - birthDate.getFullYear();
     } else {
-      // For self assessments, fetch user data as before
-      userData = await fetchUserData(userId);
-      calculatedAge = calculateAge(userData?.birth_date);
+      calculatedAge = 30; // Default age if not available
     }
 
     console.log('Idade calculada:', calculatedAge);
 
+    // Calculate body composition using Deurenberg formula
+    const bodyFatPercentage = calculateBodyFatPercentage(
+      data.weight,
+      data.height,
+      calculatedAge,
+      data.sex.toLowerCase()
+    );
+    
+    const leanMass = calculateLeanMass(data.weight, bodyFatPercentage);
+    const fatMass = calculateFatMass(data.weight, bodyFatPercentage);
+    
     // Calculate BMI
-    const heightM = height / 100;
-    const bmi = weight / (heightM * heightM);
-    
-    // Calculate body fat percentage using Deurenberg formula
-    const bodyFatPercentage = calculateBodyFatPercentage(weight, height, calculatedAge, sex);
-    console.log('Percentual de gordura calculado (Deurenberg):', bodyFatPercentage.toFixed(2) + '%');
-    
-    // Calculate lean mass and fat mass
-    const leanMass = calculateLeanMass(weight, bodyFatPercentage);
-    const fatMass = calculateFatMass(weight, bodyFatPercentage);
-    
-    console.log('Massa magra calculada:', leanMass.toFixed(2) + 'kg');
-    console.log('Massa gorda calculada:', fatMass.toFixed(2) + 'kg');
-    
-    // SEMPRE RETORNA AVALIAÇÃO BÁSICA PRIMEIRO
-    // O upgrade será feito através da função upgrade-assessment
-    console.log('Gerando avaliação básica (sem consumir créditos)');
-    const tier = 'basic';
-    const assessment = null; // Avaliação básica não tem análise de texto
+    const heightM = data.height / 100;
+    const bmi = data.weight / (heightM * heightM);
 
-    // Save assessment in database (always as basic)
-    const assessmentData = await saveAssessment(
-      userId,
-      frontPhoto,
-      sidePhoto,
-      backPhoto,
+    console.log('Cálculos realizados:', {
+      bodyFatPercentage: bodyFatPercentage.toFixed(2),
+      leanMass: leanMass.toFixed(2),
+      fatMass: fatMass.toFixed(2),
+      bmi: bmi.toFixed(2)
+    });
+
+    // For basic assessments, save without detailed analysis
+    const savedAssessment = await saveAssessment(
+      data.userId,
+      data.frontPhoto,
+      data.sidePhoto,
+      data.backPhoto,
       calculatedAge,
       bodyFatPercentage,
       leanMass,
       fatMass,
       bmi,
-      assessment, // null para avaliação básica
-      tier, // sempre 'basic'
-      patientName,
-      assessmentType,
-      patientData
+      null, // No assessment text for basic
+      'basic',
+      data.patientName || null,
+      data.assessmentType,
+      data.patientData,
+      // Pass circumferences for all assessment types
+      data.neckCircumference,
+      data.waistCircumference,
+      data.hipCircumference
     );
 
-    console.log('Avaliação básica salva com sucesso:', assessmentData.id);
+    console.log('Avaliação básica salva com ID:', savedAssessment.id);
 
-    const result: AssessmentResult = {
-      success: true, 
-      assessment: assessmentData,
-      bodyFat: parseFloat(bodyFatPercentage.toFixed(2)),
-      leanMass: parseFloat(leanMass.toFixed(2)),
-      fatMass: parseFloat(fatMass.toFixed(2)),
-      bmi: parseFloat(bmi.toFixed(2)),
-      age: calculatedAge,
-      tier: tier // sempre 'basic'
-    };
-
-    return new Response(JSON.stringify(result), {
+    return new Response(JSON.stringify({
+      success: true,
+      assessment: {
+        id: savedAssessment.id,
+        tier: 'basic',
+        bodyFatPercentage: bodyFatPercentage,
+        leanMass: leanMass,
+        fatMass: fatMass,
+        bmi: bmi
+      }
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
     });
 
   } catch (error) {
-    console.error('Erro na função:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message 
+    console.error('Erro ao processar avaliação:', error);
+    
+    return new Response(JSON.stringify({
+      success: false,
+      error: error.message
     }), {
-      status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
     });
   }
 });

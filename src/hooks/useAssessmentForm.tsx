@@ -42,11 +42,13 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
 
   const { toast } = useToast();
 
-  // Validation based on assessment type
+  // Enhanced validation with mandatory circumferences
   const canSubmit = photos.front && photos.side && photos.back && 
     (assessmentType === 'self' 
-      ? height && weight 
-      : patientData.name && patientData.gender && patientData.birthDate && patientData.height && patientData.weight
+      ? height && weight && neckCircumference && waistCircumference && hipCircumference
+      : patientData.name && patientData.gender && patientData.birthDate && 
+        patientData.height && patientData.weight && 
+        patientData.neckCircumference && patientData.waistCircumference && patientData.hipCircumference
     );
 
   const handlePhotoUpload = (position: 'front' | 'side' | 'back', photo: string) => {
@@ -65,9 +67,22 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
 
   const handleSubmit = async () => {
     if (!canSubmit) {
+      let errorMessage = "Por favor, preencha todos os campos obrigatórios e faça upload das 3 fotos.";
+      
+      // More specific error messages
+      if (assessmentType === 'self') {
+        if (!neckCircumference || !waistCircumference || !hipCircumference) {
+          errorMessage = "As medidas de circunferência (pescoço, cintura e quadril) são obrigatórias para uma análise detalhada da composição corporal.";
+        }
+      } else {
+        if (!patientData.neckCircumference || !patientData.waistCircumference || !patientData.hipCircumference) {
+          errorMessage = "As medidas de circunferência do paciente (pescoço, cintura e quadril) são obrigatórias para uma análise detalhada da composição corporal.";
+        }
+      }
+      
       toast({
         title: "Erro",
-        description: "Por favor, preencha todos os campos obrigatórios e faça upload das 3 fotos.",
+        description: errorMessage,
         variant: "destructive"
       });
       return;
@@ -98,11 +113,14 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
         sidePhoto: photos.side,
         backPhoto: photos.back,
         assessmentType,
-        // For self assessment, use current form data
+        // For self assessment, use current form data including circumferences
         ...(assessmentType === 'self' && {
           sex: userData.gender || 'Não informado',
           height: parseFloat(height),
           weight: parseFloat(weight),
+          neckCircumference: parseFloat(neckCircumference),
+          waistCircumference: parseFloat(waistCircumference),
+          hipCircumference: parseFloat(hipCircumference),
           patientName: patientName.trim() || null
         }),
         // For patient assessment, use patient data
@@ -110,15 +128,18 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
           sex: patientData.gender,
           height: parseFloat(patientData.height),
           weight: parseFloat(patientData.weight),
+          neckCircumference: parseFloat(patientData.neckCircumference),
+          waistCircumference: parseFloat(patientData.waistCircumference),
+          hipCircumference: parseFloat(patientData.hipCircumference),
           patientName: patientData.name,
           patientData: {
             gender: patientData.gender,
             birthDate: patientData.birthDate,
             height: parseFloat(patientData.height),
             weight: parseFloat(patientData.weight),
-            neckCircumference: patientData.neckCircumference ? parseFloat(patientData.neckCircumference) : null,
-            waistCircumference: patientData.waistCircumference ? parseFloat(patientData.waistCircumference) : null,
-            hipCircumference: patientData.hipCircumference ? parseFloat(patientData.hipCircumference) : null,
+            neckCircumference: parseFloat(patientData.neckCircumference),
+            waistCircumference: parseFloat(patientData.waistCircumference),
+            hipCircumference: parseFloat(patientData.hipCircumference),
             goal: patientData.goal || null,
             chronicDisease: patientData.chronicDisease || null,
             medicalRestriction: patientData.medicalRestriction || null,
@@ -131,6 +152,8 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
           }
         })
       };
+
+      console.log('Dados sendo enviados para create-assessment:', submissionData);
 
       const { data, error } = await supabase.functions.invoke('create-assessment', {
         body: submissionData

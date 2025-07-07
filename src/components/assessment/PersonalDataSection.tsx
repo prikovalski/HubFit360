@@ -90,12 +90,13 @@ const PersonalDataSection = ({
 
         <div className="border-t pt-6">
           <h3 className="text-lg font-semibold mb-4 text-gray-700">
-            Circunferências <span className="text-sm font-normal text-gray-500">(opcional)</span>
+            Circunferências <span className="text-red-500">*</span>
+            <span className="text-sm font-normal text-gray-500 ml-2">(obrigatório para análise detalhada)</span>
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="neck" className="text-sm font-medium">
-                Pescoço (cm)
+                Pescoço (cm) <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="neck"
@@ -103,13 +104,14 @@ const PersonalDataSection = ({
                 placeholder="Ex: 38"
                 value={neckCircumference}
                 onChange={(e) => onNeckCircumferenceChange(e.target.value)}
+                required
                 className="mt-1"
               />
             </div>
             
             <div>
               <Label htmlFor="waist" className="text-sm font-medium">
-                Cintura (cm)
+                Cintura (cm) <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="waist"
@@ -117,13 +119,14 @@ const PersonalDataSection = ({
                 placeholder="Ex: 85"
                 value={waistCircumference}
                 onChange={(e) => onWaistCircumferenceChange(e.target.value)}
+                required
                 className="mt-1"
               />
             </div>
             
             <div>
               <Label htmlFor="hip" className="text-sm font-medium">
-                Quadril (cm)
+                Quadril (cm) <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="hip"
@@ -131,6 +134,7 @@ const PersonalDataSection = ({
                 placeholder="Ex: 95"
                 value={hipCircumference}
                 onChange={(e) => onHipCircumferenceChange(e.target.value)}
+                required
                 className="mt-1"
               />
             </div>
