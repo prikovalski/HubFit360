@@ -142,7 +142,8 @@ DADOS PESSOAIS:
 - Doenças crônicas: ${chronicDisease}
 - Objetivo: ${goal}
 
-IMPORTANTE: Forneça o laudo em formato CSV estruturado exatamente como o exemplo abaixo. Use aspas duplas para valores que contenham vírgulas e mantenha a estrutura rigorosa:
+IMPORTANTE: Forneça o laudo em formato CSV estruturado exatamente como o exemplo abaixo. O laudo deve ser realista e profissional, utilize uma linguagem de facil entendimento para que um adolescente seja capaz de entender. Inclua valores numéricos específicos nas estimativas, mas não detalhe os cálculos. 
+Use aspas duplas para valores que contenham vírgulas e mantenha a estrutura rigorosa:
 
 \`\`\`
 AVALIAÇÃO CORPORAL
