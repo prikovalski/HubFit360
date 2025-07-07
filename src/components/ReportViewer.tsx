@@ -86,11 +86,21 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
 
   const userName = userProfile?.name || 'Usuário';
   
-  // Verificar se o relatório está pago - considerando tanto pagamento quanto upgrade via créditos
-  const isPaid = (currentReport.tier === 'premium') && 
-    (currentReport.payment_status === 'paid' || currentReport.upgrade_via_credits === true);
-  
+  // Lógica simplificada de verificação de pagamento
   const isBasic = currentReport.tier === 'basic';
+  const isPremium = currentReport.tier === 'premium';
+  
+  // Para avaliações premium, verificar se estão pagas
+  const isPaid = isPremium ? (currentReport.payment_status === 'paid' || currentReport.upgrade_via_credits === true) : true;
+
+  console.log('ReportViewer - Status da avaliação:', {
+    tier: currentReport.tier,
+    payment_status: currentReport.payment_status,
+    upgrade_via_credits: currentReport.upgrade_via_credits,
+    isPaid,
+    isBasic,
+    isPremium
+  });
 
   return (
     <LoggedPageLayout
@@ -116,7 +126,7 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
               patientProfile={patientProfile}
             />
 
-            {isPaid ? (
+            {isPremium && isPaid ? (
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">
                   Análise Completa

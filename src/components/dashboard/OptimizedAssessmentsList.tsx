@@ -18,6 +18,9 @@ interface Assessment {
   fat_mass: number;
   status: string;
   assessment_text: string;
+  tier: string;
+  payment_status?: string;
+  upgrade_via_credits?: boolean;
   patient_name?: string;
   preview?: {
     leanMass: string;
@@ -50,15 +53,22 @@ const OptimizedAssessmentsList = memo(({
     return assessment.patient_name || userProfile?.name || 'Usuário';
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return <Badge className="bg-[#019f80] hover:bg-[#017a63]">Completo</Badge>;
-      case 'processing':
-        return <Badge variant="secondary">Processando</Badge>;
-      default:
-        return <Badge variant="outline">Pendente</Badge>;
+  const getStatusBadge = (assessment: Assessment) => {
+    // Lógica simplificada de status
+    if (assessment.tier === 'basic') {
+      return <Badge className="bg-[#019f80] hover:bg-[#017a63]">Básica Completa</Badge>;
     }
+    
+    if (assessment.tier === 'premium') {
+      const isPaid = assessment.payment_status === 'paid' || assessment.upgrade_via_credits === true;
+      if (isPaid) {
+        return <Badge className="bg-[#019f80] hover:bg-[#017a63]">Premium Completa</Badge>;
+      } else {
+        return <Badge variant="secondary">Premium Pendente</Badge>;
+      }
+    }
+    
+    return <Badge variant="outline">Processando</Badge>;
   };
 
   const handleDownloadPDF = (assessment: Assessment, e: React.MouseEvent) => {
@@ -144,7 +154,7 @@ const OptimizedAssessmentsList = memo(({
                       <h3 className="text-lg font-semibold text-gray-800">
                         {getDisplayName(assessment)}
                       </h3>
-                      {getStatusBadge(assessment.status)}
+                      {getStatusBadge(assessment)}
                     </div>
                     
                     <p className="text-sm text-gray-500 mb-3">

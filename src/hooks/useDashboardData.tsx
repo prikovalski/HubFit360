@@ -40,7 +40,7 @@ export const useDashboardData = (): DashboardData => {
       setAssessmentsLoading(true);
       setAssessmentsError(null);
 
-      // Optimized query with payment information
+      // Buscar avaliações com informações de pagamento e transações de crédito
       const { data, error } = await supabase
         .from('assessments')
         .select(`
@@ -64,7 +64,8 @@ export const useDashboardData = (): DashboardData => {
           credit_transactions!left (
             id,
             type,
-            amount
+            amount,
+            description
           )
         `)
         .eq('user_id', userProfile.id)
@@ -82,18 +83,37 @@ export const useDashboardData = (): DashboardData => {
         return;
       }
 
-      // Transform data with payment status
+      // Transformar dados com verificação correta de status
       const transformedAssessments = (data || []).map(assessment => {
-        const hasPayment = assessment.payments && assessment.payments.length > 0;
-        const hasPaidPayment = hasPayment && assessment.payments.some((p: any) => p.status === 'paid');
-        const hasUpgradeCredits = assessment.credit_transactions && 
-          assessment.credit_transactions.some((t: any) => t.type === 'debit' && t.amount > 0);
+        // Para avaliações premium, verificar se foi paga ou feita via créditos
+        let isPaid = false;
+        let upgradeViaCredits = false;
+
+        if (assessment.tier === 'premium') {
+          // Verificar se tem pagamento confirmado
+          const hasPaidPayment = assessment.payments && 
+            assessment.payments.some((p: any) => p.status === 'paid');
+          
+          // Verificar se foi feita via créditos (transação de débito/uso)
+          const hasUsageCredit = assessment.credit_transactions && 
+            assessment.credit_transactions.some((t: any) => 
+              (t.type === 'debit' || t.type === 'usage') && t.amount > 0
+            );
+
+          isPaid = hasPaidPayment || hasUsageCredit;
+          upgradeViaCredits = hasUsageCredit && !hasPaidPayment;
+        }
+
+        // Para avaliações básicas, sempre são consideradas "pagas" (não precisam de pagamento)
+        if (assessment.tier === 'basic') {
+          isPaid = true;
+        }
 
         return {
           ...assessment,
           assessmentText: assessment.assessment_text,
-          payment_status: hasPaidPayment ? 'paid' : (hasPayment ? 'pending' : null),
-          upgrade_via_credits: hasUpgradeCredits,
+          payment_status: isPaid ? 'paid' : 'pending',
+          upgrade_via_credits: upgradeViaCredits,
           preview: {
             leanMass: assessment.lean_mass ? `${assessment.lean_mass.toFixed(1)}kg` : 'N/A',
             bodyFat: assessment.body_fat_percentage ? `${assessment.body_fat_percentage.toFixed(1)}%` : 'N/A',
@@ -104,6 +124,7 @@ export const useDashboardData = (): DashboardData => {
         };
       });
       
+      console.log('Avaliações processadas:', transformedAssessments);
       setAssessments(transformedAssessments);
     } catch (error) {
       console.error('Erro ao buscar avaliações:', error);
