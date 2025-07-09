@@ -8,6 +8,7 @@ import PremiumSection from './report/PremiumSection';
 import UpgradeModal from './report/UpgradeModal';
 import LoggedPageLayout from '@/components/layout/LoggedPageLayout';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Report {
   id: string;
@@ -40,7 +41,42 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
   const [copied, setCopied] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [currentReport, setCurrentReport] = useState(report);
+  const [isPaid, setIsPaid] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { userProfile, patientProfile } = useUserProfile();
+
+  // Verificar se a avaliação foi paga via transação de crédito
+  useEffect(() => {
+    const checkPaymentStatus = async () => {
+      if (currentReport.tier === 'basic') {
+        setIsPaid(true);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data: creditTransaction, error } = await supabase
+          .from('credit_transactions')
+          .select('*')
+          .eq('assessment_id', currentReport.id)
+          .eq('type', 'usage')
+          .single();
+
+        if (error || !creditTransaction) {
+          setIsPaid(false);
+        } else {
+          setIsPaid(true);
+        }
+      } catch (error) {
+        console.error('Erro ao verificar pagamento:', error);
+        setIsPaid(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkPaymentStatus();
+  }, [currentReport.id, currentReport.tier]);
 
   useEffect(() => {
     if (copied) {
@@ -71,36 +107,40 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
   };
 
   const handleUpgradeSuccess = () => {
+    // Após upgrade bem-sucedido, marcar como pago
+    setIsPaid(true);
+    
     // Atualizar o report para premium
     setCurrentReport({
       ...currentReport,
-      tier: 'premium',
-      payment_status: 'paid'
+      tier: 'premium'
     });
-    
-    // Recarregar a página para buscar os novos dados
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
   };
 
   const userName = userProfile?.name || 'Usuário';
   
-  // Lógica simplificada de verificação de pagamento
+  // Lógica simplificada de verificação
   const isBasic = currentReport.tier === 'basic';
   const isPremium = currentReport.tier === 'premium';
-  
-  // Para avaliações premium, verificar se estão pagas
-  const isPaid = isPremium ? (currentReport.payment_status === 'paid' || currentReport.upgrade_via_credits === true) : true;
 
-  console.log('ReportViewer - Status da avaliação:', {
-    tier: currentReport.tier,
-    payment_status: currentReport.payment_status,
-    upgrade_via_credits: currentReport.upgrade_via_credits,
-    isPaid,
-    isBasic,
-    isPremium
-  });
+  if (loading) {
+    return (
+      <LoggedPageLayout
+        userName={userName}
+        onLogoClick={onLogoClick}
+        onProfileClick={onProfileClick}
+        onLogout={onLogout}
+      >
+        <div className="py-8 px-4">
+          <div className="container mx-auto max-w-4xl">
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+            </div>
+          </div>
+        </div>
+      </LoggedPageLayout>
+    );
+  }
 
   return (
     <LoggedPageLayout
@@ -127,33 +167,40 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
             />
 
             {isPremium && isPaid ? (
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                  Análise Completa
-                </h3>
-                <p className="text-gray-700 leading-relaxed mb-6">
-                  {currentReport.assessmentText}
-                </p>
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => handleCopyToClipboard(currentReport.assessmentText)}
-                    className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md transition-colors"
-                    disabled={copied}
-                  >
-                    {copied ? (
-                      <>
-                        <CheckCircle2 className="w-5 h-5 text-green-500" />
-                        Copiado!
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-5 h-5" />
-                        Copiar
-                      </>
-                    )}
-                  </button>
+              <>
+                <div className="bg-white rounded-lg shadow-md p-6">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                    Análise Completa
+                  </h3>
+                  <p className="text-gray-700 leading-relaxed mb-6">
+                    {currentReport.assessmentText}
+                  </p>
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => handleCopyToClipboard(currentReport.assessmentText)}
+                      className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md transition-colors"
+                      disabled={copied}
+                    >
+                      {copied ? (
+                        <>
+                          <CheckCircle2 className="w-5 h-5 text-green-500" />
+                          Copiado!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-5 h-5" />
+                          Copiar
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
-              </div>
+                <PremiumSection 
+                  report={currentReport}
+                  isPaid={isPaid}
+                  onPaymentSuccess={() => {}}
+                />
+              </>
             ) : isBasic ? (
               <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">
@@ -171,13 +218,7 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
                   Fazer Upgrade para Premium
                 </button>
               </div>
-            ) : (
-              <PremiumSection 
-                report={currentReport}
-                isPaid={isPaid}
-                onPaymentSuccess={() => window.location.reload()}
-              />
-            )}
+            ) : null}
           </div>
         </div>
       </div>
