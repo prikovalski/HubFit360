@@ -121,7 +121,12 @@ serve(async (req) => {
       data.patientData
     );
 
-    // For basic assessments, save without detailed analysis
+    // Generate AI assessment text for basic assessments
+    console.log('Gerando análise com IA...');
+    const assessmentText = await callOpenAI(assessmentPrompt);
+    console.log('Análise gerada com sucesso');
+
+    // For basic assessments, save with AI analysis
     const savedAssessment = await saveAssessment(
       data.userId,
       data.frontPhoto,
@@ -132,7 +137,7 @@ serve(async (req) => {
       leanMass,
       fatMass,
       bmi,
-      null, // No assessment text for basic
+      assessmentText, // Save assessment text for basic
       'basic',
       data.patientName || null,
       data.assessmentType,
