@@ -129,7 +129,9 @@ serve(async (req) => {
       data.hipCircumference,
       // Pass height and weight for all assessment types
       data.height,
-      data.weight
+      data.weight,
+      // Pass userData for all assessment types
+      userData
     );
 
     console.log('Avaliação básica salva com ID:', savedAssessment.id);
