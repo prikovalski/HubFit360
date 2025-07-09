@@ -284,7 +284,8 @@ serve(async (req) => {
       .from('assessments')
       .update({
         assessment_text: assessmentText,
-        tier: 'premium'
+        tier: 'premium',
+        prompt_text: prompt
       })
       .eq('id', assessment_id);
 
