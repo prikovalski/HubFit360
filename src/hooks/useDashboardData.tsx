@@ -16,6 +16,11 @@ interface Assessment {
   assessment_text: string;
   tier: string;
   payment_status?: string;
+  patient_name?: string | null;
+  patient_goal?: string | null;
+  patient_gender?: string | null;
+  patient_height?: number | null;
+  patient_weight?: number | null;
 }
 
 interface DashboardData {
@@ -55,6 +60,9 @@ export const useDashboardData = (): DashboardData => {
           tier,
           patient_name,
           patient_goal,
+          patient_gender,
+          patient_height,
+          patient_weight,
           credit_transactions!left (
             id,
             type,
