@@ -126,7 +126,10 @@ serve(async (req) => {
       // Pass circumferences for all assessment types
       data.neckCircumference,
       data.waistCircumference,
-      data.hipCircumference
+      data.hipCircumference,
+      // Pass height and weight for all assessment types
+      data.height,
+      data.weight
     );
 
     console.log('Avaliação básica salva com ID:', savedAssessment.id);

@@ -20,7 +20,10 @@ export async function saveAssessment(
   // Add circumference parameters for all assessment types
   neckCircumference?: number,
   waistCircumference?: number,
-  hipCircumference?: number
+  hipCircumference?: number,
+  // Add height and weight parameters for all assessment types
+  height?: number,
+  weight?: number
 ) {
   const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
@@ -48,10 +51,13 @@ export async function saveAssessment(
     tier: tier,
     patient_name: patientName,
     assessment_type: assessmentType,
-    // Add circumferences for all assessment types
+    // Add circumferences and physical data for all assessment types
     neck_circumference: neckCircumference || null,
     waist_circumference: waistCircumference || null,
-    hip_circumference: hipCircumference || null
+    hip_circumference: hipCircumference || null,
+    // Add height and weight for all assessment types (not just patient assessments)
+    height: height || null,
+    weight: weight || null
   };
 
   // If it's a patient assessment, add all patient data
