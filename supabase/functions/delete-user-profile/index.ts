@@ -63,39 +63,28 @@ Deno.serve(async (req) => {
 
     // Delete in correct order of dependencies (deepest children first)
     
-    // 1. First get all payment IDs for this user
-    const { data: userPayments, error: getUserPaymentsError } = await supabase
-      .from('payments')
-      .select('id')
-      .eq('user_id', userProfile.id)
-    
-    if (getUserPaymentsError) {
-      console.error('Error getting user payments:', getUserPaymentsError)
-    } else if (userPayments && userPayments.length > 0) {
-      // Delete payment_preferences for these payments
-      const paymentIds = userPayments.map(p => p.id)
-      const { error: paymentPreferencesError } = await supabase
-        .from('payment_preferences')
-        .delete()
-        .in('payment_id', paymentIds)
-      
-      if (paymentPreferencesError) {
-        console.error('Error deleting payment preferences:', paymentPreferencesError)
-      } else {
-        console.log('Deleted payment preferences for user')
-      }
-    }
-
-    // 2. Delete payments (they reference assessments and users)
-    const { error: paymentsError } = await supabase
-      .from('payments')
+    // 1. Delete credit transactions (they reference users and assessments)
+    const { error: creditTransactionsError } = await supabase
+      .from('credit_transactions')
       .delete()
       .eq('user_id', userProfile.id)
     
-    if (paymentsError) {
-      console.error('Error deleting payments:', paymentsError)
+    if (creditTransactionsError) {
+      console.error('Error deleting credit transactions:', creditTransactionsError)
     } else {
-      console.log('Deleted payments for user')
+      console.log('Deleted credit transactions for user')
+    }
+
+    // 2. Delete user credits (they reference users)
+    const { error: userCreditsError } = await supabase
+      .from('user_credits')
+      .delete()
+      .eq('user_id', userProfile.id)
+    
+    if (userCreditsError) {
+      console.error('Error deleting user credits:', userCreditsError)
+    } else {
+      console.log('Deleted user credits for user')
     }
 
     // 3. Delete assessments (they reference users)
