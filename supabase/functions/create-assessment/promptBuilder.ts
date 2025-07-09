@@ -109,11 +109,10 @@ Analise os dados e as fotos fornecidas, gere um laudo completo incluindo:
 - Use como referência os valores já calculados: ${bodyFatPercentage.toFixed(1)}% de gordura corporal
 
 2. GASTO ENERGÉTICO
-- Cálculo da Taxa Metabólica Basal (TMB)
 - Estimativa do Gasto Energético Total (GET)
 
 3. PLANEJAMENTO NUTRICIONAL
-Considerando as doenças crônicas e as atividades fisicas informadas abaixo, forneça recomendações de calorias para:
+Considerando as doenças crônicas e as atividades fisicas informadas abaixo, forneça recomendações de calorias diarias para:
 - Manutenção com foco em definição
 - Emagrecimento saudável (cutting)
 - Ganho de massa muscular (bulking)
@@ -139,7 +138,6 @@ DADOS PESSOAIS:
   * Quadril: ${hipCirc}
 - Atividades físicas praticadas: ${physicalActivities}
 - Frequência de atividade física: ${physicalActivity}
-- Doenças crônicas: ${chronicDisease}
 - Objetivo: ${goal}
 
 IMPORTANTE: Forneça o laudo em formato CSV estruturado exatamente como o exemplo abaixo. O laudo deve ser realista e profissional, utilize uma linguagem de facil entendimento para que um adolescente seja capaz de entender. Inclua valores numéricos específicos nas estimativas, mas não detalhe os cálculos. 
@@ -151,8 +149,6 @@ AVALIAÇÃO CORPORAL
  "Valores específicos"
  
 GASTO ENERGÉTICO
- - Taxa Metabólica Basal (TMB): "XXXX kcal/dia",  "Descrição detalhada"
- 
  - Gasto Energético Total (GET): "XXXX kcal/dia" - "Descrição detalhada"
  
 PLANEJAMENTO NUTRICIONAL
