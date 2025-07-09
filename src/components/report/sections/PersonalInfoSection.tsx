@@ -8,6 +8,10 @@ interface PersonalInfoSectionProps {
   displayAge: number | string;
   patientName?: string | null;
   patientGoal?: string | null;
+  // Adicionar dados da avaliação
+  patientGender?: string | null;
+  patientHeight?: number | null;
+  patientWeight?: number | null;
 }
 
 const PersonalInfoSection = ({ 
@@ -15,7 +19,10 @@ const PersonalInfoSection = ({
   patientProfile, 
   displayAge, 
   patientName,
-  patientGoal
+  patientGoal,
+  patientGender,
+  patientHeight,
+  patientWeight
 }: PersonalInfoSectionProps) => {
   // Determinar qual nome usar (priorizar patientName se existir)
   const displayName = patientName || userProfile?.name || 'Não informado';
@@ -23,8 +30,12 @@ const PersonalInfoSection = ({
   // Determinar qual objetivo usar (priorizar patientGoal se existir)
   const displayGoal = patientGoal || patientProfile?.goal;
 
-  // Mapear o gênero para português
-  const displayGender = mapGenderFromDB(userProfile?.gender);
+  // Mapear o gênero (priorizar dados da avaliação)
+  const displayGender = mapGenderFromDB(patientGender || userProfile?.gender);
+  
+  // Priorizar dados da avaliação para altura e peso
+  const displayHeight = patientHeight || patientProfile?.height;
+  const displayWeight = patientWeight || patientProfile?.weight;
 
   return (
     <div className="mb-8">
@@ -47,13 +58,13 @@ const PersonalInfoSection = ({
         <div>
           <span className="font-medium text-gray-600">Altura:</span>
           <span className="ml-2 text-gray-800">
-            {patientProfile?.height ? `${(patientProfile.height / 100).toFixed(2)}m` : 'Não informado'}
+            {displayHeight ? `${(displayHeight / 100).toFixed(2)}m` : 'Não informado'}
           </span>
         </div>
         <div>
           <span className="font-medium text-gray-600">Peso:</span>
           <span className="ml-2 text-gray-800">
-            {patientProfile?.weight ? `${patientProfile.weight}kg` : 'Não informado'}
+            {displayWeight ? `${displayWeight}kg` : 'Não informado'}
           </span>
         </div>
         {displayGoal && (

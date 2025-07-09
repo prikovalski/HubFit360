@@ -12,6 +12,9 @@ interface BasicAnalysisSectionProps {
   report: Report & { 
     patient_name?: string | null;
     patient_goal?: string | null;
+    patient_gender?: string | null;
+    patient_height?: number | null;
+    patient_weight?: number | null;
   };
   userProfile: UserProfile | null;
   patientProfile: PatientProfile | null;
@@ -52,6 +55,9 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
           displayAge={displayAge}
           patientName={report.patient_name}
           patientGoal={report.patient_goal}
+          patientGender={report.patient_gender}
+          patientHeight={report.patient_height}
+          patientWeight={report.patient_weight}
         />
 
         <EstimatesSection preview={report.preview} />
@@ -59,6 +65,9 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
         <IdealRangesSection 
           userProfile={userProfile} 
           patientProfile={patientProfile}
+          patientGender={report.patient_gender}
+          patientHeight={report.patient_height}
+          patientWeight={report.patient_weight}
         />
 
         {report.assessmentText && (

@@ -4,16 +4,31 @@ import { UserProfile, PatientProfile } from "@/types/report";
 interface IdealRangesSectionProps {
   userProfile: UserProfile | null;
   patientProfile: PatientProfile | null;
+  // Adicionar dados da avaliação
+  patientGender?: string | null;
+  patientHeight?: number | null;
+  patientWeight?: number | null;
 }
 
-const IdealRangesSection = ({ userProfile, patientProfile }: IdealRangesSectionProps) => {
+const IdealRangesSection = ({ 
+  userProfile, 
+  patientProfile, 
+  patientGender, 
+  patientHeight, 
+  patientWeight 
+}: IdealRangesSectionProps) => {
+  // Priorizar dados da avaliação
+  const displayHeight = patientHeight || patientProfile?.height;
+  const displayWeight = patientWeight || patientProfile?.weight;
+  const displayGender = patientGender || userProfile?.gender;
+  
   // Calcular faixas ideais baseadas nos dados reais do usuário
   const calculateIdealLeanMass = () => {
-    if (!patientProfile?.height || !patientProfile?.weight) {
+    if (!displayHeight || !displayWeight) {
       return "N/A";
     }
     
-    const heightInM = patientProfile.height / 100;
+    const heightInM = displayHeight / 100;
     const baseWeight = heightInM * heightInM * 22; // IMC ideal de 22
     const idealLeanMass = baseWeight * 0.85; // 85% do peso ideal como massa magra
     
@@ -21,11 +36,11 @@ const IdealRangesSection = ({ userProfile, patientProfile }: IdealRangesSectionP
   };
 
   const getIdealBodyFatRange = () => {
-    if (!userProfile?.gender) {
+    if (!displayGender) {
       return "N/A";
     }
     
-    if (userProfile.gender === 'Masculino') {
+    if (displayGender === 'Masculino') {
       return '10-15%';
     } else {
       return '16-24%';
