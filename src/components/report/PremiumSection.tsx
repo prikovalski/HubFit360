@@ -240,6 +240,7 @@ const PremiumSection = ({ report, isPaid, onPaymentSuccess }: PremiumSectionProp
     );
   }
 
+  // Se não está pago, mostrar seção de desbloqueio
   return (
     <div className="space-y-8">
       {/* Seção Premium Bloqueada */}
