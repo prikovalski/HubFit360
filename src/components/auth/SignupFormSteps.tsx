@@ -7,7 +7,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, User, Heart, Activity, Ruler, Briefcase } from "lucide-react";
+import { CalendarIcon, User, Activity, Briefcase } from "lucide-react";
 import { format, parse } from "date-fns";
 import { getEstados, Estado } from '@/services/stateService';
 import { getCidadesByEstado, Cidade } from '@/services/cityService';
@@ -41,18 +41,16 @@ const SignupFormSteps = ({
   const [birthDateInput, setBirthDateInput] = useState('');
 
   const isProfessional = formData.userType === 'professional';
-  const maxSteps = isProfessional ? 2 : 5; // Reduzido de 7 para 5 (removendo saúde e alimentação)
+  const maxSteps = isProfessional ? 2 : 3; // Reduzido de 5 para 3 passos para pacientes
   
   const stepTitles = isProfessional 
-    ? ['Conta', 'Pessoais']
-    : ['Conta', 'Pessoais', 'Físicos', 'Atividades', 'Medidas']; // Removido 'Saúde' e 'Alimentação'
+    ? ['Conta', 'Profissionais']
+    : ['Conta', 'Pessoais', 'Atividades']; // Nova estrutura de 3 passos
 
   const stepIcons = {
     1: <User className="w-6 h-6 text-[#019f80]" />,
     2: isProfessional ? <Briefcase className="w-6 h-6 text-[#019f80]" /> : <User className="w-6 h-6 text-[#019f80]" />,
-    3: <Heart className="w-6 h-6 text-[#019f80]" />,
-    4: <Activity className="w-6 h-6 text-[#019f80]" />,
-    5: <Ruler className="w-6 h-6 text-[#019f80]" />
+    3: <Activity className="w-6 h-6 text-[#019f80]" />
   };
 
   const professionOptions = [
@@ -167,9 +165,11 @@ const SignupFormSteps = ({
         if (isProfessional) {
           return formData.name && formData.gender && formData.birthDate && formData.profession;
         }
-        return formData.name && formData.gender && formData.birthDate;
+        // Para pacientes no passo 2: nome, gênero, data, estado, cidade (sem peso/altura)
+        return formData.name && formData.gender && formData.birthDate && formData.state && formData.city;
       case 3:
-        return !isProfessional && (formData.weight && formData.height && formData.state && formData.city && formData.goal);
+        // Passo 3 não requer validação específica (atividades e objetivo são opcionais)
+        return true;
       default:
         return true;
     }
@@ -204,6 +204,7 @@ const SignupFormSteps = ({
             description="Crie sua conta para começar sua jornada"
             icon={stepIcons[1]}
           >
+            
             <div className="grid grid-cols-1 gap-6">
               <FormField
                 label="Tipo de Usuário"
@@ -253,8 +254,8 @@ const SignupFormSteps = ({
 
         {step === 2 && (
           <FormSection
-            title={isProfessional ? "Dados Profissionais" : "Dados Pessoais"}
-            description={isProfessional ? "Informações sobre você como profissional" : "Conte-nos um pouco sobre você"}
+            title={isProfessional ? "Dados Profissionais" : "Dados Pessoais e Localização"}
+            description={isProfessional ? "Informações sobre você como profissional" : "Conte-nos sobre você e onde você está localizado"}
             icon={stepIcons[2]}
           >
             <div className="grid grid-cols-1 gap-6">
@@ -334,6 +335,47 @@ const SignupFormSteps = ({
                   </Popover>
                 </div>
               </div>
+
+              {/* Campos Estado e Cidade movidos para o passo 2 apenas para pacientes */}
+              {!isProfessional && (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      label="Estado"
+                      value={formData.state}
+                      onChange={handleEstadoChange}
+                      disabled={loading || loadingEstados}
+                      required
+                      loading={loadingEstados}
+                      options={estados.map(estado => ({
+                        value: estado.sigla,
+                        label: estado.nome
+                      }))}
+                      placeholder="Selecione o estado"
+                    />
+                    
+                    <FormField
+                      label="Cidade"
+                      value={formData.city}
+                      onChange={(value) => onInputChange('city', value)}
+                      disabled={loading || loadingCidades || !formData.state}
+                      required
+                      loading={loadingCidades}
+                      options={cidades.map(cidade => ({
+                        value: String(cidade.id),
+                        label: cidade.nome
+                      }))}
+                      placeholder={
+                        !formData.state 
+                          ? "Selecione primeiro o estado" 
+                          : loadingCidades 
+                            ? "Carregando cidades..." 
+                            : "Selecione a cidade"
+                      }
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             <NavigationButtons
@@ -349,94 +391,9 @@ const SignupFormSteps = ({
 
         {!isProfessional && step === 3 && (
           <FormSection
-            title="Informações Físicas"
-            description="Seus dados físicos e localização"
+            title="Atividade Física e Objetivo"
+            description="Conte sobre sua rotina de exercícios e seus objetivos"
             icon={stepIcons[3]}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                label="Peso"
-                type="number"
-                value={formData.weight}
-                onChange={(value) => onInputChange('weight', value)}
-                placeholder="Ex: 75"
-                disabled={loading}
-                required
-                tooltip="Seu peso atual em quilogramas"
-              />
-              
-              <FormField
-                label="Altura"
-                type="number"
-                value={formData.height}
-                onChange={(value) => onInputChange('height', value)}
-                placeholder="Ex: 175"
-                disabled={loading}
-                required
-                tooltip="Sua altura em centímetros"
-              />
-              
-              <FormField
-                label="Estado"
-                value={formData.state}
-                onChange={handleEstadoChange}
-                disabled={loading || loadingEstados}
-                required
-                loading={loadingEstados}
-                options={estados.map(estado => ({
-                  value: estado.sigla,
-                  label: estado.nome
-                }))}
-                placeholder="Selecione o estado"
-              />
-              
-              <FormField
-                label="Cidade"
-                value={formData.city}
-                onChange={(value) => onInputChange('city', value)}
-                disabled={loading || loadingCidades || !formData.state}
-                required
-                loading={loadingCidades}
-                options={cidades.map(cidade => ({
-                  value: String(cidade.id),
-                  label: cidade.nome
-                }))}
-                placeholder={
-                  !formData.state 
-                    ? "Selecione primeiro o estado" 
-                    : loadingCidades 
-                      ? "Carregando cidades..." 
-                      : "Selecione a cidade"
-                }
-              />
-              
-              <div className="md:col-span-2">
-                <FormField
-                  label="Objetivo"
-                  value={formData.goal}
-                  onChange={(value) => onInputChange('goal', value)}
-                  placeholder="Ex: Perder peso, ganhar massa muscular, melhorar condicionamento..."
-                  disabled={loading}
-                  required
-                  tooltip="Descreva seu principal objetivo com a avaliação nutricional"
-                />
-              </div>
-            </div>
-
-            <NavigationButtons
-              onPrevious={() => setStep(2)}
-              onNext={() => setStep(4)}
-              loading={loading}
-              canGoNext={canGoNext()}
-            />
-          </FormSection>
-        )}
-
-        {!isProfessional && step === 4 && (
-          <FormSection
-            title="Atividade Física"
-            description="Conte sobre sua rotina de exercícios"
-            icon={stepIcons[4]}
           >
             <div className="mb-4">
               <p className="text-sm text-gray-600">
@@ -450,54 +407,21 @@ const SignupFormSteps = ({
               disabled={loading}
             />
 
-            <NavigationButtons
-              onPrevious={() => setStep(3)}
-              onNext={() => setStep(5)}
-              loading={loading}
-            />
-          </FormSection>
-        )}
-
-        {!isProfessional && step === 5 && (
-          <FormSection
-            title="Medidas Corporais"
-            description="Informações adicionais para uma análise mais precisa"
-            icon={stepIcons[5]}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Campo Objetivo movido para após as atividades físicas */}
+            <div className="mt-6">
               <FormField
-                label="Circunferência do Pescoço"
-                type="number"
-                value={formData.neckCircumference}
-                onChange={(value) => onInputChange('neckCircumference', value)}
-                placeholder="Ex: 38"
+                label="Objetivo"
+                value={formData.goal}
+                onChange={(value) => onInputChange('goal', value)}
+                placeholder="Ex: Perder peso, ganhar massa muscular, melhorar condicionamento..."
                 disabled={loading}
-                tooltip="Medida em centímetros - opcional mas útil para cálculos"
-              />
-              
-              <FormField
-                label="Circunferência da Cintura"
-                type="number"
-                value={formData.waistCircumference}
-                onChange={(value) => onInputChange('waistCircumference', value)}
-                placeholder="Ex: 85"
-                disabled={loading}
-                tooltip="Medida na parte mais estreita do abdômen"
-              />
-              
-              <FormField
-                label="Circunferência do Quadril"
-                type="number"
-                value={formData.hipCircumference}
-                onChange={(value) => onInputChange('hipCircumference', value)}
-                placeholder="Ex: 95"
-                disabled={loading}
-                tooltip="Medida na parte mais larga do quadril"
+                required
+                tooltip="Descreva seu principal objetivo com a avaliação nutricional"
               />
             </div>
 
             <NavigationButtons
-              onPrevious={() => setStep(4)}
+              onPrevious={() => setStep(2)}
               onSubmit={onSubmit}
               loading={loading}
               isLastStep={true}

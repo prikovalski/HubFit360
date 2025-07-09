@@ -27,17 +27,30 @@ export const useAuthSubmit = () => {
       userMetadata.profession = formData.profession;
     }
 
-    // Para pacientes, incluir dados físicos e medidas
+    // Para pacientes, incluir apenas dados que foram preenchidos
     if (formData.userType === 'patient') {
-      userMetadata.weight = formData.weight;
-      userMetadata.height = formData.height;
+      // Campos obrigatórios
       userMetadata.city = formData.city;
       userMetadata.state = formData.state;
       userMetadata.goal = formData.goal;
       userMetadata.physical_activities = formData.physicalActivities;
-      userMetadata.neck_circumference = formData.neckCircumference;
-      userMetadata.waist_circumference = formData.waistCircumference;
-      userMetadata.hip_circumference = formData.hipCircumference;
+      
+      // Campos opcionais - só incluir se preenchidos
+      if (formData.weight) {
+        userMetadata.weight = formData.weight;
+      }
+      if (formData.height) {
+        userMetadata.height = formData.height;
+      }
+      if (formData.neckCircumference) {
+        userMetadata.neck_circumference = formData.neckCircumference;
+      }
+      if (formData.waistCircumference) {
+        userMetadata.waist_circumference = formData.waistCircumference;
+      }
+      if (formData.hipCircumference) {
+        userMetadata.hip_circumference = formData.hipCircumference;
+      }
     }
 
     console.log('Metadados do usuário:', userMetadata);

@@ -12,8 +12,8 @@ export interface FormData {
   profession?: string;
   gender: string;
   birthDate: string;
-  weight: string;
-  height: string;
+  weight?: string; // Tornado opcional
+  height?: string; // Tornado opcional
   city: string;
   state: string;
   goal: string;
@@ -21,7 +21,7 @@ export interface FormData {
   physicalActivity: string;
   activityFrequency: string;
   physicalActivities: PhysicalActivity[];
-  neckCircumference: string;
-  waistCircumference: string;
-  hipCircumference: string;
+  neckCircumference?: string; // Tornado opcional
+  waistCircumference?: string; // Tornado opcional
+  hipCircumference?: string; // Tornado opcional
 }
