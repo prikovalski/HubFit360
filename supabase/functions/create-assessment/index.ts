@@ -107,6 +107,20 @@ serve(async (req) => {
       bmi: bmi.toFixed(2)
     });
 
+    // Build assessment prompt for potential use
+    const assessmentPrompt = buildAssessmentPrompt(
+      userData,
+      calculatedAge,
+      data.height,
+      data.weight,
+      data.sex,
+      bodyFatPercentage,
+      leanMass,
+      fatMass,
+      data.assessmentType,
+      data.patientData
+    );
+
     // For basic assessments, save without detailed analysis
     const savedAssessment = await saveAssessment(
       data.userId,
@@ -129,7 +143,9 @@ serve(async (req) => {
       data.hipCircumference,
       // Pass height and weight for all assessment types
       data.height,
-      data.weight
+      data.weight,
+      // Pass the prompt text
+      assessmentPrompt
     );
 
     console.log('Avaliação básica salva com ID:', savedAssessment.id);

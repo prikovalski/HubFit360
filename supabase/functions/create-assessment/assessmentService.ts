@@ -23,7 +23,9 @@ export async function saveAssessment(
   hipCircumference?: number,
   // Add height and weight parameters for all assessment types
   height?: number,
-  weight?: number
+  weight?: number,
+  // Add prompt parameter
+  promptText?: string
 ) {
   const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
@@ -57,7 +59,9 @@ export async function saveAssessment(
     hip_circumference: hipCircumference || null,
     // Use patient_height and patient_weight for all assessment types
     patient_height: height || null,
-    patient_weight: weight || null
+    patient_weight: weight || null,
+    // Add prompt text
+    prompt_text: promptText || null
   };
 
   // If it's a patient assessment, add all patient data
