@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -82,6 +83,7 @@ const PremiumSection = ({ report, isPaid, onPaymentSuccess }: PremiumSectionProp
 
   const personalizedContent = generatePersonalizedContent();
 
+  // Se está pago, retornar apenas o conteúdo premium desbloqueado
   if (isPaid) {
     return (
       <div className="space-y-8">
@@ -242,7 +244,6 @@ const PremiumSection = ({ report, isPaid, onPaymentSuccess }: PremiumSectionProp
   // Se não está pago, mostrar seção de desbloqueio
   return (
     <div className="space-y-8">
-      {/* Seção Premium Bloqueada */}
       <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50">
         <CardHeader>
           <div className="flex items-center justify-between">
