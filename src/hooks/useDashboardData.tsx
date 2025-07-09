@@ -16,7 +16,6 @@ interface Assessment {
   assessment_text: string;
   tier: string;
   payment_status?: string;
-  upgrade_via_credits?: boolean;
 }
 
 interface DashboardData {
@@ -40,7 +39,7 @@ export const useDashboardData = (): DashboardData => {
       setAssessmentsLoading(true);
       setAssessmentsError(null);
 
-      // Buscar avaliações com informações de pagamento e transações de crédito
+      // Buscar avaliações com transações de crédito (sem payments)
       const { data, error } = await supabase
         .from('assessments')
         .select(`
@@ -56,11 +55,6 @@ export const useDashboardData = (): DashboardData => {
           tier,
           patient_name,
           patient_goal,
-          payments!left (
-            id,
-            status,
-            paid_at
-          ),
           credit_transactions!left (
             id,
             type,
@@ -83,25 +77,19 @@ export const useDashboardData = (): DashboardData => {
         return;
       }
 
-      // Transformar dados com verificação correta de status
+      // Transformar dados com verificação simplificada (apenas créditos)
       const transformedAssessments = (data || []).map(assessment => {
-        // Para avaliações premium, verificar se foi paga ou feita via créditos
+        // Para avaliações premium, verificar se foi paga via créditos
         let isPaid = false;
-        let upgradeViaCredits = false;
 
         if (assessment.tier === 'premium') {
-          // Verificar se tem pagamento confirmado
-          const hasPaidPayment = assessment.payments && 
-            assessment.payments.some((p: any) => p.status === 'paid');
-          
-          // Verificar se foi feita via créditos (transação de débito/uso)
+          // Verificar se foi feita via créditos (transação de uso)
           const hasUsageCredit = assessment.credit_transactions && 
             assessment.credit_transactions.some((t: any) => 
-              (t.type === 'debit' || t.type === 'usage') && t.amount > 0
+              t.type === 'usage' && t.amount < 0 // Valor negativo indica débito/uso
             );
 
-          isPaid = hasPaidPayment || hasUsageCredit;
-          upgradeViaCredits = hasUsageCredit && !hasPaidPayment;
+          isPaid = hasUsageCredit;
         }
 
         // Para avaliações básicas, sempre são consideradas "pagas" (não precisam de pagamento)
@@ -113,7 +101,6 @@ export const useDashboardData = (): DashboardData => {
           ...assessment,
           assessmentText: assessment.assessment_text,
           payment_status: isPaid ? 'paid' : 'pending',
-          upgrade_via_credits: upgradeViaCredits,
           preview: {
             leanMass: assessment.lean_mass ? `${assessment.lean_mass.toFixed(1)}kg` : 'N/A',
             bodyFat: assessment.body_fat_percentage ? `${assessment.body_fat_percentage.toFixed(1)}%` : 'N/A',
