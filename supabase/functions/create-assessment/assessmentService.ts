@@ -23,9 +23,7 @@ export async function saveAssessment(
   hipCircumference?: number,
   // Add height and weight parameters for all assessment types
   height?: number,
-  weight?: number,
-  // Add userData for all assessment types
-  userData?: any
+  weight?: number
 ) {
   const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
@@ -59,15 +57,15 @@ export async function saveAssessment(
     hip_circumference: hipCircumference || null,
     // Use patient_height and patient_weight for all assessment types
     patient_height: height || null,
-    patient_weight: weight || null,
-    // Always fill these mandatory columns regardless of assessment type
-    patient_gender: assessmentType === 'patient' ? patientData?.gender : userData?.gender,
-    patient_birth_date: assessmentType === 'patient' ? patientData?.birthDate : userData?.birth_date,
-    patient_physical_activity: assessmentType === 'patient' ? patientData?.physicalActivity : userData?.patient_profiles?.[0]?.physical_activity
+    patient_weight: weight || null
   };
 
-  // If it's a patient assessment, add all additional patient data
+  // If it's a patient assessment, add all patient data
   if (assessmentType === 'patient' && patientData) {
+    assessmentRecord.patient_gender = patientData.gender;
+    assessmentRecord.patient_birth_date = patientData.birthDate;
+    assessmentRecord.patient_height = patientData.height;
+    assessmentRecord.patient_weight = patientData.weight;
     assessmentRecord.patient_neck_circumference = patientData.neckCircumference;
     assessmentRecord.patient_waist_circumference = patientData.waistCircumference;
     assessmentRecord.patient_hip_circumference = patientData.hipCircumference;
@@ -78,6 +76,7 @@ export async function saveAssessment(
     assessmentRecord.patient_avoid_food = patientData.avoidFood;
     assessmentRecord.patient_fixed_meal_times = patientData.fixedMealTimes;
     assessmentRecord.patient_must_have_food = patientData.mustHaveFood;
+    assessmentRecord.patient_physical_activity = patientData.physicalActivity;
     assessmentRecord.patient_physical_activities = patientData.physicalActivities || [];
   }
 

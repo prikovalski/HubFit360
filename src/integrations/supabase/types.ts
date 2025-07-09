@@ -32,6 +32,8 @@ export type Database = {
           patient_avoid_food: string | null
           patient_birth_date: string | null
           patient_chronic_disease: string | null
+          patient_city_id: string | null
+          patient_estado_id: string | null
           patient_fixed_meal_times: string | null
           patient_food_allergy: string | null
           patient_gender: string | null
@@ -70,6 +72,8 @@ export type Database = {
           patient_avoid_food?: string | null
           patient_birth_date?: string | null
           patient_chronic_disease?: string | null
+          patient_city_id?: string | null
+          patient_estado_id?: string | null
           patient_fixed_meal_times?: string | null
           patient_food_allergy?: string | null
           patient_gender?: string | null
@@ -108,6 +112,8 @@ export type Database = {
           patient_avoid_food?: string | null
           patient_birth_date?: string | null
           patient_chronic_disease?: string | null
+          patient_city_id?: string | null
+          patient_estado_id?: string | null
           patient_fixed_meal_times?: string | null
           patient_food_allergy?: string | null
           patient_gender?: string | null
