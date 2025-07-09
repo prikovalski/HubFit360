@@ -14,7 +14,7 @@ interface PremiumSectionProps {
   onPaymentSuccess: () => void;
 }
 
-const PremiumSection = ({ report, isPaid, onPaymentSuccess }: PremiumSectionProps) => {
+const PemiumSection = ({ report, isPaid, onPaymentSuccess }: PremiumSectionProps) => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [assessmentProduct, setAssessmentProduct] = useState<any>(null);
   const { userProfile, patientProfile } = useUserProfile();
