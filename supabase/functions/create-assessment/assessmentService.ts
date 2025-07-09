@@ -55,9 +55,9 @@ export async function saveAssessment(
     neck_circumference: neckCircumference || null,
     waist_circumference: waistCircumference || null,
     hip_circumference: hipCircumference || null,
-    // Add height and weight for all assessment types (not just patient assessments)
-    height: height || null,
-    weight: weight || null
+    // Use patient_height and patient_weight for all assessment types
+    patient_height: height || null,
+    patient_weight: weight || null
   };
 
   // If it's a patient assessment, add all patient data
