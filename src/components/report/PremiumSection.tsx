@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +13,7 @@ interface PremiumSectionProps {
   onPaymentSuccess: () => void;
 }
 
-const PemiumSection = ({ report, isPaid, onPaymentSuccess }: PremiumSectionProps) => {
+const PremiumSection = ({ report, isPaid, onPaymentSuccess }: PremiumSectionProps) => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [assessmentProduct, setAssessmentProduct] = useState<any>(null);
   const { userProfile, patientProfile } = useUserProfile();
