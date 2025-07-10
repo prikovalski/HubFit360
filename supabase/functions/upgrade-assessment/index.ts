@@ -59,7 +59,7 @@ function buildAssessmentPrompt(
 
   return `Você é um avaliador físico profissional especializado em análise de composição corporal.
 
-Com as medidas de circunferência fornecidas, analise os dados e gere um laudo completo incluindo:
+Com as medidas de circunferência e as fotos fornecidas, analise os dados e as fotos e gere um laudo completo incluindo:
 
 1. AVALIAÇÃO CORPORAL
 - Análise detalhada da distribuição de gordura corporal (central vs periférica)
@@ -68,19 +68,22 @@ Com as medidas de circunferência fornecidas, analise os dados e gere um laudo c
 - Use como referência os valores já calculados: ${bodyFatPercentage.toFixed(1)}% de gordura corporal
 
 2. GASTO ENERGÉTICO
-- Cálculo da Taxa Metabólica Basal (TMB)
-- Estimativa do Gasto Energético Total (GET)
+- Cálculo da Taxa Metabólica Basal (TMB) IMPORTANTE: NÃO DETALHE O CALCULO REALIZADO APENAS INFORME O RESULTADO.
+- Estimativa do Gasto Energético Total considerando atividade fisica relatada (GET) IMPORTANTE: NÃO DETALHE O CALCULO REALIZADO APENAS INFORME O RESULTADO.
 
 3. PLANEJAMENTO NUTRICIONAL
-Forneça recomendações de calorias para:
+Considerando as atividades fisicas informadas, forneça recomendações de calorias diarias para:
 - Manutenção com foco em definição
 - Emagrecimento saudável (cutting)
 - Ganho de massa muscular (bulking)
 
-Divisão de macronutrientes em cada refeição para cada cenário (proteínas, carboidratos, gorduras)
+Divisão de macronutrientes em cada refeição para cada cenário (proteínas, carboidratos, gorduras). Deixe claro que a divisão apresentada é POR REFEIÇÃO.
 
 4. PROJEÇÃO DE RESULTADOS
 Explique o que pode acontecer seguindo as recomendações por 30 dias
+
+5. RESUMO
+Faça uma avaliação detalhada das fotos, cruze com os valores calculados e apresente um resumo enfatizando os RISCOS e/ou o que já está bom. Apresente também um rápido resumo da avaliação.  
 
 DADOS PESSOAIS:
 - Gênero: ${genderForPrompt}
@@ -97,12 +100,61 @@ DADOS PESSOAIS:
   * Cintura: ${formattedWaist}
   * Quadril: ${formattedHip}
 - Atividade física: ${patientProfile.physical_activity || 'Não informado'}
-- Doenças crônicas: ${patientProfile.chronic_disease || 'Nenhuma'}
 - Objetivo: ${patientProfile.goal || 'Não informado'}
 
 IMPORTANTE: Com base nas circunferências fornecidas, faça uma análise detalhada da distribuição de gordura corporal e forneça recomendações específicas.
 
-Forneça um laudo técnico realista e profissional utilizando uma linguagem de fácil entendimento. Inclua valores numéricos específicos nas estimativas e explore detalhadamente as implicações das medidas de circunferência para a saúde e composição corporal.`;
+IMPORTANTE: Forneça o laudo em formato CSV estruturado exatamente como o exemplo abaixo. O laudo deve ser realista e profissional, utilize uma linguagem de facil entendimento para que um leigo seja capaz de entender. Inclua valores numéricos específicos nas estimativas, mas não detalhe os cálculos. 
+Use aspas duplas para valores que contenham vírgulas e mantenha a estrutura rigorosa:
+
+\`\`\`
+AVALIAÇÃO CORPORAL
+ - Distribuição de Gordura,"Descrição detalhada",
+ "Valores específicos"
+ 
+GASTO ENERGÉTICO
+ - Gasto Energético Total (GET): "XXXX kcal/dia"
+ 
+PLANEJAMENTO NUTRICIONAL
+ - Manutenção com foco em definição: XXXX kcal/dia - "Descrição detalhada"
+ - Emagrecimento saudável (cutting): "XXXX kcal/dia" - "Descrição detalhada"
+ - Ganho de massa muscular (bulking): XXXX kcal/dia, "Descrição detalhada"
+ 
+ Divisão de Macronutrientes por refeição para MANUTENÇÃO:
+    Proteínas: XXXg
+    Carboidratos: XXXg
+    Gorduras: XXXg
+    
+ Divisão de Macronutrientes por refeição para EMAGRECIMENTO:
+    Proteínas: "XXXg"
+    Carboidratos: "XXXg" 
+    Gorduras: "XXXg"
+
+    
+ Divisão de Macronutrientes por refeição para GANHO DE MASSA MUSCULAR:
+   Proteínas: "XXXg" 
+   Carboidratos: "XXXg" 
+   Gorduras: "XXXg"
+
+   
+PROJEÇÃO DE RESULTADOS
+  EMAGRECIMENTO SAUDÁVEL: "Descrição das expectativas em 30 dias", "Valor esperado"
+  
+  MANUTENÇÃO COM DEFINIÇÃO: "Descrição das expectativas em 30 dias", "Valor esperado"
+  
+  GANHO DE MASSA MUSCULAR: "Descrição das expectativas em 30 dias", "Valor esperado"
+
+RESUMO
+"Descrição detalhada"
+  
+MÉTODOS UTILIZADOS
+  Composição Corporal:"Fórmula de Deurenberg para estimar percentual de gordura e massa magra"
+  Gasto Energético:"Equação utilizada para TMB e GET"
+  Planejamento Nutricional: "Metodologia para divisão de macronutrientes"
+  
+\`\`\`
+
+Forneça um laudo técnico realista e profissional utilizando uma linguagem informal de fácil entendimento. Inclua valores numéricos específicos nas estimativas, não detalhe os cálculos e explore detalhadamente as implicações das medidas de circunferência para a saúde e composição corporal. Use o formato CSV rigorosamente como mostrado no exemplo.`;
 }
 
 async function callOpenAI(prompt: string): Promise<string> {
