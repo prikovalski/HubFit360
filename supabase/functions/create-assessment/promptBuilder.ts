@@ -106,21 +106,25 @@ Analise os dados e as fotos fornecidas, gere um laudo completo incluindo:
 
 1. AVALIAÇÃO CORPORAL
 - Com base nas fotos faça uma análise da distribuição de gordura corporal
+- Com base nas fotos faça uma análise da distribuição muscular
 - Use como referência os valores já calculados: ${bodyFatPercentage.toFixed(1)}% de gordura corporal
 
 2. GASTO ENERGÉTICO
-- Estimativa do Gasto Energético Total (GET)
+- Estimativa do Gasto Energético Total (GET). IMPORTANTE: NÃO DETALHE O CALCULO REALIZADO APENAS INFORME O RESULTADO.
 
 3. PLANEJAMENTO NUTRICIONAL
-Considerando as doenças crônicas e as atividades fisicas informadas abaixo, forneça recomendações de calorias diarias para:
+Considerando as atividades fisicas informadas abaixo, forneça recomendações de calorias diarias para:
 - Manutenção com foco em definição
 - Emagrecimento saudável (cutting)
 - Ganho de massa muscular (bulking)
 
-Divisão de macronutrientes em cada refeição para cada cenário (proteínas, carboidratos, gorduras)
+Divisão de macronutrientes em cada refeição para cada cenário (proteínas, carboidratos, gorduras). Deixe claro que a divisão apresentada é POR REFEIÇÃO.
 
 4. PROJEÇÃO DE RESULTADOS
 Explique o que pode acontecer seguindo as recomendações por 30 dias
+
+5. RESUMO
+Faça uma avaliação detalhada das fotos, cruze com os valores calculados e apresente um resumo enfatizando os RISCOS e/ou o que já está bom. Apresente também um rápido resumo da avaliação.  
 
 DADOS PESSOAIS:
 - Gênero: ${genderForPrompt}
@@ -149,7 +153,7 @@ AVALIAÇÃO CORPORAL
  "Valores específicos"
  
 GASTO ENERGÉTICO
- - Gasto Energético Total (GET): "XXXX kcal/dia" - "Descrição detalhada"
+ - Gasto Energético Total (GET): "XXXX kcal/dia"
  
 PLANEJAMENTO NUTRICIONAL
  - Manutenção com foco em definição: XXXX kcal/dia - "Descrição detalhada"
@@ -173,19 +177,22 @@ PLANEJAMENTO NUTRICIONAL
    Gorduras: "XXXg"
 
    
-PROJEÇÃO DE RESULTADOS,
-  EMAGRECIMENTO SAUDÁVEL: "Descrição das expectativas em 30 dias","Valor esperado"
+PROJEÇÃO DE RESULTADOS
+  EMAGRECIMENTO SAUDÁVEL: "Descrição das expectativas em 30 dias", "Valor esperado"
   
-  MANUTENÇÃO COM DEFINIÇÃO: "Descrição das expectativas em 30 dias","Valor esperado"
+  MANUTENÇÃO COM DEFINIÇÃO: "Descrição das expectativas em 30 dias", "Valor esperado"
   
-  GANHO DE MASSA MUSCULAR: "Descrição das expectativas em 30 dias","Valor esperado"
+  GANHO DE MASSA MUSCULAR: "Descrição das expectativas em 30 dias", "Valor esperado"
+
+RESUMO
+"Descrição detalhada"
   
-MÉTODOS UTILIZADOS,
+MÉTODOS UTILIZADOS
   Composição Corporal:"Fórmula de Deurenberg para estimar percentual de gordura e massa magra"
   Gasto Energético:"Equação utilizada para TMB e GET"
   Planejamento Nutricional: "Metodologia para divisão de macronutrientes"
   
 \`\`\`
 
-Forneça um laudo técnico realista e profissional utilizando uma linguagem de fácil entendimento. Inclua valores numéricos específicos nas estimativas, mas não detalhe os cálculos. Use o formato CSV rigorosamente como mostrado no exemplo.`;
+Forneça um laudo técnico realista e profissional utilizando uma linguagem informal de fácil entendimento. Inclua valores numéricos específicos nas estimativas e não detalhe os cálculos. Use o formato CSV rigorosamente como mostrado no exemplo.`;
 }
