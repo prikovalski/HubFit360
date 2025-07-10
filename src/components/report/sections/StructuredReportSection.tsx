@@ -44,6 +44,22 @@ const StructuredReportSection = ({ assessmentText }: StructuredReportSectionProp
     return sections;
   }
 
+  // Função para limpar e formatar o texto, removendo caracteres especiais desnecessários
+  const formatText = (text: string) => {
+    return text
+      // Remover aspas duplas desnecessárias no início e fim
+      .replace(/^"|"$/g, '')
+      // Remover vírgulas no final das linhas
+      .replace(/,\s*$/gm, '')
+      // Limpar caracteres especiais em excesso
+      .replace(/["'`,]/g, '')
+      // Melhorar quebras de linha
+      .replace(/\n\s*\n/g, '\n\n')
+      // Remover espaços extras
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
   const sections = parseStructuredReport(assessmentText);
 
   if (!sections) {
@@ -60,7 +76,7 @@ const StructuredReportSection = ({ assessmentText }: StructuredReportSectionProp
           </CardHeader>
           <CardContent>
             <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
-              {assessmentText || 'Relatório não disponível.'}
+              {formatText(assessmentText) || 'Relatório não disponível.'}
             </div>
             
             <div className="mt-6 pt-4 border-t border-gray-200 space-y-2">
@@ -106,8 +122,10 @@ const StructuredReportSection = ({ assessmentText }: StructuredReportSectionProp
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
-              {sections.avaliacaoCorporal}
+            <div className="text-gray-800 leading-relaxed space-y-3">
+              {formatText(sections.avaliacaoCorporal).split('\n').map((line, index) => (
+                <p key={index} className="mb-2">{line}</p>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -123,8 +141,10 @@ const StructuredReportSection = ({ assessmentText }: StructuredReportSectionProp
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
-              {sections.gastoEnergetico}
+            <div className="text-gray-800 leading-relaxed space-y-3">
+              {formatText(sections.gastoEnergetico).split('\n').map((line, index) => (
+                <p key={index} className="mb-2">{line}</p>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -140,8 +160,10 @@ const StructuredReportSection = ({ assessmentText }: StructuredReportSectionProp
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
-              {sections.planejamentoNutricional}
+            <div className="text-gray-800 leading-relaxed space-y-3">
+              {formatText(sections.planejamentoNutricional).split('\n').map((line, index) => (
+                <p key={index} className="mb-2">{line}</p>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -157,8 +179,10 @@ const StructuredReportSection = ({ assessmentText }: StructuredReportSectionProp
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
-              {sections.projecaoResultados}
+            <div className="text-gray-800 leading-relaxed space-y-3">
+              {formatText(sections.projecaoResultados).split('\n').map((line, index) => (
+                <p key={index} className="mb-2">{line}</p>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -174,8 +198,10 @@ const StructuredReportSection = ({ assessmentText }: StructuredReportSectionProp
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
-              {sections.metodosUtilizados}
+            <div className="text-gray-800 leading-relaxed space-y-3">
+              {formatText(sections.metodosUtilizados).split('\n').map((line, index) => (
+                <p key={index} className="mb-2">{line}</p>
+              ))}
             </div>
           </CardContent>
         </Card>
