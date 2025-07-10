@@ -56,8 +56,12 @@ export const generateAssessmentPDF = ({ report, userProfile, patientProfile }: G
   // Determinar qual nome usar (priorizar patient_name se existir)
   const displayName = report.patient_name || userProfile?.name || 'Não informado';
 
-  // Mapear o gênero para português
-  const displayGender = mapGenderFromDB(userProfile?.gender);
+  // Mapear o gênero para português (priorizar dados da avaliação)
+  const displayGender = mapGenderFromDB(report.patient_gender || userProfile?.gender);
+
+  // Priorizar dados da avaliação para altura e peso
+  const displayHeight = report.patient_height || patientProfile?.height;
+  const displayWeight = report.patient_weight || patientProfile?.weight;
 
   // Cabeçalho
   addText('HUBFIT360', 20, true);
@@ -65,7 +69,7 @@ export const generateAssessmentPDF = ({ report, userProfile, patientProfile }: G
   addText(`Data: ${new Date(report.date).toLocaleDateString('pt-BR')}`, 12);
   currentY += 10;
 
-  // Dados Pessoais (usar nome determinado acima)
+  // Dados Pessoais
   addText('DADOS PESSOAIS', 14, true);
   addText(`Nome: ${displayName}`);
   
@@ -73,11 +77,13 @@ export const generateAssessmentPDF = ({ report, userProfile, patientProfile }: G
   addText(`Idade: ${displayAge} anos`);
   
   addText(`Gênero: ${displayGender || 'Não informado'}`);
-  addText(`Altura: ${patientProfile?.height ? `${(patientProfile.height / 100).toFixed(2)}m` : 'Não informado'}`);
-  addText(`Peso: ${patientProfile?.weight ? `${patientProfile.weight}kg` : 'Não informado'}`);
+  addText(`Altura: ${displayHeight ? `${(displayHeight / 100).toFixed(2)}m` : 'Não informado'}`);
+  addText(`Peso: ${displayWeight ? `${displayWeight}kg` : 'Não informado'}`);
   
-  if (patientProfile?.goal) {
-    addText(`Objetivo: ${patientProfile.goal}`);
+  // Mostrar objetivo (priorizar dados da avaliação)
+  const displayGoal = report.patient_goal || patientProfile?.goal;
+  if (displayGoal) {
+    addText(`Objetivo: ${displayGoal}`);
   }
   
   currentY += 10;
@@ -97,21 +103,22 @@ export const generateAssessmentPDF = ({ report, userProfile, patientProfile }: G
   // Análise Visual (usando dados reais se disponível)
   addText('ANÁLISE VISUAL E COMPOSIÇÃO CORPORAL', 14, true);
   
-  if (report.assessmentText) {
-    addText(report.assessmentText);
+  if (report.assessmentText || report.assessment_text) {
+    addText(report.assessmentText || report.assessment_text);
   } else {
     // Fallback para texto genérico baseado nos dados do usuário
-    const genderText = userProfile?.gender === 'Masculino' ? 'masculino' : 'feminino';
+    const genderText = (report.patient_gender || userProfile?.gender) === 'Masculino' ? 'masculino' : 'feminino';
     const defaultAnalysis = `A análise visual demonstra uma composição corporal adequada para o perfil ${genderText}. O percentual de gordura corporal atual encontra-se dentro de uma faixa considerada para a faixa etária. A avaliação foi realizada com base nas medidas corporais fornecidas e nas fotografias submetidas.`;
     addText(defaultAnalysis);
   }
   
   currentY += 10;
 
-  // Valores Ideais (baseados no gênero do usuário)
+  // Valores Ideais (baseados no gênero)
   addText('VALORES IDEAIS', 14, true);
   
-  if (userProfile?.gender === 'Masculino') {
+  const patientGender = report.patient_gender || userProfile?.gender;
+  if (patientGender === 'Masculino') {
     addText('Massa Gorda Ideal: 10-18%');
     addText('IMC Ideal: 22-25');
   } else {
@@ -122,17 +129,18 @@ export const generateAssessmentPDF = ({ report, userProfile, patientProfile }: G
   currentY += 10;
 
   // Recomendações (apenas se for versão paga)
-  if (report.status === 'paid') {
+  if (report.status === 'paid' || report.tier === 'premium') {
     addText('RECOMENDAÇÕES PERSONALIZADAS', 14, true);
     
-    // Recomendações baseadas no objetivo do usuário
-    if (patientProfile?.goal) {
-      addText(`Programa personalizado para: ${patientProfile.goal}`, 12, true);
+    // Recomendações baseadas no objetivo
+    const goal = report.patient_goal || patientProfile?.goal;
+    if (goal) {
+      addText(`Programa personalizado para: ${goal}`, 12, true);
     }
     
     addText('Programa de Treino:', 12, true);
     
-    if (patientProfile?.goal?.toLowerCase().includes('perda')) {
+    if (goal?.toLowerCase().includes('perda')) {
       addText('• 4-5x por semana de exercícios');
       addText('• Foco em exercícios aeróbicos');
       addText('• 3-4x cardio moderado a intenso');
@@ -148,28 +156,31 @@ export const generateAssessmentPDF = ({ report, userProfile, patientProfile }: G
     
     addText('Plano Nutricional:', 12, true);
     
-    if (patientProfile?.weight) {
-      const calories = patientProfile.goal?.toLowerCase().includes('perda') ? 
-        Math.round(patientProfile.weight * 24) : 
-        Math.round(patientProfile.weight * 32);
+    const weight = displayWeight;
+    if (weight) {
+      const calories = goal?.toLowerCase().includes('perda') ? 
+        Math.round(weight * 24) : 
+        Math.round(weight * 32);
       addText(`• ${calories}-${calories + 200} kcal/dia`);
-      addText(`• ${(patientProfile.weight * 1.8).toFixed(1)}g proteína/dia`);
+      addText(`• ${(weight * 1.8).toFixed(1)}g proteína/dia`);
     }
     
     addText('• Distribuição balanceada de macronutrientes');
     addText('• 5-6 refeições ao dia');
     
     // Considerações especiais baseadas no perfil
-    if (patientProfile?.food_allergy) {
+    const foodAllergy = report.patient_food_allergy || patientProfile?.food_allergy;
+    if (foodAllergy) {
       currentY += 5;
       addText('Restrições Alimentares:', 12, true);
-      addText(`• ${patientProfile.food_allergy}`);
+      addText(`• ${foodAllergy}`);
     }
     
-    if (patientProfile?.medical_restriction) {
+    const medicalRestriction = report.patient_medical_restriction || patientProfile?.medical_restriction;
+    if (medicalRestriction) {
       currentY += 5;
       addText('Restrições Médicas:', 12, true);
-      addText(`• ${patientProfile.medical_restriction}`);
+      addText(`• ${medicalRestriction}`);
     }
     
     currentY += 10;
