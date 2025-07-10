@@ -5,7 +5,6 @@ import { Report, UserProfile, PatientProfile } from "@/types/report";
 import PersonalInfoSection from "./sections/PersonalInfoSection";
 import EstimatesSection from "./sections/EstimatesSection";
 import IdealRangesSection from "./sections/IdealRangesSection";
-import StructuredReportSection from "./sections/StructuredReportSection";
 import AnalysisIncludedSection from "./sections/AnalysisIncludedSection";
 
 interface BasicAnalysisSectionProps {
@@ -37,7 +36,6 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
   const displayAge = report.age || calculateAge(userProfile?.birth_date || null);
 
   console.log('Dados do report na BasicAnalysisSection:', report);
-  console.log('Texto da avaliação:', report.assessmentText);
   console.log('Objetivo do paciente:', report.patient_goal);
 
   return (
@@ -45,7 +43,7 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
       <CardHeader className="bg-gradient-to-r from-[#019f80]/5 to-green-50 border-b border-green-100">
         <CardTitle className="text-2xl text-gray-800 flex items-center font-bold">
           <FileText className="w-7 h-7 mr-3 text-[#019f80]" />
-          Laudo Técnico
+          Análise Básica
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-8">
@@ -69,10 +67,6 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
           patientHeight={report.patient_height}
           patientWeight={report.patient_weight}
         />
-
-        {report.assessmentText && (
-          <StructuredReportSection assessmentText={report.assessmentText} />
-        )}
 
         <AnalysisIncludedSection />
       </CardContent>

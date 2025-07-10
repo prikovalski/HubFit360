@@ -1,12 +1,16 @@
+
 import { CheckCircle, Crown, TrendingUp, Brain, FileText, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useUserProfile } from '@/hooks/useUserProfile';
+import StructuredReportSection from "./sections/StructuredReportSection";
+
 interface PremiumSectionProps {
   report: any;
   isPaid: boolean;
   onPaymentSuccess: () => void;
 }
+
 const PremiumSection = ({
   report,
   isPaid,
@@ -60,7 +64,9 @@ const PremiumSection = ({
   if (!isPaid) {
     return null;
   }
-  return <div className="space-y-8">
+
+  return (
+    <div className="space-y-8">
       <Card className="border-green-200 bg-gradient-to-r from-green-50 to-emerald-50">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -74,8 +80,14 @@ const PremiumSection = ({
             </Badge>
           </div>
         </CardHeader>
-        
       </Card>
-    </div>;
+
+      {/* Relatório Detalhado - Movido da análise básica para premium */}
+      {report.assessmentText && (
+        <StructuredReportSection assessmentText={report.assessmentText} />
+      )}
+    </div>
+  );
 };
+
 export default PremiumSection;
