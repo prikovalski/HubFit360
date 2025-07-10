@@ -37,6 +37,7 @@ serve(async (req) => {
     const data: AssessmentData = await req.json();
     
     console.log('Dados recebidos na create-assessment:', {
+      userId: data.userId,
       assessmentType: data.assessmentType,
       hasCircumferences: {
         neck: !!data.neckCircumference,
@@ -59,16 +60,45 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get user data
+    // Get user data with detailed patient profile information
+    console.log('Buscando dados do usuário ID:', data.userId);
     const { data: userData, error: userError } = await supabase
       .from('users')
-      .select('*, patient_profiles(*)')
+      .select(`
+        *,
+        patient_profiles (
+          neck_circumference,
+          waist_circumference,
+          hip_circumference,
+          physical_activity,
+          physical_activities,
+          chronic_disease,
+          goal,
+          height,
+          weight
+        )
+      `)
       .eq('id', data.userId)
       .single();
 
     if (userError || !userData) {
+      console.error('Erro ao buscar usuário:', userError);
       throw new Error('Usuário não encontrado');
     }
+
+    console.log('Dados do usuário carregados:', {
+      userId: userData.id,
+      hasPatientProfile: !!userData.patient_profiles?.[0],
+      patientProfileData: userData.patient_profiles?.[0] ? {
+        hasPhysicalActivity: !!userData.patient_profiles[0].physical_activity,
+        hasPhysicalActivities: !!userData.patient_profiles[0].physical_activities,
+        physicalActivity: userData.patient_profiles[0].physical_activity,
+        physicalActivitiesCount: Array.isArray(userData.patient_profiles[0].physical_activities) 
+          ? userData.patient_profiles[0].physical_activities.length 
+          : 0,
+        physicalActivities: userData.patient_profiles[0].physical_activities
+      } : null
+    });
 
     // Calculate age based on assessment type
     let calculatedAge: number;
@@ -121,6 +151,8 @@ serve(async (req) => {
       data.patientData
     );
 
+    console.log('Prompt construído com sucesso, tamanho:', assessmentPrompt.length);
+
     // For basic assessments, save without detailed analysis
     const savedAssessment = await saveAssessment(
       data.userId,
@@ -145,7 +177,9 @@ serve(async (req) => {
       data.height,
       data.weight,
       // Pass the prompt text
-      assessmentPrompt
+      assessmentPrompt,
+      // Pass user data to copy physical activities for self assessments
+      userData
     );
 
     console.log('Avaliação básica salva com ID:', savedAssessment.id);

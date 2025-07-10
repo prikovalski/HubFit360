@@ -25,17 +25,21 @@ export async function saveAssessment(
   height?: number,
   weight?: number,
   // Add prompt parameter
-  promptText?: string
+  promptText?: string,
+  // Add userData parameter to access user profile data
+  userData?: any
 ) {
   const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-  console.log('Salvando avaliação com circunferências:', {
+  console.log('Salvando avaliação com dados completos:', {
     assessmentType,
     neckCircumference,
     waistCircumference,
-    hipCircumference
+    hipCircumference,
+    hasUserData: !!userData,
+    hasPatientProfile: !!(userData?.patient_profiles?.[0])
   });
 
   const assessmentRecord: any = {
@@ -66,6 +70,7 @@ export async function saveAssessment(
 
   // If it's a patient assessment, add all patient data
   if (assessmentType === 'patient' && patientData) {
+    console.log('Adicionando dados do paciente à avaliação');
     assessmentRecord.patient_gender = patientData.gender;
     assessmentRecord.patient_birth_date = patientData.birthDate;
     assessmentRecord.patient_height = patientData.height;
@@ -82,9 +87,36 @@ export async function saveAssessment(
     assessmentRecord.patient_must_have_food = patientData.mustHaveFood;
     assessmentRecord.patient_physical_activity = patientData.physicalActivity;
     assessmentRecord.patient_physical_activities = patientData.physicalActivities || [];
+  } 
+  // If it's a self assessment and we have user profile data, copy physical activities
+  else if (assessmentType === 'self' && userData?.patient_profiles?.[0]) {
+    const profile = userData.patient_profiles[0];
+    console.log('Copiando dados de atividades físicas do perfil do usuário para autoavaliação:', {
+      hasPhysicalActivity: !!profile.physical_activity,
+      hasPhysicalActivities: !!profile.physical_activities,
+      physicalActivity: profile.physical_activity,
+      physicalActivitiesCount: Array.isArray(profile.physical_activities) ? profile.physical_activities.length : 0
+    });
+    
+    // Copy physical activity data from user profile to patient fields for consistency
+    assessmentRecord.patient_physical_activity = profile.physical_activity;
+    assessmentRecord.patient_physical_activities = profile.physical_activities || [];
+    assessmentRecord.patient_goal = profile.goal;
+    assessmentRecord.patient_chronic_disease = profile.chronic_disease;
+    
+    // Also copy other profile data if available
+    if (profile.neck_circumference) assessmentRecord.patient_neck_circumference = profile.neck_circumference;
+    if (profile.waist_circumference) assessmentRecord.patient_waist_circumference = profile.waist_circumference;
+    if (profile.hip_circumference) assessmentRecord.patient_hip_circumference = profile.hip_circumference;
   }
 
-  console.log('Registro de avaliação a ser salvo:', assessmentRecord);
+  console.log('Registro de avaliação final a ser salvo:', {
+    ...assessmentRecord,
+    // Log only relevant fields for debugging
+    patient_physical_activity: assessmentRecord.patient_physical_activity,
+    patient_physical_activities: assessmentRecord.patient_physical_activities,
+    assessment_type: assessmentRecord.assessment_type
+  });
 
   const { data: assessmentData, error } = await supabase
     .from('assessments')
