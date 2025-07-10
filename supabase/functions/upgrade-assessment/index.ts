@@ -105,7 +105,7 @@ DADOS PESSOAIS:
 IMPORTANTE: Com base nas circunferências fornecidas, faça uma análise detalhada da distribuição de gordura corporal e forneça recomendações específicas.
 
 IMPORTANTE: Forneça o laudo em formato CSV estruturado exatamente como o exemplo abaixo. O laudo deve ser realista e profissional, utilize uma linguagem de facil entendimento para que um leigo seja capaz de entender. Inclua valores numéricos específicos nas estimativas, mas não detalhe os cálculos. 
-Use aspas duplas para valores que contenham vírgulas e mantenha a estrutura rigorosa:
+Use aspas duplas para valores que contenham vírgulas e mantenha a estrutura rigorosa: 
 
 \`\`\`
 AVALIAÇÃO CORPORAL
