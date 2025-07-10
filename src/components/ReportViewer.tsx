@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Copy, CheckCircle2 } from 'lucide-react';
@@ -9,7 +8,6 @@ import UpgradeModal from './report/UpgradeModal';
 import LoggedPageLayout from '@/components/layout/LoggedPageLayout';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { supabase } from '@/integrations/supabase/client';
-
 interface Report {
   id: string;
   date: string;
@@ -27,7 +25,6 @@ interface Report {
     summary: string;
   };
 }
-
 interface ReportViewerProps {
   report: Report;
   onBack: () => void;
@@ -35,15 +32,25 @@ interface ReportViewerProps {
   onProfileClick: () => void;
   onLogout: () => void;
 }
-
-const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }: ReportViewerProps) => {
-  const { toast } = useToast();
+const ReportViewer = ({
+  report,
+  onBack,
+  onLogoClick,
+  onProfileClick,
+  onLogout
+}: ReportViewerProps) => {
+  const {
+    toast
+  } = useToast();
   const [copied, setCopied] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [currentReport, setCurrentReport] = useState(report);
   const [isPaid, setIsPaid] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { userProfile, patientProfile } = useUserProfile();
+  const {
+    userProfile,
+    patientProfile
+  } = useUserProfile();
 
   // Verificar se a avaliação foi paga via transação de crédito
   useEffect(() => {
@@ -53,15 +60,11 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
         setLoading(false);
         return;
       }
-
       try {
-        const { data: creditTransaction, error } = await supabase
-          .from('credit_transactions')
-          .select('*')
-          .eq('assessment_id', currentReport.id)
-          .eq('type', 'usage')
-          .single();
-
+        const {
+          data: creditTransaction,
+          error
+        } = await supabase.from('credit_transactions').select('*').eq('assessment_id', currentReport.id).eq('type', 'usage').single();
         if (error || !creditTransaction) {
           setIsPaid(false);
         } else {
@@ -74,27 +77,23 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
         setLoading(false);
       }
     };
-
     checkPaymentStatus();
   }, [currentReport.id, currentReport.tier]);
-
   useEffect(() => {
     if (copied) {
       const timer = setTimeout(() => {
         setCopied(false);
       }, 2000);
-
       return () => clearTimeout(timer);
     }
   }, [copied]);
-
   const handleCopyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
       toast({
         title: "Copiado!",
-        description: "O texto foi copiado para a área de transferência.",
+        description: "O texto foi copiado para a área de transferência."
       });
     } catch (err) {
       console.error('Falha ao copiar: ', err);
@@ -105,32 +104,23 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
       });
     }
   };
-
   const handleUpgradeSuccess = () => {
     // Após upgrade bem-sucedido, marcar como pago
     setIsPaid(true);
-    
+
     // Atualizar o report para premium
     setCurrentReport({
       ...currentReport,
       tier: 'premium'
     });
   };
-
   const userName = userProfile?.name || 'Usuário';
-  
+
   // Lógica simplificada de verificação
   const isBasic = currentReport.tier === 'basic';
   const isPremium = currentReport.tier === 'premium';
-
   if (loading) {
-    return (
-      <LoggedPageLayout
-        userName={userName}
-        onLogoClick={onLogoClick}
-        onProfileClick={onProfileClick}
-        onLogout={onLogout}
-      >
+    return <LoggedPageLayout userName={userName} onLogoClick={onLogoClick} onProfileClick={onProfileClick} onLogout={onLogout}>
         <div className="py-8 px-4">
           <div className="container mx-auto max-w-4xl">
             <div className="flex justify-center items-center py-8">
@@ -138,71 +128,20 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
             </div>
           </div>
         </div>
-      </LoggedPageLayout>
-    );
+      </LoggedPageLayout>;
   }
-
-  return (
-    <LoggedPageLayout
-      userName={userName}
-      onLogoClick={onLogoClick}
-      onProfileClick={onProfileClick}
-      onLogout={onLogout}
-    >
+  return <LoggedPageLayout userName={userName} onLogoClick={onLogoClick} onProfileClick={onProfileClick} onLogout={onLogout}>
       <div className="py-8 px-4">
         <div className="container mx-auto max-w-4xl">
-          <ReportHeader
-            report={currentReport}
-            userProfile={userProfile}
-            patientProfile={patientProfile}
-            isPaid={isPaid}
-            onBack={onBack}
-          />
+          <ReportHeader report={currentReport} userProfile={userProfile} patientProfile={patientProfile} isPaid={isPaid} onBack={onBack} />
           
           <div className="space-y-8">
-            <BasicAnalysisSection 
-              report={currentReport}
-              userProfile={userProfile}
-              patientProfile={patientProfile}
-            />
+            <BasicAnalysisSection report={currentReport} userProfile={userProfile} patientProfile={patientProfile} />
 
-            {isPremium && isPaid ? (
-              <>
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                    Análise Completa
-                  </h3>
-                  <p className="text-gray-700 leading-relaxed mb-6">
-                    {currentReport.assessmentText}
-                  </p>
-                  <div className="flex justify-end">
-                    <button
-                      onClick={() => handleCopyToClipboard(currentReport.assessmentText)}
-                      className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md transition-colors"
-                      disabled={copied}
-                    >
-                      {copied ? (
-                        <>
-                          <CheckCircle2 className="w-5 h-5 text-green-500" />
-                          Copiado!
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-5 h-5" />
-                          Copiar
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-                <PremiumSection 
-                  report={currentReport}
-                  isPaid={isPaid}
-                  onPaymentSuccess={() => {}}
-                />
-              </>
-            ) : isBasic ? (
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
+            {isPremium && isPaid ? <>
+                
+                <PremiumSection report={currentReport} isPaid={isPaid} onPaymentSuccess={() => {}} />
+              </> : isBasic ? <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-6">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">
                   🎉 Análise Básica Completa!
                 </h3>
@@ -211,26 +150,15 @@ const ReportViewer = ({ report, onBack, onLogoClick, onProfileClick, onLogout }:
                   avançadas, recomendações nutricionais personalizadas e projeção de resultados, 
                   faça o upgrade para a versão premium.
                 </p>
-                <button
-                  onClick={() => setShowUpgradeModal(true)}
-                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-md transition-colors"
-                >
+                <button onClick={() => setShowUpgradeModal(true)} className="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-md transition-colors">
                   Fazer Upgrade para Premium
                 </button>
-              </div>
-            ) : null}
+              </div> : null}
           </div>
         </div>
       </div>
 
-      <UpgradeModal
-        isOpen={showUpgradeModal}
-        onClose={() => setShowUpgradeModal(false)}
-        assessmentId={currentReport.id}
-        onUpgradeSuccess={handleUpgradeSuccess}
-      />
-    </LoggedPageLayout>
-  );
+      <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} assessmentId={currentReport.id} onUpgradeSuccess={handleUpgradeSuccess} />
+    </LoggedPageLayout>;
 };
-
 export default ReportViewer;
