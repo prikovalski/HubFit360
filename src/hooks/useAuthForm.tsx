@@ -5,6 +5,7 @@ import { usePasswordReset } from '@/hooks/usePasswordReset';
 import { useFormData } from '@/hooks/useFormData';
 import { useAuthSubmit } from '@/hooks/useAuthSubmit';
 import { useEmailCheck } from '@/hooks/useEmailCheck';
+import { useSecureAuth } from '@/hooks/useSecureAuth';
 import { validateEmail } from '@/utils/inputValidation';
 
 export const useAuthForm = (onLogin: (user: any) => void) => {
@@ -12,11 +13,14 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
   const { formData, setFormData, handleInputChange } = useFormData();
   const { handleSubmit: submitForm } = useAuthSubmit();
   const { checkEmailExists } = useEmailCheck();
+  const { resendConfirmation } = useSecureAuth();
   
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [emailExists, setEmailExists] = useState(false);
   const [emailError, setEmailError] = useState('');
+  const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   const validateEmailInput = async (email: string) => {
     setEmailError('');
@@ -57,11 +61,45 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
         return;
       }
       
-      await submitForm(formData, isLogin);
+      const result = await submitForm(formData, isLogin);
+      
+      // Se não for login e o cadastro foi bem-sucedido, mostrar tela de confirmação
+      if (!isLogin && result && !result.error) {
+        setShowEmailConfirmation(true);
+      }
     } catch (error) {
       console.error('Auth error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendConfirmation = async () => {
+    setResendLoading(true);
+    try {
+      const { error } = await resendConfirmation(formData.email);
+      
+      if (error) {
+        toast({
+          title: "Erro ao reenviar email",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Email reenviado!",
+          description: "Verifique sua caixa de entrada e spam.",
+        });
+      }
+    } catch (error) {
+      console.error('Error resending confirmation:', error);
+      toast({
+        title: "Erro ao reenviar email",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -84,11 +122,15 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
     setEmailError,
     formData,
     setFormData,
+    showEmailConfirmation,
+    setShowEmailConfirmation,
+    resendLoading,
     handleSocialLogin,
     handleForgotPassword: () => handleForgotPassword(formData.email),
     handlePasswordReset: () => handlePasswordReset(formData.email, setLoading, setEmailExists),
     handleInputChange,
     handleSubmit,
-    validateEmailInput
+    validateEmailInput,
+    handleResendConfirmation
   };
 };

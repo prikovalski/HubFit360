@@ -12,6 +12,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<any>;
   signOut: () => Promise<void>;
   checkEmailExists: (email: string) => Promise<boolean>;
+  resendConfirmation: (email: string) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,13 +30,12 @@ export const SecureAuthProvider = ({ children }: { children: React.ReactNode }) 
       setLoading(false);
     });
 
-    // Set up auth state listener - fixed to remove async
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Use setTimeout for any async operations if needed
         setTimeout(() => {
           setLoading(false);
         }, 0);
@@ -54,12 +54,15 @@ export const SecureAuthProvider = ({ children }: { children: React.ReactNode }) 
       };
     }
 
+    // Configure redirect URL for email confirmation
+    const redirectUrl = `${window.location.origin}/`;
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: metadata,
-        emailRedirectTo: undefined // Email confirmation disabled for development
+        emailRedirectTo: redirectUrl // Email confirmation enabled
       }
     });
     return { data, error };
@@ -83,6 +86,27 @@ export const SecureAuthProvider = ({ children }: { children: React.ReactNode }) 
 
   const signOut = async () => {
     await supabase.auth.signOut();
+  };
+
+  const resendConfirmation = async (email: string) => {
+    if (!validateEmail(email)) {
+      return { 
+        data: null, 
+        error: { message: 'Email inválido' }
+      };
+    }
+
+    const redirectUrl = `${window.location.origin}/`;
+    
+    const { data, error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email,
+      options: {
+        emailRedirectTo: redirectUrl
+      }
+    });
+    
+    return { data, error };
   };
 
   // Secure email existence check using edge function
@@ -116,7 +140,8 @@ export const SecureAuthProvider = ({ children }: { children: React.ReactNode }) 
       signUp,
       signIn,
       signOut,
-      checkEmailExists
+      checkEmailExists,
+      resendConfirmation
     }}>
       {children}
     </AuthContext.Provider>

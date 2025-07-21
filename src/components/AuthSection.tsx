@@ -5,6 +5,7 @@ import { LoginForm } from './auth/LoginForm';
 import SignupFormSteps from './auth/SignupFormSteps';
 import { AuthHeader } from './auth/AuthHeader';
 import { AuthCard } from './auth/AuthCard';
+import { EmailConfirmationCard } from './auth/EmailConfirmationCard';
 import { useAuthForm } from '@/hooks/useAuthForm';
 
 interface AuthSectionProps {
@@ -32,12 +33,16 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
     setEmailError,
     formData,
     setFormData,
+    showEmailConfirmation,
+    setShowEmailConfirmation,
+    resendLoading,
     handleSocialLogin,
     handleForgotPassword,
     handlePasswordReset,
     handleInputChange,
     handleSubmit,
-    validateEmailInput
+    validateEmailInput,
+    handleResendConfirmation
   } = useAuthForm(handleAuthSuccess);
 
   const getTitle = () => {
@@ -55,58 +60,68 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
       <div className="container mx-auto max-w-2xl py-8">
         <AuthHeader onBack={onBack} isLogin={isLogin} />
 
-        <AuthCard title={getTitle()} description={getDescription()}>
-          {emailExists && !isLogin && (
-            <EmailExistsOptions
-              email={formData.email}
-              loading={loading}
-              onLogin={() => {
-                setIsLogin(true);
-                setEmailExists(false);
-              }}
-              onPasswordReset={() => setShowPasswordReset(true)}
-              onUseAnotherEmail={() => {
-                setEmailExists(false);
-                setFormData(prev => ({...prev, email: ''}));
-              }}
-            />
-          )}
+        {showEmailConfirmation ? (
+          <EmailConfirmationCard
+            email={formData.email}
+            onResendEmail={handleResendConfirmation}
+            onBack={() => setShowEmailConfirmation(false)}
+            loading={loading}
+            resendLoading={resendLoading}
+          />
+        ) : (
+          <AuthCard title={getTitle()} description={getDescription()}>
+            {emailExists && !isLogin && (
+              <EmailExistsOptions
+                email={formData.email}
+                loading={loading}
+                onLogin={() => {
+                  setIsLogin(true);
+                  setEmailExists(false);
+                }}
+                onPasswordReset={() => setShowPasswordReset(true)}
+                onUseAnotherEmail={() => {
+                  setEmailExists(false);
+                  setFormData(prev => ({...prev, email: ''}));
+                }}
+              />
+            )}
 
-          {showPasswordReset && (
-            <PasswordResetForm
-              email={formData.email}
-              loading={loading}
-              onSendReset={handlePasswordReset}
-              onCancel={() => setShowPasswordReset(false)}
-            />
-          )}
+            {showPasswordReset && (
+              <PasswordResetForm
+                email={formData.email}
+                loading={loading}
+                onSendReset={handlePasswordReset}
+                onCancel={() => setShowPasswordReset(false)}
+              />
+            )}
 
-          {!emailExists && !showPasswordReset && (
-            <>
-              {isLogin ? (
-                <LoginForm
-                  formData={formData}
-                  loading={loading}
-                  onInputChange={handleInputChange}
-                  onSubmit={handleSubmit}
-                  onSocialLogin={handleSocialLogin}
-                  onSwitchToSignup={() => setIsLogin(false)}
-                  onForgotPassword={handleForgotPassword}
-                />
-              ) : (
-                <SignupFormSteps
-                  formData={formData}
-                  loading={loading}
-                  onInputChange={handleInputChange}
-                  onSubmit={handleSubmit}
-                  onSwitchToLogin={() => setIsLogin(true)}
-                  emailError={emailError}
-                  onEmailValidation={validateEmailInput}
-                />
-              )}
-            </>
-          )}
-        </AuthCard>
+            {!emailExists && !showPasswordReset && (
+              <>
+                {isLogin ? (
+                  <LoginForm
+                    formData={formData}
+                    loading={loading}
+                    onInputChange={handleInputChange}
+                    onSubmit={handleSubmit}
+                    onSocialLogin={handleSocialLogin}
+                    onSwitchToSignup={() => setIsLogin(false)}
+                    onForgotPassword={handleForgotPassword}
+                  />
+                ) : (
+                  <SignupFormSteps
+                    formData={formData}
+                    loading={loading}
+                    onInputChange={handleInputChange}
+                    onSubmit={handleSubmit}
+                    onSwitchToLogin={() => setIsLogin(true)}
+                    emailError={emailError}
+                    onEmailValidation={validateEmailInput}
+                  />
+                )}
+              </>
+            )}
+          </AuthCard>
+        )}
       </div>
     </div>
   );
