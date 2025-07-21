@@ -64,7 +64,7 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
       const result = await submitForm(formData, isLogin);
       
       // Se não for login e o cadastro foi bem-sucedido, mostrar tela de confirmação
-      if (!isLogin && result && !result.error) {
+      if (!isLogin && result) {
         setShowEmailConfirmation(true);
       }
     } catch (error) {
