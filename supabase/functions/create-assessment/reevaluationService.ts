@@ -108,7 +108,7 @@ export function shouldTriggerReevaluation(
   }
 
   const cinturaAltura = waistCircumference / height;
-  const shouldTrigger = bodyFatPercentage > 30 && cinturaAltura < 0.45;
+  const shouldTrigger = bodyFatPercentage > 25 && cinturaAltura < 0.70;
 
   console.log('Verificação de reavaliação:', {
     bodyFatPercentage: bodyFatPercentage.toFixed(1),
