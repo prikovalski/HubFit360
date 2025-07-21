@@ -8,9 +8,9 @@ export async function saveAssessment(
   sidePhoto: string,
   backPhoto: string,
   calculatedAge: number,
-  estimatedBodyFat: number | null,
-  leanMass: number | null,
-  fatMass: number | null,
+  estimatedBodyFat: number,
+  leanMass: number,
+  fatMass: number,
   bmi: number,
   assessment: string | null,
   tier: string = 'basic',
@@ -27,7 +27,10 @@ export async function saveAssessment(
   // Add prompt parameter
   promptText?: string,
   // Add userData parameter to access user profile data
-  userData?: any
+  userData?: any,
+  // Add reevaluation parameters
+  wasReevaluated?: boolean,
+  reevaluationInfo?: string
 ) {
   const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
@@ -39,7 +42,8 @@ export async function saveAssessment(
     waistCircumference,
     hipCircumference,
     hasUserData: !!userData,
-    hasPatientProfile: !!(userData?.patient_profiles?.[0])
+    hasPatientProfile: !!(userData?.patient_profiles?.[0]),
+    wasReevaluated: !!wasReevaluated
   });
 
   const assessmentRecord: any = {
@@ -67,6 +71,12 @@ export async function saveAssessment(
     // Add prompt text
     prompt_text: promptText || null
   };
+
+  // Add reevaluation information if available
+  if (wasReevaluated && reevaluationInfo) {
+    assessmentRecord.reevaluation_applied = true;
+    assessmentRecord.reevaluation_notes = reevaluationInfo;
+  }
 
   // If it's a patient assessment, add all patient data
   if (assessmentType === 'patient' && patientData) {
@@ -115,7 +125,8 @@ export async function saveAssessment(
     // Log only relevant fields for debugging
     patient_physical_activity: assessmentRecord.patient_physical_activity,
     patient_physical_activities: assessmentRecord.patient_physical_activities,
-    assessment_type: assessmentRecord.assessment_type
+    assessment_type: assessmentRecord.assessment_type,
+    reevaluation_applied: assessmentRecord.reevaluation_applied
   });
 
   const { data: assessmentData, error } = await supabase

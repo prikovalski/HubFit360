@@ -5,6 +5,7 @@ import { saveAssessment } from './assessmentService.ts';
 import { calculateBodyFatPercentage, calculateLeanMass, calculateFatMass } from './deurenbergFormula.ts';
 import { callOpenAI } from './openaiService.ts';
 import { buildAssessmentPrompt } from './promptBuilder.ts';
+import { shouldTriggerReevaluation, reevaluateBodyComposition } from './reevaluationService.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -116,13 +117,59 @@ serve(async (req) => {
     console.log('Idade calculada:', calculatedAge);
 
     // Calculate body composition using Deurenberg formula
-    const bodyFatPercentage = calculateBodyFatPercentage(
+    let bodyFatPercentage = calculateBodyFatPercentage(
       data.weight,
       data.height,
       calculatedAge,
       data.sex.toLowerCase()
     );
     
+    console.log('=== CÁLCULO INICIAL COM DEURENBERG ===');
+    console.log('Percentual de gordura inicial:', bodyFatPercentage.toFixed(1) + '%');
+
+    // Check if reevaluation is needed
+    const needsReevaluation = shouldTriggerReevaluation(
+      bodyFatPercentage,
+      data.waistCircumference || 0,
+      data.height
+    );
+
+    let reevaluationInfo = '';
+    let wasReevaluated = false;
+
+    if (needsReevaluation && data.waistCircumference) {
+      console.log('=== ACIONANDO REAVALIAÇÃO ===');
+      console.log('Condições atendidas para reavaliação:', {
+        bodyFatPercentage: bodyFatPercentage.toFixed(1),
+        waistCircumference: data.waistCircumference,
+        cinturaAlturaRatio: (data.waistCircumference / data.height).toFixed(2)
+      });
+
+      const reevaluationResult = await reevaluateBodyComposition(
+        bodyFatPercentage,
+        data.waistCircumference,
+        data.height,
+        data.weight,
+        data.weight / Math.pow(data.height / 100, 2), // BMI
+        data.sex,
+        calculatedAge,
+        data.frontPhoto,
+        data.sidePhoto,
+        data.backPhoto
+      );
+
+      if (reevaluationResult.wasReevaluated) {
+        console.log('=== REAVALIAÇÃO APLICADA ===');
+        console.log('Percentual original:', bodyFatPercentage.toFixed(1) + '%');
+        console.log('Percentual reavaliado:', reevaluationResult.newBodyFatPercentage.toFixed(1) + '%');
+        console.log('Justificativa:', reevaluationResult.justification);
+
+        bodyFatPercentage = reevaluationResult.newBodyFatPercentage;
+        reevaluationInfo = reevaluationResult.justification;
+        wasReevaluated = true;
+      }
+    }
+
     const leanMass = calculateLeanMass(data.weight, bodyFatPercentage);
     const fatMass = calculateFatMass(data.weight, bodyFatPercentage);
     
@@ -130,11 +177,12 @@ serve(async (req) => {
     const heightM = data.height / 100;
     const bmi = data.weight / (heightM * heightM);
 
-    console.log('Cálculos realizados:', {
+    console.log('Cálculos finais realizados:', {
       bodyFatPercentage: bodyFatPercentage.toFixed(2),
       leanMass: leanMass.toFixed(2),
       fatMass: fatMass.toFixed(2),
-      bmi: bmi.toFixed(2)
+      bmi: bmi.toFixed(2),
+      wasReevaluated
     });
 
     // Build assessment prompt for potential use
@@ -192,7 +240,9 @@ serve(async (req) => {
         bodyFatPercentage: bodyFatPercentage,
         leanMass: leanMass,
         fatMass: fatMass,
-        bmi: bmi
+        bmi: bmi,
+        wasReevaluated: wasReevaluated,
+        reevaluationInfo: reevaluationInfo
       }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
