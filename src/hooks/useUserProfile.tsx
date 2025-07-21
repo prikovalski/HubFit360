@@ -45,8 +45,12 @@ export const useUserProfile = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [patientProfile, setPatientProfile] = useState<PatientProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRefetching, setIsRefetching] = useState(false);
 
   useEffect(() => {
+    // Evitar múltiplas execuções simultâneas
+    if (isRefetching) return;
+    
     if (user) {
       fetchUserProfile();
     } else {
@@ -57,9 +61,12 @@ export const useUserProfile = () => {
   }, [user]);
 
   const fetchUserProfile = async () => {
-    if (!user) return;
+    if (!user || isRefetching) return;
 
     try {
+      setIsRefetching(true);
+      console.log('Fetching user profile for user:', user.id);
+      
       // Fetch user profile
       const { data: userData, error: userError } = await supabase
         .from('users')
@@ -93,6 +100,7 @@ export const useUserProfile = () => {
       console.error('Error fetching profile:', error);
     } finally {
       setLoading(false);
+      setIsRefetching(false);
     }
   };
 

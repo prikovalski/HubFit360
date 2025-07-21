@@ -21,11 +21,12 @@ const AppContent = () => {
 
   // Auto-redirect to dashboard when user logs in (but not during logout)
   useEffect(() => {
+    // ANTI-LOOP: Prevenir múltiplos redirecionamentos
     if (user && currentSection === 'home' && !isLoggingOut) {
-      console.log('Usuario logado detectado, redirecionando para dashboard');
+      console.log('AppContent: Usuario logado detectado, redirecionando para dashboard (APENAS UMA VEZ)');
       setCurrentSection('dashboard');
     }
-  }, [user, currentSection, isLoggingOut]);
+  }, [user, isLoggingOut]); // Removido currentSection da dependência para evitar loop
 
   const handleLogout = async () => {
     try {
