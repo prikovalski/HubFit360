@@ -5,7 +5,7 @@ import { usePasswordReset } from '@/hooks/usePasswordReset';
 import { useFormData } from '@/hooks/useFormData';
 import { useAuthSubmit } from '@/hooks/useAuthSubmit';
 import { useEmailCheck } from '@/hooks/useEmailCheck';
-import { useSecureAuth } from '@/hooks/useSecureAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { validateEmail } from '@/utils/inputValidation';
 
 export const useAuthForm = (onLogin: (user: any) => void) => {
@@ -13,7 +13,7 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
   const { formData, setFormData, handleInputChange } = useFormData();
   const { handleSubmit: submitForm } = useAuthSubmit();
   const { checkEmailExists } = useEmailCheck();
-  const { resendConfirmation } = useSecureAuth();
+  const { resendConfirmation } = useAuth();
   
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);

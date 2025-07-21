@@ -13,6 +13,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<any>;
   signOut: () => Promise<void>;
   checkEmailExists: (email: string) => Promise<boolean>;
+  resendConfirmation: (email: string) => Promise<any>;
   loginRateLimit: {
     isBlocked: boolean;
     remainingAttempts: number;
@@ -75,97 +76,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       };
     }
 
-    // Create the auth user without email confirmation
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // Configure redirect URL for email confirmation
+    const redirectUrl = `${window.location.origin}/`;
+
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: metadata,
-        emailRedirectTo: undefined // Disable email confirmation completely
+        emailRedirectTo: redirectUrl // Email confirmation enabled
       }
     });
 
-    if (authError) {
-      return { data: authData, error: authError };
-    }
-
-    // If user was created successfully, wait for the trigger to create the user record and then update it
-    if (authData.user) {
-      try {
-        console.log('Aguardando criação do usuário na tabela users...');
-        
-        // Aguardar um pouco para garantir que o trigger criou o usuário
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Buscar o usuário criado pelo trigger e atualizar com os dados completos
-        let attempts = 0;
-        const maxAttempts = 5;
-        
-        while (attempts < maxAttempts) {
-          console.log(`Tentativa ${attempts + 1} de atualizar dados do usuário`);
-          
-          const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('id')
-            .eq('auth_user_id', authData.user.id)
-            .single();
-          
-          if (userData && !userError) {
-            console.log('Usuário encontrado, atualizando dados:', userData);
-            
-            // Atualizar com os dados completos
-            const updateData: any = {};
-            
-            if (metadata.birth_date) {
-              updateData.birth_date = metadata.birth_date;
-            }
-            
-            if (metadata.gender) {
-              updateData.gender = metadata.gender;
-            }
-            
-            if (metadata.name) {
-              updateData.name = metadata.name;
-            }
-            
-            if (metadata.profession) {
-              updateData.profession = metadata.profession;
-            }
-            
-            if (metadata.role) {
-              updateData.role = metadata.role;
-            }
-            
-            console.log('Dados para atualização:', updateData);
-            
-            const { error: updateError } = await supabase
-              .from('users')
-              .update(updateData)
-              .eq('auth_user_id', authData.user.id);
-
-            if (updateError) {
-              console.error('Erro ao atualizar dados do usuário:', updateError);
-            } else {
-              console.log('Dados do usuário atualizados com sucesso');
-              break;
-            }
-          } else {
-            console.log('Usuário ainda não criado pelo trigger, aguardando...');
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            attempts++;
-          }
-        }
-        
-        if (attempts >= maxAttempts) {
-          console.error('Não foi possível atualizar os dados do usuário após várias tentativas');
-        }
-        
-      } catch (error) {
-        console.error('Erro ao atualizar dados do usuário:', error);
-      }
-    }
-
-    return { data: authData, error: authError };
+    return { data, error };
   };
 
   const signIn = async (email: string, password: string) => {
@@ -230,6 +153,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const resendConfirmation = async (email: string) => {
+    if (!validateEmail(email)) {
+      return { 
+        data: null, 
+        error: { message: 'Email inválido' }
+      };
+    }
+
+    const redirectUrl = `${window.location.origin}/`;
+    
+    const { data, error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email,
+      options: {
+        emailRedirectTo: redirectUrl
+      }
+    });
+    
+    return { data, error };
+  };
+
   // Secure email existence check using edge function
   const checkEmailExists = async (email: string): Promise<boolean> => {
     if (!validateEmail(email)) {
@@ -262,6 +206,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signIn,
       signOut,
       checkEmailExists,
+      resendConfirmation,
       loginRateLimit: {
         isBlocked: loginRateLimiter.isBlocked,
         remainingAttempts: loginRateLimiter.remainingAttempts
