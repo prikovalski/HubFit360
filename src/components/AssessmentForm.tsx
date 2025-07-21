@@ -71,15 +71,8 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
       setPrompt(assessment.prompt);
     }
     
-    // Para avaliações básicas, fazer reload da página para carregar os dados calculados
-    if (assessment && assessment.tier === 'basic') {
-      console.log('Avaliação básica concluída, fazendo reload para carregar dados calculados');
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-      return;
-    }
-    
+    // Para todas as avaliações, chamar o callback de sucesso
+    console.log('Avaliação concluída com sucesso:', assessment?.tier);
     if (onSuccess) onSuccess(assessment);
   }
 
