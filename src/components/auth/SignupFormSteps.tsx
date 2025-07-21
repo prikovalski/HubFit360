@@ -24,6 +24,8 @@ interface SignupFormStepsProps {
   onSubmit: () => void;
   loading: boolean;
   onSwitchToLogin: () => void;
+  emailError?: string;
+  onEmailValidation?: (email: string) => Promise<boolean>;
 }
 
 const SignupFormSteps = ({ 
@@ -31,7 +33,9 @@ const SignupFormSteps = ({
   onInputChange, 
   onSubmit, 
   loading, 
-  onSwitchToLogin 
+  onSwitchToLogin,
+  emailError,
+  onEmailValidation
 }: SignupFormStepsProps) => {
   const [step, setStep] = useState(1);
   const [estados, setEstados] = useState<Estado[]>([]);
@@ -160,7 +164,7 @@ const SignupFormSteps = ({
     switch (step) {
       case 1:
         const { isValid: isPasswordValid } = validatePassword(formData.password);
-        return formData.email && formData.password && isPasswordValid && formData.userType;
+        return formData.email && formData.password && isPasswordValid && formData.userType && !emailError;
       case 2:
         if (isProfessional) {
           return formData.name && formData.gender && formData.birthDate && formData.profession;
@@ -220,16 +224,29 @@ const SignupFormSteps = ({
                 tooltip="Escolha se você é um paciente buscando avaliação ou um profissional que irá avaliar pacientes"
               />
               
-              <FormField
-                label="Email"
-                type="email"
-                value={formData.email}
-                onChange={(value) => onInputChange('email', value)}
-                placeholder="seuemail@exemplo.com"
-                disabled={loading}
-                required
-                tooltip="Usaremos este email para comunicação e login"
-              />
+              <div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    Email <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => onInputChange('email', e.target.value)}
+                    onBlur={() => {
+                      if (formData.email && onEmailValidation) {
+                        onEmailValidation(formData.email);
+                      }
+                    }}
+                    placeholder="seuemail@exemplo.com"
+                    disabled={loading}
+                    className={emailError ? "border-red-500" : ""}
+                  />
+                  {emailError && (
+                    <p className="text-sm text-red-500">{emailError}</p>
+                  )}
+                </div>
+              </div>
               
               <FormField
                 label="Senha"

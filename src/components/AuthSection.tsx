@@ -28,13 +28,16 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
     setShowPasswordReset,
     emailExists,
     setEmailExists,
+    emailError,
+    setEmailError,
     formData,
     setFormData,
     handleSocialLogin,
     handleForgotPassword,
     handlePasswordReset,
     handleInputChange,
-    handleSubmit
+    handleSubmit,
+    validateEmailInput
   } = useAuthForm(handleAuthSuccess);
 
   const getTitle = () => {
@@ -97,6 +100,8 @@ const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
                   onInputChange={handleInputChange}
                   onSubmit={handleSubmit}
                   onSwitchToLogin={() => setIsLogin(true)}
+                  emailError={emailError}
+                  onEmailValidation={validateEmailInput}
                 />
               )}
             </>
