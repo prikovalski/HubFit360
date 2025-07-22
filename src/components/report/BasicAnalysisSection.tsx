@@ -14,6 +14,10 @@ interface BasicAnalysisSectionProps {
     patient_gender?: string | null;
     patient_height?: number | null;
     patient_weight?: number | null;
+    bodyFatPercentage?: number;
+    leanMass?: number;
+    fatMass?: number;
+    bmi?: number;
   };
   userProfile: UserProfile | null;
   patientProfile: PatientProfile | null;
@@ -38,6 +42,17 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
   console.log('Dados do report na BasicAnalysisSection:', report);
   console.log('Objetivo do paciente:', report.patient_goal);
 
+  // Criar preview a partir dos dados do report se não existir
+  const preview = report.preview || {
+    leanMass: report.leanMass ? `${report.leanMass.toFixed(1)}kg` : 'N/A',
+    bodyFat: report.bodyFatPercentage ? `${report.bodyFatPercentage.toFixed(1)}%` : 'N/A',
+    bmi: report.bmi ? report.bmi.toFixed(1) : 'N/A',
+    fatMass: report.fatMass ? `${report.fatMass.toFixed(1)}kg` : 'N/A',
+    summary: report.assessmentText || ''
+  };
+
+  console.log('Preview gerado:', preview);
+
   return (
     <Card className="border-0 shadow-lg bg-white mb-6">
       <CardHeader className="bg-gradient-to-r from-[#019f80]/5 to-green-50 border-b border-green-100">
@@ -58,7 +73,7 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
           patientWeight={report.patient_weight}
         />
 
-        <EstimatesSection preview={report.preview} />
+        <EstimatesSection preview={preview} />
 
         <IdealRangesSection 
           userProfile={userProfile} 

@@ -45,8 +45,13 @@ const ReportHeader = ({
     }
   };
 
-  // Verificação de segurança para preview
-  const preview = report?.preview || {};
+  // Criar preview a partir dos dados do report se não existir
+  const preview = report?.preview || {
+    leanMass: report?.leanMass ? `${report.leanMass.toFixed(1)}kg` : (report?.lean_mass ? `${report.lean_mass.toFixed(1)}kg` : 'N/A'),
+    bodyFat: report?.bodyFatPercentage ? `${report.bodyFatPercentage.toFixed(1)}%` : (report?.body_fat_percentage ? `${report.body_fat_percentage.toFixed(1)}%` : 'N/A'),
+    bmi: report?.bmi ? report.bmi.toFixed(1) : 'N/A'
+  };
+
   const safeLeanMass = preview.leanMass || 'N/A';
   const safeBodyFat = preview.bodyFat || 'N/A';
   const safeBmi = preview.bmi || 'N/A';
