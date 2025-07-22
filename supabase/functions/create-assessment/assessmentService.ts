@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import type { PatientData } from './types.ts';
 
@@ -72,10 +71,10 @@ export async function saveAssessment(
     prompt_text: promptText || null
   };
 
-  // Add reevaluation information if available
+  // Add reevaluation information if available - FIXED COLUMN NAME
   if (wasReevaluated && reevaluationInfo) {
     assessmentRecord.reevaluation_applied = true;
-    assessmentRecord.reevaluation_notes = reevaluationInfo;
+    assessmentRecord.reevaluation_info = reevaluationInfo; // Changed from reevaluation_notes to reevaluation_info
   }
 
   // If it's a patient assessment, add all patient data
