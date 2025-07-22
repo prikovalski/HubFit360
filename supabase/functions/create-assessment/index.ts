@@ -201,7 +201,7 @@ serve(async (req) => {
 
     console.log('Prompt construído com sucesso, tamanho:', assessmentPrompt.length);
 
-    // For basic assessments, save without detailed analysis
+    // Save the assessment and get the complete saved data
     const savedAssessment = await saveAssessment(
       data.userId,
       data.frontPhoto,
@@ -227,22 +227,102 @@ serve(async (req) => {
       // Pass the prompt text
       assessmentPrompt,
       // Pass user data to copy physical activities for self assessments
-      userData
+      userData,
+      // Add reevaluation parameters
+      wasReevaluated,
+      reevaluationInfo
     );
 
     console.log('Avaliação básica salva com ID:', savedAssessment.id);
 
+    // Fetch the complete assessment data that was just saved
+    console.log('Buscando dados completos da avaliação criada...');
+    const { data: completeAssessment, error: fetchError } = await supabase
+      .from('assessments')
+      .select('*')
+      .eq('id', savedAssessment.id)
+      .single();
+
+    if (fetchError) {
+      console.error('Erro ao buscar avaliação completa:', fetchError);
+      // If we can't fetch, return what we have with constructed data
+      return new Response(JSON.stringify({
+        success: true,
+        assessment: {
+          id: savedAssessment.id,
+          tier: 'basic',
+          bodyFatPercentage: bodyFatPercentage,
+          leanMass: leanMass,
+          fatMass: fatMass,
+          bmi: bmi,
+          wasReevaluated: wasReevaluated,
+          reevaluationInfo: reevaluationInfo,
+          // Add the essential data that should have been saved
+          patient_height: data.height,
+          patient_weight: data.weight,
+          patient_name: data.patientName,
+          patient_gender: data.assessmentType === 'self' ? userData.gender : data.patientData?.gender,
+          patient_goal: data.patientData?.goal,
+          created_at: new Date().toISOString(),
+          status: 'completed',
+          assessment_type: data.assessmentType
+        }
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
+    }
+
+    console.log('Dados completos da avaliação recuperados:', {
+      id: completeAssessment.id,
+      patient_height: completeAssessment.patient_height,
+      patient_weight: completeAssessment.patient_weight,
+      patient_name: completeAssessment.patient_name,
+      patient_gender: completeAssessment.patient_gender,
+      patient_goal: completeAssessment.patient_goal
+    });
+
+    // Create preview data for immediate display
+    const preview = {
+      leanMass: `${leanMass.toFixed(1)}kg`,
+      bodyFat: `${bodyFatPercentage.toFixed(1)}%`,
+      bmi: bmi.toFixed(1),
+      fatMass: `${fatMass.toFixed(1)}kg`,
+      summary: completeAssessment.assessment_text || ''
+    };
+
+    // Return complete assessment data with all fields needed for immediate display
     return new Response(JSON.stringify({
       success: true,
       assessment: {
-        id: savedAssessment.id,
-        tier: 'basic',
+        id: completeAssessment.id,
+        tier: completeAssessment.tier,
         bodyFatPercentage: bodyFatPercentage,
         leanMass: leanMass,
         fatMass: fatMass,
         bmi: bmi,
         wasReevaluated: wasReevaluated,
-        reevaluationInfo: reevaluationInfo
+        reevaluationInfo: reevaluationInfo,
+        // Include all the personal data
+        patient_height: completeAssessment.patient_height,
+        patient_weight: completeAssessment.patient_weight,
+        patient_name: completeAssessment.patient_name,
+        patient_gender: completeAssessment.patient_gender,
+        patient_goal: completeAssessment.patient_goal,
+        patient_neck_circumference: completeAssessment.patient_neck_circumference,
+        patient_waist_circumference: completeAssessment.patient_waist_circumference,
+        patient_hip_circumference: completeAssessment.patient_hip_circumference,
+        // Include metadata
+        created_at: completeAssessment.created_at,
+        status: completeAssessment.status,
+        assessment_type: completeAssessment.assessment_type,
+        age: completeAssessment.age,
+        assessmentText: completeAssessment.assessment_text,
+        // Include preview for compatibility
+        preview: preview,
+        // Include display data for immediate use
+        date: completeAssessment.created_at,
+        payment_status: 'paid' // Basic assessments are always considered paid
       }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

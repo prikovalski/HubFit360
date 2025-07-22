@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Activity, Sparkles } from 'lucide-react';
 import AboutSection from '@/components/AboutSection';
@@ -65,7 +64,43 @@ const AppContent = () => {
   };
 
   const handleAssessmentSuccess = (assessment: any) => {
-    setSelectedReport(assessment);
+    console.log('AppContent: Avaliação recebida com dados completos:', {
+      id: assessment.id,
+      hasHeight: !!assessment.patient_height,
+      hasWeight: !!assessment.patient_weight,
+      hasName: !!assessment.patient_name,
+      hasGender: !!assessment.patient_gender,
+      hasGoal: !!assessment.patient_goal,
+      fullAssessment: assessment
+    });
+
+    // Garantir que todos os dados necessários estão presentes
+    const completeReport = {
+      ...assessment,
+      // Garantir compatibilidade com diferentes formatos de dados
+      leanMass: assessment.leanMass,
+      bodyFatPercentage: assessment.bodyFatPercentage,
+      bmi: assessment.bmi,
+      fatMass: assessment.fatMass,
+      // Garantir que os dados pessoais estão presentes
+      patient_height: assessment.patient_height,
+      patient_weight: assessment.patient_weight,
+      patient_name: assessment.patient_name,
+      patient_gender: assessment.patient_gender,
+      patient_goal: assessment.patient_goal,
+      // Garantir preview para compatibilidade
+      preview: assessment.preview || {
+        leanMass: assessment.leanMass ? `${assessment.leanMass.toFixed(1)}kg` : 'N/A',
+        bodyFat: assessment.bodyFatPercentage ? `${assessment.bodyFatPercentage.toFixed(1)}%` : 'N/A',
+        bmi: assessment.bmi ? assessment.bmi.toFixed(1) : 'N/A',
+        fatMass: assessment.fatMass ? `${assessment.fatMass.toFixed(1)}kg` : 'N/A',
+        summary: assessment.assessmentText || ''
+      }
+    };
+
+    console.log('AppContent: Relatório completo preparado:', completeReport);
+
+    setSelectedReport(completeReport);
     setCurrentSection('report');
   };
 
