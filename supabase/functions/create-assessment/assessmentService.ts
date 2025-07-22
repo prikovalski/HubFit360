@@ -98,26 +98,51 @@ export async function saveAssessment(
     assessmentRecord.patient_physical_activity = patientData.physicalActivity;
     assessmentRecord.patient_physical_activities = patientData.physicalActivities || [];
   } 
-  // If it's a self assessment and we have user profile data, copy physical activities
-  else if (assessmentType === 'self' && userData?.patient_profiles?.[0]) {
-    const profile = userData.patient_profiles[0];
-    console.log('Copiando dados de atividades físicas do perfil do usuário para autoavaliação:', {
-      hasPhysicalActivity: !!profile.physical_activity,
-      hasPhysicalActivities: !!profile.physical_activities,
-      physicalActivity: profile.physical_activity,
-      physicalActivitiesCount: Array.isArray(profile.physical_activities) ? profile.physical_activities.length : 0
-    });
+  // If it's a self assessment, add data from form and user profile
+  else if (assessmentType === 'self') {
+    console.log('Adicionando dados de autoavaliação');
     
-    // Copy physical activity data from user profile to patient fields for consistency
-    assessmentRecord.patient_physical_activity = profile.physical_activity;
-    assessmentRecord.patient_physical_activities = profile.physical_activities || [];
-    assessmentRecord.patient_goal = profile.goal;
-    assessmentRecord.patient_chronic_disease = profile.chronic_disease;
+    // Add gender from user data
+    if (userData?.gender) {
+      assessmentRecord.patient_gender = userData.gender;
+    }
     
-    // Also copy other profile data if available
-    if (profile.neck_circumference) assessmentRecord.patient_neck_circumference = profile.neck_circumference;
-    if (profile.waist_circumference) assessmentRecord.patient_waist_circumference = profile.waist_circumference;
-    if (profile.hip_circumference) assessmentRecord.patient_hip_circumference = profile.hip_circumference;
+    // Add goal from patientData if provided (from new PhysicalActivityGoalSection)
+    if (patientData?.goal) {
+      assessmentRecord.patient_goal = patientData.goal;
+    }
+    
+    // Copy data from user profile if available
+    if (userData?.patient_profiles?.[0]) {
+      const profile = userData.patient_profiles[0];
+      console.log('Copiando dados do perfil do usuário para autoavaliação:', {
+        hasPhysicalActivity: !!profile.physical_activity,
+        hasPhysicalActivities: !!profile.physical_activities,
+        physicalActivity: profile.physical_activity,
+        physicalActivitiesCount: Array.isArray(profile.physical_activities) ? profile.physical_activities.length : 0
+      });
+      
+      // Copy physical activity data from user profile to patient fields for consistency
+      assessmentRecord.patient_physical_activity = profile.physical_activity;
+      assessmentRecord.patient_physical_activities = profile.physical_activities || [];
+      
+      // Only use profile goal if no goal was provided in the form
+      if (!patientData?.goal && profile.goal) {
+        assessmentRecord.patient_goal = profile.goal;
+      }
+      
+      assessmentRecord.patient_chronic_disease = profile.chronic_disease;
+      
+      // Also copy other profile data if available
+      if (profile.neck_circumference) assessmentRecord.patient_neck_circumference = profile.neck_circumference;
+      if (profile.waist_circumference) assessmentRecord.patient_waist_circumference = profile.waist_circumference;
+      if (profile.hip_circumference) assessmentRecord.patient_hip_circumference = profile.hip_circumference;
+    }
+    
+    // Add physical activities from form if provided
+    if (patientData?.physicalActivities) {
+      assessmentRecord.patient_physical_activities = patientData.physicalActivities;
+    }
   }
 
   console.log('Registro de avaliação final a ser salvo:', {
