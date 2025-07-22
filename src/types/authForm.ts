@@ -16,11 +16,6 @@ export interface FormData {
   height?: string; // Tornado opcional
   city: string;
   state: string;
-  goal: string;
-  intensity: string;
-  physicalActivity: string;
-  activityFrequency: string;
-  physicalActivities: PhysicalActivity[];
   neckCircumference?: string; // Tornado opcional
   waistCircumference?: string; // Tornado opcional
   hipCircumference?: string; // Tornado opcional

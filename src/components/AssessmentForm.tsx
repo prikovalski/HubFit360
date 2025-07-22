@@ -6,6 +6,7 @@ import PatientProfileSection from './assessment/PatientProfileSection';
 import InstructionsCard from './assessment/InstructionsCard';
 import PhotoUploadSection from './assessment/PhotoUploadSection';
 import SubmitSection from './assessment/SubmitSection';
+import PhysicalActivityGoalSection from './assessment/PhysicalActivityGoalSection';
 import { useAssessmentForm } from '@/hooks/useAssessmentForm';
 import PromptPreview from './PromptPreview';
 import LoggedPageLayout from '@/components/layout/LoggedPageLayout';
@@ -32,6 +33,8 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
     waistCircumference,
     hipCircumference,
     patientName,
+    goal,
+    physicalActivities,
     patientData,
     canSubmit,
     setAssessmentType,
@@ -41,6 +44,8 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
     setWaistCircumference,
     setHipCircumference,
     setPatientName,
+    setGoal,
+    setPhysicalActivities,
     handlePhotoUpload,
     handlePatientDataChange,
     handleSubmit
@@ -105,20 +110,29 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
               />
 
               {assessmentType === 'self' ? (
-                <PersonalDataSection
-                  height={height}
-                  weight={weight}
-                  neckCircumference={neckCircumference}
-                  waistCircumference={waistCircumference}
-                  hipCircumference={hipCircumference}
-                  patientName={patientName}
-                  onHeightChange={setHeight}
-                  onWeightChange={setWeight}
-                  onNeckCircumferenceChange={setNeckCircumference}
-                  onWaistCircumferenceChange={setWaistCircumference}
-                  onHipCircumferenceChange={setHipCircumference}
-                  onPatientNameChange={setPatientName}
-                />
+                <>
+                  <PersonalDataSection
+                    height={height}
+                    weight={weight}
+                    neckCircumference={neckCircumference}
+                    waistCircumference={waistCircumference}
+                    hipCircumference={hipCircumference}
+                    patientName={patientName}
+                    onHeightChange={setHeight}
+                    onWeightChange={setWeight}
+                    onNeckCircumferenceChange={setNeckCircumference}
+                    onWaistCircumferenceChange={setWaistCircumference}
+                    onHipCircumferenceChange={setHipCircumference}
+                    onPatientNameChange={setPatientName}
+                  />
+                  
+                  <PhysicalActivityGoalSection
+                    goal={goal}
+                    physicalActivities={physicalActivities}
+                    onGoalChange={setGoal}
+                    onPhysicalActivitiesChange={setPhysicalActivities}
+                  />
+                </>
               ) : (
                 <PatientProfileSection
                   patientData={patientData}

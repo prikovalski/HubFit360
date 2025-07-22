@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { FormData, PhysicalActivity } from '@/types/authForm';
+import { FormData } from '@/types/authForm';
 
 export const useFormData = () => {
   const [formData, setFormData] = useState<FormData>({
@@ -15,17 +15,12 @@ export const useFormData = () => {
     height: '', // Opcional mas inicializado
     city: '',
     state: '',
-    goal: '',
-    intensity: '',
-    physicalActivity: '',
-    activityFrequency: '',
-    physicalActivities: [],
     neckCircumference: '', // Opcional mas inicializado
     waistCircumference: '', // Opcional mas inicializado
     hipCircumference: '' // Opcional mas inicializado
   });
 
-  const handleInputChange = (field: string, value: string | PhysicalActivity[]) => {
+  const handleInputChange = (field: string, value: string) => {
     console.log(`Alterando campo ${field} para:`, value);
     setFormData(prev => ({
       ...prev,
@@ -46,11 +41,6 @@ export const useFormData = () => {
       height: '',
       city: '',
       state: '',
-      goal: '',
-      intensity: '',
-      physicalActivity: '',
-      activityFrequency: '',
-      physicalActivities: [],
       neckCircumference: '',
       waistCircumference: '',
       hipCircumference: ''

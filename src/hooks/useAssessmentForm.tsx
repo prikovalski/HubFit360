@@ -18,6 +18,8 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
   const [waistCircumference, setWaistCircumference] = useState('');
   const [hipCircumference, setHipCircumference] = useState('');
   const [patientName, setPatientName] = useState('');
+  const [goal, setGoal] = useState('');
+  const [physicalActivities, setPhysicalActivities] = useState<PhysicalActivity[]>([]);
   
   // Patient-specific data
   const [patientData, setPatientData] = useState({
@@ -42,10 +44,10 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
 
   const { toast } = useToast();
 
-  // Enhanced validation with mandatory circumferences
+  // Enhanced validation with mandatory circumferences and goal
   const canSubmit = photos.front && photos.side && photos.back && 
     (assessmentType === 'self' 
-      ? height && weight && neckCircumference && waistCircumference && hipCircumference
+      ? height && weight && neckCircumference && waistCircumference && hipCircumference && goal
       : patientData.name && patientData.gender && patientData.birthDate && 
         patientData.height && patientData.weight && 
         patientData.neckCircumference && patientData.waistCircumference && patientData.hipCircumference
@@ -113,7 +115,7 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
         sidePhoto: photos.side,
         backPhoto: photos.back,
         assessmentType,
-        // For self assessment, use current form data including circumferences
+        // For self assessment, use current form data including circumferences and goal
         ...(assessmentType === 'self' && {
           sex: userData.gender || 'Não informado',
           height: parseFloat(height),
@@ -121,7 +123,11 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
           neckCircumference: parseFloat(neckCircumference),
           waistCircumference: parseFloat(waistCircumference),
           hipCircumference: parseFloat(hipCircumference),
-          patientName: patientName.trim() || null
+          patientName: patientName.trim() || null,
+          patientData: {
+            goal: goal || null,
+            physicalActivities: physicalActivities || [],
+          }
         }),
         // For patient assessment, use patient data
         ...(assessmentType === 'patient' && {
@@ -197,6 +203,8 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
     waistCircumference,
     hipCircumference,
     patientName,
+    goal,
+    physicalActivities,
     patientData,
     canSubmit,
     setAssessmentType,
@@ -206,6 +214,8 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
     setWaistCircumference,
     setHipCircumference,
     setPatientName,
+    setGoal,
+    setPhysicalActivities,
     handlePhotoUpload,
     handlePatientDataChange,
     handleSubmit

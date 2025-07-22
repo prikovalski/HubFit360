@@ -1,16 +1,12 @@
-
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from "@/hooks/use-toast";
-import { FormData, PhysicalActivity } from '@/types/authForm';
+
+import { FormData } from '@/types/authForm';
 
 export const createPatientProfile = async (authUserId: string, formData: FormData) => {
   try {
     console.log('=== INÍCIO DA CRIAÇÃO DO PERFIL DE PACIENTE ===');
     console.log('Auth User ID:', authUserId);
     console.log('FormData recebido:', JSON.stringify(formData, null, 2));
-    console.log('Atividades físicas:', formData.physicalActivities);
-    console.log('Tipo das atividades físicas:', typeof formData.physicalActivities);
-    console.log('É array?', Array.isArray(formData.physicalActivities));
 
     // Aguardar um pouco para garantir que o trigger criou o registro na tabela users
     await new Promise(resolve => setTimeout(resolve, 3000));
@@ -113,48 +109,26 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
       }
     }
 
-    // Validar e processar atividades físicas
-    let physicalActivitiesForDB: PhysicalActivity[] = [];
-    if (formData.physicalActivities && Array.isArray(formData.physicalActivities)) {
-      physicalActivitiesForDB = formData.physicalActivities.filter(activity => 
-        activity && activity.type && activity.type.trim() !== ''
-      );
-      console.log('Atividades físicas processadas para o DB:', physicalActivitiesForDB);
-    } else {
-      console.log('Nenhuma atividade física válida encontrada');
-    }
-
-    // Converter atividades físicas para Json compatível com Supabase
-    const physicalActivitiesJson = physicalActivitiesForDB.length > 0 
-      ? JSON.parse(JSON.stringify(physicalActivitiesForDB)) 
-      : [];
-
-    console.log('=== CONVERSÃO PARA JSON ===');
-    console.log('Atividades originais:', physicalActivitiesForDB);
-    console.log('Atividades convertidas para JSON:', physicalActivitiesJson);
-    console.log('Tipo das atividades convertidas:', typeof physicalActivitiesJson);
-
-    // Criar o objeto de dados do paciente com validação - removendo campos que não existem mais
+    // Como os campos de objetivo e atividades físicas foram movidos para a tela de avaliação,
+    // criamos o perfil apenas com os dados básicos do cadastro
     const patientData = {
       user_id: userProfile.id,
       height: formData.height ? parseFloat(formData.height) : null,
       weight: formData.weight ? parseFloat(formData.weight) : null,
       city_id: cityId,
       estado_id: estadoId,
-      goal: formData.goal || null,
-      physical_activity: formData.physicalActivity || null,
-      activity_frequency: formData.activityFrequency || null,
-      physical_activities: physicalActivitiesJson as any, // Cast explícito para Json
       neck_circumference: formData.neckCircumference ? parseFloat(formData.neckCircumference) : null,
       waist_circumference: formData.waistCircumference ? parseFloat(formData.waistCircumference) : null,
-      hip_circumference: formData.hipCircumference ? parseFloat(formData.hipCircumference) : null
+      hip_circumference: formData.hipCircumference ? parseFloat(formData.hipCircumference) : null,
+      // Os campos abaixo serão preenchidos na tela de avaliação
+      goal: null,
+      physical_activity: null,
+      activity_frequency: null,
+      physical_activities: [] as any[]
     };
 
     console.log('=== DADOS DO PACIENTE PARA INSERÇÃO ===');
     console.log('Dados completos:', JSON.stringify(patientData, null, 2));
-    console.log('Atividades físicas específicas:', patientData.physical_activities);
-    console.log('Quantidade de atividades:', Array.isArray(patientData.physical_activities) ? patientData.physical_activities.length : 0);
-    console.log('Tipo final das atividades:', typeof patientData.physical_activities);
 
     // Verificar se já existe um perfil de paciente para este usuário
     const { data: existingProfile } = await supabase
@@ -201,9 +175,6 @@ export const createPatientProfile = async (authUserId: string, formData: FormDat
     } else {
       console.log('=== VERIFICAÇÃO DOS DADOS SALVOS ===');
       console.log('Dados salvos no banco:', JSON.stringify(verificationData, null, 2));
-      console.log('Atividades físicas salvas:', verificationData.physical_activities);
-      console.log('Tipo das atividades salvas:', typeof verificationData.physical_activities);
-      console.log('Quantidade de atividades salvas:', Array.isArray(verificationData.physical_activities) ? verificationData.physical_activities.length : 0);
     }
 
     console.log('=== FIM DA CRIAÇÃO DO PERFIL DE PACIENTE ===');

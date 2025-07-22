@@ -11,7 +11,6 @@ import { CalendarIcon, User, Activity, Briefcase } from "lucide-react";
 import { format, parse } from "date-fns";
 import { getEstados, Estado } from '@/services/stateService';
 import { getCidadesByEstado, Cidade } from '@/services/cityService';
-import { PhysicalActivitiesSection, PhysicalActivity } from '@/components/PhysicalActivitiesSection';
 import { StepProgressIndicator } from './StepProgressIndicator';
 import { FormSection } from './FormSection';
 import { FormField } from './FormField';
@@ -20,7 +19,7 @@ import { validatePassword } from '@/utils/inputValidation';
 
 interface SignupFormStepsProps {
   formData: any;
-  onInputChange: (field: string, value: string | PhysicalActivity[]) => void;
+  onInputChange: (field: string, value: string) => void;
   onSubmit: () => void;
   loading: boolean;
   onSwitchToLogin: () => void;
@@ -45,16 +44,15 @@ const SignupFormSteps = ({
   const [birthDateInput, setBirthDateInput] = useState('');
 
   const isProfessional = formData.userType === 'professional';
-  const maxSteps = isProfessional ? 2 : 3; // Reduzido de 5 para 3 passos para pacientes
+  const maxSteps = isProfessional ? 2 : 2; // Reduzido para 2 passos para ambos
   
   const stepTitles = isProfessional 
     ? ['Conta', 'Profissionais']
-    : ['Conta', 'Pessoais', 'Atividades']; // Nova estrutura de 3 passos
+    : ['Conta', 'Pessoais']; // Removido passo de atividades
 
   const stepIcons = {
     1: <User className="w-6 h-6 text-[#019f80]" />,
-    2: isProfessional ? <Briefcase className="w-6 h-6 text-[#019f80]" /> : <User className="w-6 h-6 text-[#019f80]" />,
-    3: <Activity className="w-6 h-6 text-[#019f80]" />
+    2: isProfessional ? <Briefcase className="w-6 h-6 text-[#019f80]" /> : <User className="w-6 h-6 text-[#019f80]" />
   };
 
   const professionOptions = [
@@ -131,11 +129,6 @@ const SignupFormSteps = ({
     return `${numbersOnly.slice(0, 2)}/${numbersOnly.slice(2, 4)}/${numbersOnly.slice(4, 8)}`;
   };
 
-  const handlePhysicalActivitiesChange = (activities: PhysicalActivity[]) => {
-    console.log('SignupFormSteps - Atividades físicas alteradas:', activities);
-    console.log('Número de atividades:', activities.length);
-    onInputChange('physicalActivities', activities);
-  };
 
   const handleBirthDateInputChange = (value: string) => {
     const formattedValue = formatDateInput(value);
@@ -169,11 +162,8 @@ const SignupFormSteps = ({
         if (isProfessional) {
           return formData.name && formData.gender && formData.birthDate && formData.profession;
         }
-        // Para pacientes no passo 2: nome, gênero, data, estado, cidade (sem peso/altura)
+        // Para pacientes no passo 2: nome, gênero, data, estado, cidade
         return formData.name && formData.gender && formData.birthDate && formData.state && formData.city;
-      case 3:
-        // Passo 3 não requer validação específica (atividades e objetivo são opcionais)
-        return true;
       default:
         return true;
     }
@@ -397,54 +387,14 @@ const SignupFormSteps = ({
 
             <NavigationButtons
               onPrevious={() => setStep(1)}
-              onNext={isProfessional ? undefined : () => setStep(3)}
-              onSubmit={isProfessional ? onSubmit : undefined}
-              loading={loading}
-              canGoNext={canGoNext()}
-              isLastStep={isProfessional}
-            />
-          </FormSection>
-        )}
-
-        {!isProfessional && step === 3 && (
-          <FormSection
-            title="Atividade Física e Objetivo"
-            description="Conte sobre sua rotina de exercícios e seus objetivos"
-            icon={stepIcons[3]}
-          >
-            <div className="mb-4">
-              <p className="text-sm text-gray-600">
-                Atual: {formData.physicalActivities?.length || 0} atividade(s) cadastrada(s)
-              </p>
-            </div>
-            
-            <PhysicalActivitiesSection
-              activities={formData.physicalActivities || []}
-              onChange={handlePhysicalActivitiesChange}
-              disabled={loading}
-            />
-
-            {/* Campo Objetivo movido para após as atividades físicas */}
-            <div className="mt-6">
-              <FormField
-                label="Objetivo"
-                value={formData.goal}
-                onChange={(value) => onInputChange('goal', value)}
-                placeholder="Ex: Perder peso, ganhar massa muscular, melhorar condicionamento..."
-                disabled={loading}
-                required
-                tooltip="Descreva seu principal objetivo com a avaliação nutricional"
-              />
-            </div>
-
-            <NavigationButtons
-              onPrevious={() => setStep(2)}
               onSubmit={onSubmit}
               loading={loading}
+              canGoNext={canGoNext()}
               isLastStep={true}
             />
           </FormSection>
         )}
+
 
         {/* Footer */}
         <div className="text-center text-gray-500 mt-8 pt-6 border-t border-gray-100">
