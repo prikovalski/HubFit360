@@ -131,7 +131,48 @@ const ReportViewer = ({
     }
   };
 
-  const handleUpgradeSuccess = () => {
+  const refetchAssessmentData = async () => {
+    try {
+      setLoading(true);
+      
+      const { data: assessmentData, error } = await supabase
+        .from('assessments')
+        .select('*')
+        .eq('id', currentReport.id)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar dados da avaliação:', error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar os dados premium. Tente recarregar a página.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (assessmentData) {
+        // Atualizar o report com todos os dados atualizados
+        setCurrentReport(prev => ({
+          ...prev,
+          ...assessmentData,
+          tier: assessmentData.tier,
+          assessmentText: assessmentData.assessment_text || prev.assessmentText
+        }));
+      }
+    } catch (error) {
+      console.error('Erro ao refazer busca da avaliação:', error);
+      toast({
+        title: "Erro",
+        description: "Erro interno. Tente recarregar a página.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpgradeSuccess = async () => {
     // Após upgrade bem-sucedido, marcar como pago
     setIsPaid(true);
 
@@ -140,6 +181,9 @@ const ReportViewer = ({
       ...currentReport,
       tier: 'premium'
     });
+
+    // Buscar os dados atualizados da avaliação premium
+    await refetchAssessmentData();
   };
 
   const userName = userProfile?.name || 'Usuário';
