@@ -22,10 +22,13 @@ function buildAssessmentPrompt(
   const bmi = weight / (heightM * heightM);
   const genderForPrompt = sex === 'male' ? 'Masculino' : 'Feminino';
 
+  console.log('=== CONSTRUÇÃO DO PROMPT DE UPGRADE ===');
+  console.log('Assessment data:', JSON.stringify(assessment, null, 2));
+  
   // Use circumferences from the assessment itself (prioritize direct fields over patient fields)
-  const neckCirc = assessment.neck_circumference || assessment.patient_neck_circumference || 'N/A';
-  const waistCirc = assessment.waist_circumference || assessment.patient_waist_circumference || 'N/A';
-  const hipCirc = assessment.hip_circumference || assessment.patient_hip_circumference || 'N/A';
+  const neckCirc = assessment.neck_circumference || assessment.patient_neck_circumference || null;
+  const waistCirc = assessment.waist_circumference || assessment.patient_waist_circumference || null;
+  const hipCirc = assessment.hip_circumference || assessment.patient_hip_circumference || null;
 
   console.log('Dados de circunferência para o prompt:', {
     neck_circumference: assessment.neck_circumference,
@@ -40,8 +43,9 @@ function buildAssessmentPrompt(
   // Get patient profile data for additional context
   const patientProfile = userData.patient_profiles?.[0] || {};
 
-  const formatCircumference = (value: any): string => {
-    if (value === null || value === undefined || value === 'N/A') {
+  // Função para formatar circunferências
+  const formatCircumference = (value: number | string | null | undefined): string => {
+    if (value === null || value === undefined || value === '') {
       return 'Não informado';
     }
     return `${value} cm`;
@@ -51,6 +55,46 @@ function buildAssessmentPrompt(
   const formattedWaist = formatCircumference(waistCirc);
   const formattedHip = formatCircumference(hipCirc);
 
+  // Formatação das atividades físicas
+  const formatPhysicalActivities = (activities: any): string => {
+    console.log('Formatando atividades físicas:', activities);
+    
+    if (!activities || (Array.isArray(activities) && activities.length === 0)) {
+      return 'Nenhuma atividade informada';
+    }
+    
+    if (Array.isArray(activities)) {
+      const formattedActivities = activities.map((activity: any) => {
+        if (typeof activity === 'string') {
+          return activity;
+        }
+        if (activity && activity.name) {
+          const frequency = activity.frequency ? ` (${activity.frequency})` : '';
+          return `${activity.name}${frequency}`;
+        }
+        if (activity && activity.type) {
+          const frequency = activity.frequency ? ` (${activity.frequency})` : '';
+          return `${activity.type}${frequency}`;
+        }
+        return JSON.stringify(activity);
+      });
+      
+      return formattedActivities.join(', ');
+    }
+    
+    if (typeof activities === 'string') {
+      return activities;
+    }
+    
+    return JSON.stringify(activities);
+  };
+
+  // Get data for the prompt
+  const physicalActivities = formatPhysicalActivities(
+    assessment.patient_physical_activities || patientProfile.physical_activities || []
+  );
+  const goal = assessment.patient_goal || patientProfile.goal || 'Não informado';
+
   console.log('Circunferências formatadas para o prompt:', {
     pescoço: formattedNeck,
     cintura: formattedWaist,
@@ -59,20 +103,18 @@ function buildAssessmentPrompt(
 
   return `Você é um avaliador físico profissional especializado em análise de composição corporal.
 
-Com as medidas de circunferência e as fotos fornecidas, analise os dados e as fotos e gere um laudo completo incluindo:
+Analise os dados e as fotos fornecidas, gere um laudo completo incluindo:
 
 1. AVALIAÇÃO CORPORAL
-- Análise detalhada da distribuição de gordura corporal (central vs periférica)
-- Interpretação das circunferências de pescoço, cintura e quadril
-- Relação cintura-quadril (RCQ) e seus significados
+- Com base nas fotos faça uma análise da distribuição de gordura corporal
+- Com base nas fotos faça uma análise da distribuição muscular
 - Use como referência os valores já calculados: ${bodyFatPercentage.toFixed(1)}% de gordura corporal
 
 2. GASTO ENERGÉTICO
-- Cálculo da Taxa Metabólica Basal (TMB) IMPORTANTE: NÃO DETALHE O CALCULO REALIZADO APENAS INFORME O RESULTADO.
-- Estimativa do Gasto Energético Total considerando atividade fisica relatada (GET) IMPORTANTE: NÃO DETALHE O CALCULO REALIZADO APENAS INFORME O RESULTADO.
+- Estimativa do Gasto Energético Total (GET). IMPORTANTE: NÃO DETALHE O CALCULO REALIZADO APENAS INFORME O RESULTADO.
 
 3. PLANEJAMENTO NUTRICIONAL
-Considerando as atividades fisicas informadas, forneça recomendações de calorias diarias para:
+Considerando as atividades fisicas informadas abaixo, forneça recomendações de calorias diarias para:
 - Manutenção com foco em definição
 - Emagrecimento saudável (cutting)
 - Ganho de massa muscular (bulking)
@@ -95,17 +137,16 @@ DADOS PESSOAIS:
   * Gordura Corporal: ${bodyFatPercentage.toFixed(1)}%
   * Massa Magra: ${leanMass.toFixed(1)} kg
   * Massa Gorda: ${fatMass.toFixed(1)} kg
-- Circunferências Medidas: 
+- Circunferências: 
   * Pescoço: ${formattedNeck}
   * Cintura: ${formattedWaist}
   * Quadril: ${formattedHip}
-- Atividade física: ${patientProfile.physical_activity || 'Não informado'}
-- Objetivo: ${patientProfile.goal || 'Não informado'}
+- Atividades físicas praticadas: ${physicalActivities}
+- Frequência de atividade física: ${patientProfile.physical_activity || 'Não informado'}
+- Objetivo: ${goal}
 
-IMPORTANTE: Com base nas circunferências fornecidas, faça uma análise detalhada da distribuição de gordura corporal e forneça recomendações específicas.
-
-IMPORTANTE: Forneça o laudo em formato CSV estruturado exatamente como o exemplo abaixo. O laudo deve ser realista e profissional, utilize uma linguagem de facil entendimento para que um leigo seja capaz de entender. Inclua valores numéricos específicos nas estimativas, mas não detalhe os cálculos. 
-Use aspas duplas para valores que contenham vírgulas e mantenha a estrutura rigorosa: 
+IMPORTANTE: Forneça o laudo em formato CSV estruturado exatamente como o exemplo abaixo. O laudo deve ser realista e profissional, utilize uma linguagem de facil entendimento para que um adolescente seja capaz de entender. Inclua valores numéricos específicos nas estimativas, mas não detalhe os cálculos. 
+Use aspas duplas para valores que contenham vírgulas e mantenha a estrutura rigorosa:
 
 \`\`\`
 AVALIAÇÃO CORPORAL
@@ -154,7 +195,7 @@ MÉTODOS UTILIZADOS
   
 \`\`\`
 
-Forneça um laudo técnico realista e profissional utilizando uma linguagem informal de fácil entendimento. Inclua valores numéricos específicos nas estimativas, não detalhe os cálculos e explore detalhadamente as implicações das medidas de circunferência para a saúde e composição corporal. Use o formato CSV rigorosamente como mostrado no exemplo.`;
+Forneça um laudo técnico realista e profissional utilizando uma linguagem informal de fácil entendimento. Inclua valores numéricos específicos nas estimativas e não detalhe os cálculos. Use o formato CSV rigorosamente como mostrado no exemplo.`;
 }
 
 async function callOpenAI(prompt: string): Promise<string> {
