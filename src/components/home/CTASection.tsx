@@ -77,13 +77,13 @@ const CTASection = ({ setCurrentSection }: CTASectionProps) => {
           
           <Button 
             onClick={() => setCurrentSection('auth')}
-            className="btn-modern-green text-white px-6 py-3 md:px-12 md:py-6 text-lg md:text-2xl rounded-full transition-all duration-300 hover:shadow-2xl hover:scale-110 focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-green-900 font-bold group neon-accent-green relative overflow-hidden"
+            className="btn-modern-green text-white px-4 py-2 md:px-12 md:py-6 text-base md:text-2xl rounded-full transition-all duration-300 hover:shadow-2xl hover:scale-110 focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-green-900 font-bold group neon-accent-green relative overflow-hidden w-full max-w-xs md:max-w-none md:w-auto"
             aria-label="Iniciar avaliação física gratuita agora"
           >
-            <div className="flex items-center">
-              <Zap className="mr-2 md:mr-3 w-5 h-5 md:w-7 md:h-7 group-hover:animate-spin" />
-              Iniciar Avaliação Gratuita
-              <ArrowRight className="ml-2 md:ml-3 w-5 h-5 md:w-7 md:h-7 group-hover:translate-x-2 transition-transform" />
+            <div className="flex items-center justify-center">
+              <Zap className="mr-1 md:mr-3 w-4 h-4 md:w-7 md:h-7 group-hover:animate-spin" />
+              <span className="text-sm md:text-2xl">Iniciar Avaliação Gratuita</span>
+              <ArrowRight className="ml-1 md:ml-3 w-4 h-4 md:w-7 md:h-7 group-hover:translate-x-2 transition-transform" />
             </div>
           </Button>
           
