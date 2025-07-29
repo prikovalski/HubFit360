@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Ruler, AlertCircle } from "lucide-react";
+import OptimizedImage from "@/components/ui/optimized-image";
 
 interface MeasurementInstructionsModalProps {
   open: boolean;
@@ -31,6 +32,23 @@ export const MeasurementInstructionsModal = ({
         </DialogHeader>
         
         <div className="space-y-6">
+          {/* Imagem Ilustrativa */}
+          <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+            <div className="text-center space-y-4">
+              <OptimizedImage
+                src="/lovable-uploads/75f434d3-de70-45e6-87a8-ef9d6e41c372.webp"
+                alt="Ilustração mostrando os pontos corretos para medir circunferências do pescoço, cintura e quadril"
+                width={400}
+                height={300}
+                className="mx-auto rounded-lg shadow-sm max-w-full h-auto"
+                loading="eager"
+              />
+              <p className="text-sm text-gray-600 italic">
+                As linhas pontilhadas mostram exatamente onde posicionar a fita métrica para cada medição
+              </p>
+            </div>
+          </div>
+
           {/* Preparação */}
           <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
             <div className="flex items-start gap-3">
