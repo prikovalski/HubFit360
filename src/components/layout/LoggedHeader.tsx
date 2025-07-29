@@ -74,12 +74,6 @@ const LoggedHeader = ({ userName, onLogoClick, onProfileClick, onLogout }: Logge
           
           {/* User Actions */}
           <div className="flex items-center space-x-3">
-            {userName && (
-              <span className="hidden sm:block text-sm text-gray-600 mr-2 font-medium">
-                {userName}
-              </span>
-            )}
-            
             <Button
               onClick={onProfileClick}
               className="glass border-2 border-green-200 text-green-700 hover:bg-green-50 hover:border-green-300 hover:text-green-800 transition-all duration-300 hover:shadow-lg hover:scale-105 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-medium group"
