@@ -76,7 +76,7 @@ const LoggedHeader = ({ userName, onLogoClick, onProfileClick, onLogout }: Logge
           <div className="flex items-center space-x-3">
             {userName && (
               <span className="hidden sm:block text-sm text-gray-600 mr-2 font-medium">
-                Olá, {userName}
+                {userName}
               </span>
             )}
             
