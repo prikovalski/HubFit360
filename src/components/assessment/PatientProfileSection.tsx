@@ -2,9 +2,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { User, Activity, Heart, Utensils } from "lucide-react";
+import { User, Activity, Heart, Utensils, HelpCircle } from "lucide-react";
 import { PhysicalActivitiesSection, PhysicalActivity } from "@/components/PhysicalActivitiesSection";
 
 interface PatientProfileSectionProps {
@@ -28,9 +29,10 @@ interface PatientProfileSectionProps {
     physicalActivities: PhysicalActivity[];
   };
   onPatientDataChange: (field: string, value: string | PhysicalActivity[]) => void;
+  onShowInstructions: () => void;
 }
 
-const PatientProfileSection = ({ patientData, onPatientDataChange }: PatientProfileSectionProps) => {
+const PatientProfileSection = ({ patientData, onPatientDataChange, onShowInstructions }: PatientProfileSectionProps) => {
   return (
     <div className="space-y-6">
       {/* Dados Pessoais */}
@@ -114,7 +116,19 @@ const PatientProfileSection = ({ patientData, onPatientDataChange }: PatientProf
           </div>
           
           <div className="border-t pt-4">
-            <h4 className="font-medium mb-3">Circunferências (opcional)</h4>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-medium">Circunferências (opcional)</h4>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onShowInstructions}
+                className="flex items-center gap-2 text-xs"
+              >
+                <HelpCircle className="w-4 h-4" />
+                Como medir?
+              </Button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="patient-neck">Pescoço (cm)</Label>

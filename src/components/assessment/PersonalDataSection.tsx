@@ -2,7 +2,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { User, HelpCircle } from "lucide-react";
 
 interface PersonalDataSectionProps {
   height: string;
@@ -17,6 +18,7 @@ interface PersonalDataSectionProps {
   onWaistCircumferenceChange: (value: string) => void;
   onHipCircumferenceChange: (value: string) => void;
   onPatientNameChange: (value: string) => void;
+  onShowInstructions: () => void;
 }
 
 const PersonalDataSection = ({
@@ -32,6 +34,7 @@ const PersonalDataSection = ({
   onWaistCircumferenceChange,
   onHipCircumferenceChange,
   onPatientNameChange,
+  onShowInstructions,
 }: PersonalDataSectionProps) => {
   return (
     <Card className="mb-8">
@@ -89,10 +92,22 @@ const PersonalDataSection = ({
         </div>
 
         <div className="border-t pt-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-700">
-            Circunferências <span className="text-red-500">*</span>
-            <span className="text-sm font-normal text-gray-500 ml-2">(obrigatório para análise detalhada)</span>
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-700">
+              Circunferências <span className="text-red-500">*</span>
+              <span className="text-sm font-normal text-gray-500 ml-2">(obrigatório para análise detalhada)</span>
+            </h3>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onShowInstructions}
+              className="flex items-center gap-2 text-xs"
+            >
+              <HelpCircle className="w-4 h-4" />
+              Como medir?
+            </Button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="neck" className="text-sm font-medium">

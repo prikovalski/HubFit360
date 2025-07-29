@@ -12,7 +12,8 @@ import PromptPreview from './PromptPreview';
 import LoggedPageLayout from '@/components/layout/LoggedPageLayout';
 import { FormSkeleton } from '@/components/ui/form-skeleton';
 import { LoadingOverlay } from '@/components/ui/loading-overlay';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { MeasurementInstructionsModal } from './assessment/MeasurementInstructionsModal';
 
 interface AssessmentFormProps {
   onBack: () => void;
@@ -53,6 +54,16 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
 
   const [prompt, setPrompt] = useState<string | null>(null);
   const [formReady, setFormReady] = useState(true);
+  const [showInstructions, setShowInstructions] = useState(false);
+
+  // Show instructions modal on first load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowInstructions(true);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   // Passar as fotos diretamente (elas já são strings base64 ou null)
   const adaptedPhotos = {
@@ -94,6 +105,11 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
       
       <div className="py-12 px-4">
         <div className="container mx-auto max-w-6xl">
+          <MeasurementInstructionsModal
+            open={showInstructions}
+            onOpenChange={setShowInstructions}
+          />
+          
           {prompt && (
             <PromptPreview prompt={prompt} onClose={() => setPrompt(null)} />
           )}
@@ -124,6 +140,7 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
                     onWaistCircumferenceChange={setWaistCircumference}
                     onHipCircumferenceChange={setHipCircumference}
                     onPatientNameChange={setPatientName}
+                    onShowInstructions={() => setShowInstructions(true)}
                   />
                   
                   <PhysicalActivityGoalSection
@@ -137,6 +154,7 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
                 <PatientProfileSection
                   patientData={patientData}
                   onPatientDataChange={handlePatientDataChange}
+                  onShowInstructions={() => setShowInstructions(true)}
                 />
               )}
 
