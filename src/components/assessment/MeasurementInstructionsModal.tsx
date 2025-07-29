@@ -36,7 +36,7 @@ export const MeasurementInstructionsModal = ({
           <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
             <div className="text-center space-y-4">
               <OptimizedImage
-                src="/lovable-uploads/75f434d3-de70-45e6-87a8-ef9d6e41c372.webp"
+                src="/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.webp"
                 alt="Ilustração mostrando os pontos corretos para medir circunferências do pescoço, cintura e quadril"
                 width={400}
                 height={300}
