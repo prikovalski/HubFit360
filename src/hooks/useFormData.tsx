@@ -11,13 +11,15 @@ export const useFormData = () => {
     profession: '',
     gender: '',
     birthDate: '',
-    weight: '', // Opcional mas inicializado
-    height: '', // Opcional mas inicializado
+    weight: '',
+    height: '',
     city: '',
     state: '',
-    neckCircumference: '', // Opcional mas inicializado
-    waistCircumference: '', // Opcional mas inicializado
-    hipCircumference: '' // Opcional mas inicializado
+    goal: '',
+    physicalActivities: [],
+    neckCircumference: '',
+    waistCircumference: '',
+    hipCircumference: ''
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -41,6 +43,8 @@ export const useFormData = () => {
       height: '',
       city: '',
       state: '',
+      goal: '',
+      physicalActivities: [],
       neckCircumference: '',
       waistCircumference: '',
       hipCircumference: ''

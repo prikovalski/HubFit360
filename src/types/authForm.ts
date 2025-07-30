@@ -12,11 +12,13 @@ export interface FormData {
   profession?: string;
   gender: string;
   birthDate: string;
-  weight?: string; // Tornado opcional
-  height?: string; // Tornado opcional
+  weight?: string;
+  height?: string;
   city: string;
   state: string;
-  neckCircumference?: string; // Tornado opcional
-  waistCircumference?: string; // Tornado opcional
-  hipCircumference?: string; // Tornado opcional
+  goal?: string;
+  physicalActivities?: PhysicalActivity[];
+  neckCircumference?: string;
+  waistCircumference?: string;
+  hipCircumference?: string;
 }
