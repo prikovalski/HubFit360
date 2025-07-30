@@ -147,33 +147,67 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      console.log('Executando signOut...');
-      const { error } = await supabase.auth.signOut();
+      console.log('Executando logout completo...');
+      
+      // 1. Fazer logout no Supabase com scope global
+      const { error } = await supabase.auth.signOut({
+        scope: 'global'
+      });
       
       // Tratar erros específicos do Supabase
       if (error) {
-        // Se for erro de sessão não encontrada, não é crítico - apenas log
         if (error.message?.includes('Session not found') || 
             error.message?.includes('session_not_found') ||
             error.message?.includes('Auth session missing')) {
-          console.log('Sessão já havia expirado, logout bem-sucedido');
+          console.log('Sessão já havia expirado, prosseguindo com limpeza local');
         } else {
           console.error('Erro no signOut:', error);
-          throw error;
+          // Continuar com limpeza local mesmo com erro
         }
       }
       
-      // Limpar estado local explicitamente
+      // 2. Limpar todo o localStorage
+      localStorage.clear();
+      
+      // 3. Limpar todo o sessionStorage
+      sessionStorage.clear();
+      
+      // 4. Limpar cookies específicos do Supabase
+      const cookiesToClear = [
+        'sb-access-token',
+        'sb-refresh-token',
+        'supabase-auth-token',
+        'supabase.auth.token'
+      ];
+      
+      cookiesToClear.forEach(cookieName => {
+        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
+        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      });
+      
+      // 5. Limpar estado local explicitamente
       setSession(null);
       setUser(null);
       
-      console.log('SignOut executado com sucesso');
+      // 6. Forçar reload da página para garantir limpeza total
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
+      
+      console.log('Logout completo executado com sucesso');
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
-      // Limpar estado local mesmo com erro
+      
+      // Limpeza de emergência mesmo com erro
+      localStorage.clear();
+      sessionStorage.clear();
       setSession(null);
       setUser(null);
-      throw error;
+      
+      // Forçar redirecionamento mesmo com erro
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
     }
   };
 
