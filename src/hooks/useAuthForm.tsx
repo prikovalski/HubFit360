@@ -50,14 +50,6 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
   };
 
   const handleSubmit = async () => {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    console.log('🔧 useAuthForm: Iniciando submit', { 
-      email: formData.email, 
-      isLogin, 
-      isMobile 
-    });
-    
     setLoading(true);
     setEmailError('');
     
@@ -65,29 +57,18 @@ export const useAuthForm = (onLogin: (user: any) => void) => {
       // Validar email antes de submeter
       const isEmailValid = await validateEmailInput(formData.email);
       if (!isEmailValid) {
-        console.log('🔧 useAuthForm: Email inválido, parando submit');
         setLoading(false);
         return;
       }
       
-      console.log('🔧 useAuthForm: Email válido, prosseguindo com submit');
       const result = await submitForm(formData, isLogin);
-      
-      console.log('🔧 useAuthForm: Resultado do submit', { 
-        result, 
-        isLogin, 
-        isMobile 
-      });
       
       // Se não for login e o cadastro foi bem-sucedido, mostrar tela de confirmação
       if (!isLogin && result) {
-        console.log('🔧 useAuthForm: Mostrando confirmação de email para cadastro');
         setShowEmailConfirmation(true);
-      } else if (isLogin && result) {
-        console.log('🔧 useAuthForm: Login bem-sucedido, aguardando redirecionamento automático');
       }
     } catch (error) {
-      console.error('🔧 useAuthForm: Erro no submit:', error);
+      console.error('Auth error:', error);
     } finally {
       setLoading(false);
     }

@@ -34,13 +34,15 @@ export const useDashboardData = (): DashboardData => {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [assessmentsLoading, setAssessmentsLoading] = useState(true);
   const [assessmentsError, setAssessmentsError] = useState<string | null>(null);
+  const [isFetching, setIsFetching] = useState(false);
   const { userProfile } = useUserProfile();
   const { toast } = useToast();
 
   const fetchAssessments = useCallback(async () => {
-    if (!userProfile?.id) return;
+    if (!userProfile?.id || isFetching) return;
 
     try {
+      setIsFetching(true);
       setAssessmentsLoading(true);
       setAssessmentsError(null);
 
@@ -126,11 +128,13 @@ export const useDashboardData = (): DashboardData => {
       setAssessmentsError('Erro inesperado ao carregar avaliações');
     } finally {
       setAssessmentsLoading(false);
+      setIsFetching(false);
     }
-  }, [userProfile?.id, toast]);
+  }, [userProfile?.id, toast]); // Removido isFetching da dependência
 
   useEffect(() => {
-    if (userProfile?.id) {
+    // Evitar múltiplas execuções quando userProfile muda
+    if (userProfile?.id && !isFetching) {
       console.log('Loading assessments for user:', userProfile.id);
       fetchAssessments();
     }

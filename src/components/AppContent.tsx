@@ -15,32 +15,17 @@ const AppContent = () => {
   const [currentSection, setCurrentSection] = useState('home');
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [hasRedirected, setHasRedirected] = useState(false);
-  const { user, signOut, loading: authLoading } = useAuth();
-  const { userProfile, loading: profileLoading } = useUserProfile();
+  const { user, signOut } = useAuth();
+  const { userProfile, loading } = useUserProfile();
 
   // Auto-redirect to dashboard when user logs in (but not during logout)
   useEffect(() => {
-    console.log('AppContent: Verificando redirecionamento', { 
-      hasUser: !!user, 
-      currentSection, 
-      isLoggingOut, 
-      authLoading,
-      hasRedirected
-    });
-    
-    // ANTI-LOOP: Usar flag para evitar múltiplos redirecionamentos
-    if (user && currentSection === 'home' && !isLoggingOut && !authLoading && !hasRedirected) {
-      console.log('AppContent: Usuario logado detectado, redirecionando para dashboard');
-      setHasRedirected(true);
+    // ANTI-LOOP: Prevenir múltiplos redirecionamentos
+    if (user && currentSection === 'home' && !isLoggingOut) {
+      console.log('AppContent: Usuario logado detectado, redirecionando para dashboard (APENAS UMA VEZ)');
       setCurrentSection('dashboard');
     }
-    
-    // Reset redirect flag when user logs out
-    if (!user && hasRedirected) {
-      setHasRedirected(false);
-    }
-  }, [user, isLoggingOut, authLoading, hasRedirected, currentSection]);
+  }, [user, isLoggingOut]); // Removido currentSection da dependência para evitar loop
 
   const handleLogout = async () => {
     try {
@@ -122,7 +107,7 @@ const AppContent = () => {
   const renderSection = () => {
     // Se o usuário está logado, mostrar as seções do dashboard
     if (user) {
-      if (authLoading) {
+      if (loading) {
         return (
           <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center relative overflow-hidden">
             {/* Background decorative elements */}

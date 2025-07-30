@@ -35,56 +35,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   useEffect(() => {
-    // Mobile debug logs
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    console.log('🔧 useAuth: Inicializando autenticação', { isMobile, userAgent: navigator.userAgent });
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
 
-    // Set up auth state listener FIRST to catch all events
+    // Set up auth state listener - fixed to remove async
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('🔧 Auth state changed:', { 
-          event, 
-          hasSession: !!session, 
-          hasUser: !!session?.user, 
-          email: session?.user?.email,
-          isMobile 
-        });
-        
+        console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
-        setLoading(false);
+        // Use setTimeout for any async operations if needed
+        setTimeout(() => {
+          setLoading(false);
+        }, 0);
       }
     );
-
-    // THEN get initial session with retry for mobile
-    const getInitialSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        console.log('🔧 Initial session check:', { 
-          hasSession: !!session, 
-          hasUser: !!session?.user, 
-          email: session?.user?.email,
-          error: error?.message,
-          isMobile 
-        });
-        
-        if (error) {
-          console.error('🔧 Error getting session:', error);
-        }
-        
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-        
-      } catch (error) {
-        console.error('🔧 Error in getInitialSession:', error);
-        setLoading(false);
-      }
-    };
-
-    getInitialSession();
 
     return () => subscription.unsubscribe();
   }, []);
@@ -122,10 +92,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string) => {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    console.log('🔧 signIn: Iniciando login', { email, isMobile });
-    
     // Check rate limit
     if (!loginRateLimiter.checkRateLimit()) {
       return { 
@@ -142,32 +108,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       };
     }
 
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
 
-      console.log('🔧 signIn: Resultado do login', { 
-        hasData: !!data, 
-        hasUser: !!data?.user, 
-        hasSession: !!data?.session,
-        error: error?.message,
-        isMobile 
-      });
-
-      // Reset rate limiter on successful login
-      if (data.user && !error) {
-        loginRateLimiter.reset();
-        
-        console.log('🔧 signIn: Login bem-sucedido');
-      }
-
-      return { data, error };
-    } catch (error) {
-      console.error('🔧 signIn: Erro no login:', error);
-      return { data: null, error };
+    // Reset rate limiter on successful login
+    if (data.user && !error) {
+      loginRateLimiter.reset();
     }
+
+    return { data, error };
   };
 
   const signOut = async () => {
