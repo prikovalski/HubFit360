@@ -4,6 +4,8 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { validateAuthEmail, validateAuthPassword } from '@/utils/authValidation';
 import { useRateLimiter } from '@/hooks/useRateLimiter';
+import { getDeviceInfo } from '@/utils/deviceDetection';
+import { hybridStorage } from '@/utils/hybridStorage';
 
 interface AuthContextType {
   user: User | null;
@@ -38,17 +40,73 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    const deviceInfo = getDeviceInfo();
+    console.log('AuthProvider initialized for device:', deviceInfo);
 
-    // Set up auth state listener - fixed to remove async
+    // Função para verificar sessão com retry para iOS
+    const getSessionWithRetry = async (retries = 3) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          console.log(`Tentativa ${i + 1} de obter sessão`);
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.warn(`Erro na tentativa ${i + 1}:`, error);
+            if (i === retries - 1) throw error;
+            continue;
+          }
+
+          // Verificar se a sessão é válida
+          if (session?.access_token) {
+            console.log('Sessão válida encontrada:', session.user?.email);
+            setSession(session);
+            setUser(session.user);
+          } else {
+            console.log('Nenhuma sessão válida encontrada');
+            
+            // Para iOS, tentar verificar storage alternativo
+            if (deviceInfo.isIOS) {
+              const storedToken = hybridStorage.getItem('sb-access-token');
+              if (storedToken) {
+                console.log('Token encontrado no storage alternativo, tentando restaurar sessão');
+                // Aguardar um pouco para o Supabase processar
+                await new Promise(resolve => setTimeout(resolve, 500));
+                continue;
+              }
+            }
+            
+            setSession(null);
+            setUser(null);
+          }
+          
+          setLoading(false);
+          return;
+        } catch (error) {
+          console.error(`Erro na tentativa ${i + 1} de obter sessão:`, error);
+          if (i === retries - 1) {
+            console.error('Falha em todas as tentativas de obter sessão');
+            setSession(null);
+            setUser(null);
+            setLoading(false);
+          } else {
+            // Aguardar antes da próxima tentativa
+            await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+          }
+        }
+      }
+    };
+
+    // Set up auth state listener primeiro
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
+        
+        // Validação adicional para iOS
+        if (deviceInfo.isIOS && session && !session.access_token) {
+          console.warn('Sessão inválida detectada no iOS, ignorando');
+          return;
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -58,6 +116,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }, 0);
       }
     );
+
+    // Depois tentar obter sessão inicial
+    getSessionWithRetry();
 
     return () => subscription.unsubscribe();
   }, []);
@@ -103,6 +164,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     setAuthLoading(true);
+    const deviceInfo = getDeviceInfo();
     
     try {
       // Check rate limit
@@ -129,25 +191,74 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         };
       }
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      console.log('Tentando login para dispositivo:', deviceInfo);
 
-      // Reset rate limiter on successful login
-      if (data.user && !error) {
-        loginRateLimiter.reset();
+      // Retry logic específico para iOS
+      const maxRetries = deviceInfo.isIOS ? 3 : 1;
+      let lastError = null;
+
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          console.log(`Tentativa de login ${attempt}/${maxRetries}`);
+          
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password
+          });
+
+          if (error) {
+            lastError = error;
+            console.warn(`Tentativa ${attempt} falhou:`, error.message);
+            
+            // Para iOS, aguardar antes de tentar novamente
+            if (deviceInfo.isIOS && attempt < maxRetries) {
+              await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+              continue;
+            }
+            
+            return { data, error };
+          }
+
+          // Sucesso
+          console.log(`Login bem-sucedido na tentativa ${attempt}`);
+          
+          // Reset rate limiter on successful login
+          if (data.user) {
+            loginRateLimiter.reset();
+            
+            // Para iOS, aguardar um pouco para garantir persistência
+            if (deviceInfo.isIOS) {
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
+          }
+
+          return { data, error };
+        } catch (networkError) {
+          lastError = networkError;
+          console.error(`Erro de rede na tentativa ${attempt}:`, networkError);
+          
+          if (attempt < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+            continue;
+          }
+        }
       }
 
-      return { data, error };
+      // Se chegou aqui, todas as tentativas falharam
+      return { 
+        data: null, 
+        error: lastError || { message: 'Falha ao conectar após múltiplas tentativas' }
+      };
     } finally {
       setAuthLoading(false);
     }
   };
 
   const signOut = async () => {
+    const deviceInfo = getDeviceInfo();
+    
     try {
-      console.log('Executando logout completo...');
+      console.log('Executando logout completo para dispositivo:', deviceInfo);
       
       // 1. Fazer logout no Supabase com scope global
       const { error } = await supabase.auth.signOut({
@@ -166,48 +277,66 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
       
-      // 2. Limpar todo o localStorage
-      localStorage.clear();
+      // 2. Limpeza com hybrid storage para iOS
+      if (deviceInfo.isIOS || !deviceInfo.storageAvailable) {
+        hybridStorage.clear();
+      } else {
+        localStorage.clear();
+        sessionStorage.clear();
+      }
       
-      // 3. Limpar todo o sessionStorage
-      sessionStorage.clear();
-      
-      // 4. Limpar cookies específicos do Supabase
+      // 3. Limpar cookies específicos do Supabase de forma mais abrangente
       const cookiesToClear = [
         'sb-access-token',
         'sb-refresh-token',
         'supabase-auth-token',
-        'supabase.auth.token'
+        'supabase.auth.token',
+        'sb-auth-token' // iOS específico
       ];
       
       cookiesToClear.forEach(cookieName => {
-        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
-        document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        // Múltiplas tentativas de limpeza de cookies
+        const domains = [window.location.hostname, `.${window.location.hostname}`, ''];
+        const paths = ['/', '', '/auth'];
+        
+        domains.forEach(domain => {
+          paths.forEach(path => {
+            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; SameSite=Lax;`;
+            document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path}; domain=${domain}; SameSite=None; Secure;`;
+          });
+        });
       });
       
-      // 5. Limpar estado local explicitamente
+      // 4. Limpar estado local explicitamente
       setSession(null);
       setUser(null);
       
-      // 6. Forçar reload da página para garantir limpeza total
+      // 5. Para iOS, aguardar mais tempo antes do redirecionamento
+      const redirectDelay = deviceInfo.isIOS ? 300 : 100;
+      
       setTimeout(() => {
         window.location.href = '/';
-      }, 100);
+      }, redirectDelay);
       
       console.log('Logout completo executado com sucesso');
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
       
       // Limpeza de emergência mesmo com erro
-      localStorage.clear();
-      sessionStorage.clear();
+      if (deviceInfo.isIOS || !deviceInfo.storageAvailable) {
+        hybridStorage.clear();
+      } else {
+        localStorage.clear();
+        sessionStorage.clear();
+      }
+      
       setSession(null);
       setUser(null);
       
       // Forçar redirecionamento mesmo com erro
       setTimeout(() => {
         window.location.href = '/';
-      }, 100);
+      }, deviceInfo.isIOS ? 300 : 100);
     }
   };
 
