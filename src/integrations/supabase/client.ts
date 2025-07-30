@@ -31,24 +31,19 @@ const customStorage = {
 // Configurações específicas para iOS/Safari
 const supabaseOptions = {
   auth: {
-    storage: deviceInfo.isIOS || !deviceInfo.storageAvailable ? customStorage : undefined,
+    // Sempre usar customStorage para garantir fallback
+    storage: customStorage,
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    flowType: 'pkce' as const,
+    // Usar implicit flow para iOS que tem melhor compatibilidade
+    flowType: deviceInfo.isIOS ? 'implicit' as const : 'pkce' as const,
     // Configurações específicas para iOS
     ...(deviceInfo.isIOS && {
-      storageKey: 'sb-auth-token',
-      cookieOptions: {
-        name: 'sb-auth-token',
-        lifetime: 60 * 60 * 24 * 365, // 1 ano
-        domain: window.location.hostname,
-        path: '/',
-        sameSite: 'lax'
-      }
+      storageKey: 'sb-auth-token'
     })
   },
-  // Headers específicos para mobile
+  // Headers minimalistas para evitar CORS issues
   global: {
     headers: {
       'X-Client-Info': `js/${deviceInfo.isIOS ? 'ios' : 'web'}-${deviceInfo.isMobile ? 'mobile' : 'desktop'}`

@@ -193,8 +193,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       console.log('Tentando login para dispositivo:', deviceInfo);
 
-      // Retry logic específico para iOS
-      const maxRetries = deviceInfo.isIOS ? 3 : 1;
+      // Retry logic específico para iOS com timeout maior
+      const maxRetries = deviceInfo.isIOS ? 5 : 1;
       let lastError = null;
 
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -202,7 +202,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           console.log(`Tentativa de login ${attempt}/${maxRetries}`);
           
           const { data, error } = await supabase.auth.signInWithPassword({
-            email,
+            email: email.trim(),
             password
           });
 
@@ -210,9 +210,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             lastError = error;
             console.warn(`Tentativa ${attempt} falhou:`, error.message);
             
-            // Para iOS, aguardar antes de tentar novamente
+            // Para iOS, aguardar mais tempo antes de tentar novamente
             if (deviceInfo.isIOS && attempt < maxRetries) {
-              await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+              await new Promise(resolve => setTimeout(resolve, 3000 + (attempt * 1000)));
               continue;
             }
             
@@ -226,9 +226,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           if (data.user) {
             loginRateLimiter.reset();
             
-            // Para iOS, aguardar um pouco para garantir persistência
+            // Para iOS, aguardar mais tempo para garantir persistência
             if (deviceInfo.isIOS) {
-              await new Promise(resolve => setTimeout(resolve, 500));
+              await new Promise(resolve => setTimeout(resolve, 2000));
             }
           }
 
@@ -238,7 +238,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           console.error(`Erro de rede na tentativa ${attempt}:`, networkError);
           
           if (attempt < maxRetries) {
-            await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+            await new Promise(resolve => setTimeout(resolve, 4000 + (attempt * 2000)));
             continue;
           }
         }

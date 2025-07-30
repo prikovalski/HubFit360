@@ -19,10 +19,12 @@ export class HybridStorage {
     this.storageAvailable = isLocalStorageAvailable();
     this.cookiesAvailable = areCookiesEnabled();
     this.options = {
-      domain: options.domain || window.location.hostname,
+      // Não definir domain explicitamente para iOS Safari
+      domain: undefined,
       path: options.path || '/',
-      secure: options.secure ?? window.location.protocol === 'https:',
-      sameSite: options.sameSite || 'Lax',
+      // Configurar para cross-site requests no iOS
+      secure: true,
+      sameSite: 'None',
       maxAge: options.maxAge || 365 * 24 * 60 * 60 // 1 ano
     };
 
@@ -158,7 +160,7 @@ export class HybridStorage {
   private setCookie(name: string, value: string): void {
     const { domain, path, secure, sameSite, maxAge } = this.options;
     
-    let cookieString = `${name}=${encodeURIComponent(value)}`;
+    let cookieString = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
     cookieString += `; path=${path}`;
     cookieString += `; max-age=${maxAge}`;
     cookieString += `; SameSite=${sameSite}`;
@@ -167,12 +169,13 @@ export class HybridStorage {
       cookieString += '; Secure';
     }
     
-    // Adicionar domain apenas se não for localhost
+    // Só adicionar domain se explicitamente definido (não para iOS)
     if (domain && !domain.includes('localhost') && !domain.includes('127.0.0.1')) {
       cookieString += `; domain=${domain}`;
     }
     
     document.cookie = cookieString;
+    console.log(`Cookie set: ${name}`, { cookieString });
   }
 
   private getCookie(name: string): string | null {
