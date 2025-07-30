@@ -15,38 +15,32 @@ const AppContent = () => {
   const [currentSection, setCurrentSection] = useState('home');
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [hasRedirected, setHasRedirected] = useState(false);
   const { user, signOut, loading: authLoading } = useAuth();
   const { userProfile, loading: profileLoading } = useUserProfile();
-  
-  // Combinar estados de loading
-  const loading = authLoading || profileLoading;
 
   // Auto-redirect to dashboard when user logs in (but not during logout)
   useEffect(() => {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    console.log('🔧 AppContent: Verificando redirecionamento', { 
+    console.log('AppContent: Verificando redirecionamento', { 
       hasUser: !!user, 
       currentSection, 
       isLoggingOut, 
-      loading,
-      isMobile 
+      authLoading,
+      hasRedirected
     });
     
-    // ANTI-LOOP: Prevenir múltiplos redirecionamentos
-    // Aguardar que o loading termine antes de redirecionar (especialmente importante no mobile)
-    if (user && currentSection === 'home' && !isLoggingOut && !loading) {
-      console.log('🔧 AppContent: Usuario logado detectado, redirecionando para dashboard');
-      
-      // Para mobile, adicionar um pequeno delay para garantir estabilidade
-      const redirectDelay = isMobile ? 100 : 0;
-      
-      setTimeout(() => {
-        console.log('🔧 AppContent: Executando redirecionamento para dashboard');
-        setCurrentSection('dashboard');
-      }, redirectDelay);
+    // ANTI-LOOP: Usar flag para evitar múltiplos redirecionamentos
+    if (user && currentSection === 'home' && !isLoggingOut && !authLoading && !hasRedirected) {
+      console.log('AppContent: Usuario logado detectado, redirecionando para dashboard');
+      setHasRedirected(true);
+      setCurrentSection('dashboard');
     }
-  }, [user, isLoggingOut, loading]); // Adicionado loading na dependência
+    
+    // Reset redirect flag when user logs out
+    if (!user && hasRedirected) {
+      setHasRedirected(false);
+    }
+  }, [user, isLoggingOut, authLoading, hasRedirected, currentSection]);
 
   const handleLogout = async () => {
     try {
@@ -128,7 +122,7 @@ const AppContent = () => {
   const renderSection = () => {
     // Se o usuário está logado, mostrar as seções do dashboard
     if (user) {
-      if (loading) {
+      if (authLoading) {
         return (
           <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center relative overflow-hidden">
             {/* Background decorative elements */}

@@ -53,11 +53,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Para mobile, adicionar delay extra para garantir estabilidade
-        const delay = isMobile ? 100 : 0;
-        setTimeout(() => {
-          setLoading(false);
-        }, delay);
+        setLoading(false);
       }
     );
 
@@ -80,11 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         setSession(session);
         setUser(session?.user ?? null);
-        
-        // Para mobile, aguardar um pouco mais antes de marcar como carregado
-        setTimeout(() => {
-          setLoading(false);
-        }, isMobile ? 200 : 50);
+        setLoading(false);
         
       } catch (error) {
         console.error('🔧 Error in getInitialSession:', error);
@@ -168,20 +160,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (data.user && !error) {
         loginRateLimiter.reset();
         
-        // Para mobile, verificar se a sessão foi estabelecida corretamente
-        if (isMobile && data.session) {
-          console.log('🔧 signIn: Login mobile bem-sucedido, aguardando estabilização da sessão');
-          
-          // Aguardar um pouco para garantir que a sessão seja processada
-          await new Promise(resolve => setTimeout(resolve, 300));
-          
-          // Verificar novamente a sessão
-          const { data: sessionCheck } = await supabase.auth.getSession();
-          console.log('🔧 signIn: Verificação de sessão pós-login', { 
-            hasSession: !!sessionCheck.session,
-            hasUser: !!sessionCheck.session?.user 
-          });
-        }
+        console.log('🔧 signIn: Login bem-sucedido');
       }
 
       return { data, error };
