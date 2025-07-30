@@ -35,26 +35,64 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Mobile debug logs
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    console.log('🔧 useAuth: Inicializando autenticação', { isMobile, userAgent: navigator.userAgent });
 
-    // Set up auth state listener - fixed to remove async
+    // Set up auth state listener FIRST to catch all events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+        console.log('🔧 Auth state changed:', { 
+          event, 
+          hasSession: !!session, 
+          hasUser: !!session?.user, 
+          email: session?.user?.email,
+          isMobile 
+        });
+        
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Use setTimeout for any async operations if needed
+        // Para mobile, adicionar delay extra para garantir estabilidade
+        const delay = isMobile ? 100 : 0;
         setTimeout(() => {
           setLoading(false);
-        }, 0);
+        }, delay);
       }
     );
+
+    // THEN get initial session with retry for mobile
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        console.log('🔧 Initial session check:', { 
+          hasSession: !!session, 
+          hasUser: !!session?.user, 
+          email: session?.user?.email,
+          error: error?.message,
+          isMobile 
+        });
+        
+        if (error) {
+          console.error('🔧 Error getting session:', error);
+        }
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Para mobile, aguardar um pouco mais antes de marcar como carregado
+        setTimeout(() => {
+          setLoading(false);
+        }, isMobile ? 200 : 50);
+        
+      } catch (error) {
+        console.error('🔧 Error in getInitialSession:', error);
+        setLoading(false);
+      }
+    };
+
+    getInitialSession();
 
     return () => subscription.unsubscribe();
   }, []);
@@ -92,6 +130,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string) => {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    console.log('🔧 signIn: Iniciando login', { email, isMobile });
+    
     // Check rate limit
     if (!loginRateLimiter.checkRateLimit()) {
       return { 
@@ -108,17 +150,45 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       };
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
-    // Reset rate limiter on successful login
-    if (data.user && !error) {
-      loginRateLimiter.reset();
+      console.log('🔧 signIn: Resultado do login', { 
+        hasData: !!data, 
+        hasUser: !!data?.user, 
+        hasSession: !!data?.session,
+        error: error?.message,
+        isMobile 
+      });
+
+      // Reset rate limiter on successful login
+      if (data.user && !error) {
+        loginRateLimiter.reset();
+        
+        // Para mobile, verificar se a sessão foi estabelecida corretamente
+        if (isMobile && data.session) {
+          console.log('🔧 signIn: Login mobile bem-sucedido, aguardando estabilização da sessão');
+          
+          // Aguardar um pouco para garantir que a sessão seja processada
+          await new Promise(resolve => setTimeout(resolve, 300));
+          
+          // Verificar novamente a sessão
+          const { data: sessionCheck } = await supabase.auth.getSession();
+          console.log('🔧 signIn: Verificação de sessão pós-login', { 
+            hasSession: !!sessionCheck.session,
+            hasUser: !!sessionCheck.session?.user 
+          });
+        }
+      }
+
+      return { data, error };
+    } catch (error) {
+      console.error('🔧 signIn: Erro no login:', error);
+      return { data: null, error };
     }
-
-    return { data, error };
   };
 
   const signOut = async () => {

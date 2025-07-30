@@ -74,8 +74,10 @@ export const useAuthSubmit = () => {
   };
 
   const submitLogin = async (email: string, password: string) => {
-    console.log('=== TENTATIVA DE LOGIN ===');
-    console.log('Email:', email);
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    console.log('🔧 useAuthSubmit: === TENTATIVA DE LOGIN ===');
+    console.log('🔧 useAuthSubmit:', { email, isMobile, userAgent: navigator.userAgent });
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -83,26 +85,46 @@ export const useAuthSubmit = () => {
     });
 
     if (error) {
-      console.error('Erro no login:', error);
+      console.error('🔧 useAuthSubmit: Erro no login:', error);
       throw error;
     }
 
-    console.log('Login realizado com sucesso:', data);
+    console.log('🔧 useAuthSubmit: Login realizado com sucesso:', { 
+      hasData: !!data, 
+      hasUser: !!data?.user, 
+      hasSession: !!data?.session,
+      email: data?.user?.email,
+      isMobile 
+    });
+    
     return data;
   };
 
   const handleSubmit = async (formData: any, isLogin: boolean) => {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    console.log('🔧 useAuthSubmit: handleSubmit iniciado', { isLogin, isMobile });
+    
     try {
       if (isLogin) {
+        console.log('🔧 useAuthSubmit: Processando login...');
         const data = await submitLogin(formData.email, formData.password);
         
+        console.log('🔧 useAuthSubmit: Login finalizado, mostrando toast');
         toast({
           title: "Login realizado com sucesso!",
           description: "Bem-vindo de volta!",
         });
         
+        // Para mobile, aguardar um pouco antes de retornar para garantir que a sessão seja processada
+        if (isMobile) {
+          console.log('🔧 useAuthSubmit: Aguardando processamento da sessão no mobile...');
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        
         return data;
       } else {
+        console.log('🔧 useAuthSubmit: Processando cadastro...');
         const data = await submitSignup(formData);
         
         toast({
@@ -113,6 +135,7 @@ export const useAuthSubmit = () => {
         return data;
       }
     } catch (error: any) {
+      console.error('🔧 useAuthSubmit: Erro no handleSubmit:', error);
       toast({
         title: isLogin ? "Erro no login" : "Erro no cadastro",
         description: error.message || "Ocorreu um erro inesperado",

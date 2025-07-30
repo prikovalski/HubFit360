@@ -14,11 +14,16 @@ interface AuthSectionProps {
 }
 
 const AuthSection = ({ onBack, onLogin }: AuthSectionProps) => {
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
   // Callback que não faz nada - o redirecionamento será automático via estado de autenticação
   const handleAuthSuccess = (user: any) => {
     // O usuário já estará logado devido ao estado de autenticação do Supabase
     // O redirecionamento para o dashboard acontecerá automaticamente via useAuth
-    console.log('Usuário autenticado com sucesso:', user);
+    console.log('🔧 AuthSection: Usuário autenticado com sucesso', { 
+      user: user?.email, 
+      isMobile 
+    });
   };
 
   const {

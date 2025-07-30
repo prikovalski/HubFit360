@@ -15,17 +15,38 @@ const AppContent = () => {
   const [currentSection, setCurrentSection] = useState('home');
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const { user, signOut } = useAuth();
-  const { userProfile, loading } = useUserProfile();
+  const { user, signOut, loading: authLoading } = useAuth();
+  const { userProfile, loading: profileLoading } = useUserProfile();
+  
+  // Combinar estados de loading
+  const loading = authLoading || profileLoading;
 
   // Auto-redirect to dashboard when user logs in (but not during logout)
   useEffect(() => {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    console.log('🔧 AppContent: Verificando redirecionamento', { 
+      hasUser: !!user, 
+      currentSection, 
+      isLoggingOut, 
+      loading,
+      isMobile 
+    });
+    
     // ANTI-LOOP: Prevenir múltiplos redirecionamentos
-    if (user && currentSection === 'home' && !isLoggingOut) {
-      console.log('AppContent: Usuario logado detectado, redirecionando para dashboard (APENAS UMA VEZ)');
-      setCurrentSection('dashboard');
+    // Aguardar que o loading termine antes de redirecionar (especialmente importante no mobile)
+    if (user && currentSection === 'home' && !isLoggingOut && !loading) {
+      console.log('🔧 AppContent: Usuario logado detectado, redirecionando para dashboard');
+      
+      // Para mobile, adicionar um pequeno delay para garantir estabilidade
+      const redirectDelay = isMobile ? 100 : 0;
+      
+      setTimeout(() => {
+        console.log('🔧 AppContent: Executando redirecionamento para dashboard');
+        setCurrentSection('dashboard');
+      }, redirectDelay);
     }
-  }, [user, isLoggingOut]); // Removido currentSection da dependência para evitar loop
+  }, [user, isLoggingOut, loading]); // Adicionado loading na dependência
 
   const handleLogout = async () => {
     try {
