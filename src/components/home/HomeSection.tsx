@@ -1,7 +1,6 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Zap, Brain, TrendingUp } from 'lucide-react';
-import InstallPWAButton from '@/components/pwa/InstallPWAButton';
 
 interface HomeSectionProps {
   setCurrentSection: (section: string) => void;
@@ -93,10 +92,6 @@ const HomeSection = ({ setCurrentSection }: HomeSectionProps) => {
                 Descubra Mais
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
-              
-              <div className="sm:hidden">
-                <InstallPWAButton />
-              </div>
             </div>
           </div>
         </div>

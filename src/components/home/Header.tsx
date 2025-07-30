@@ -1,6 +1,5 @@
 
 import { Button } from "@/components/ui/button";
-import InstallPWAButton from '@/components/pwa/InstallPWAButton';
 import { Sparkles } from 'lucide-react';
 
 interface HeaderProps {
@@ -50,7 +49,6 @@ const Header = ({ setCurrentSection }: HeaderProps) => {
               Sobre
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-300 group-hover:w-full"></span>
             </button>
-            <InstallPWAButton />
             <Button 
               onClick={() => setCurrentSection('auth')}
               className="btn-modern-green text-white px-6 py-2 rounded-full transition-all duration-300 hover:shadow-lg focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-semibold"
@@ -62,7 +60,6 @@ const Header = ({ setCurrentSection }: HeaderProps) => {
 
           {/* Menu mobile */}
           <div className="md:hidden flex items-center space-x-2">
-            <InstallPWAButton />
             <Button 
               onClick={() => setCurrentSection('auth')}
               size="sm"

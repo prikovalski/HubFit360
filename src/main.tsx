@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client';
 import { Suspense } from 'react';
 import './index.css';
 import App from './App';
-import PWARegister from './components/pwa/PWARegister';
 
 // Loading inicial crítico
 const InitialLoader = () => (
@@ -17,6 +16,5 @@ const root = createRoot(document.getElementById("root")!);
 root.render(
   <Suspense fallback={<InitialLoader />}>
     <App />
-    <PWARegister />
   </Suspense>
 );
