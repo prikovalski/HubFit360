@@ -15,8 +15,24 @@ const AppContent = () => {
   const [currentSection, setCurrentSection] = useState('home');
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const { user, signOut } = useAuth();
-  const { userProfile, loading } = useUserProfile();
+  
+  // Use try-catch to handle potential auth context issues
+  let user = null;
+  let signOut = () => Promise.resolve();
+  let userProfile = null;
+  let loading = true;
+  
+  try {
+    const auth = useAuth();
+    user = auth.user;
+    signOut = auth.signOut;
+    const profile = useUserProfile();
+    userProfile = profile.userProfile;
+    loading = profile.loading;
+  } catch (error) {
+    console.error('Error accessing auth context:', error);
+    // Fallback to unauthenticated state
+  }
 
   // Auto-redirect to dashboard when user logs in (but not during logout)
   useEffect(() => {
