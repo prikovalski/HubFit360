@@ -21,11 +21,13 @@ const AppContent = () => {
   let signOut = () => Promise.resolve();
   let userProfile = null;
   let loading = true;
+  let authLoading = true;
   
   try {
     const auth = useAuth();
     user = auth.user;
     signOut = auth.signOut;
+    authLoading = auth.loading;
     const profile = useUserProfile();
     userProfile = profile.userProfile;
     loading = profile.loading;
@@ -36,12 +38,16 @@ const AppContent = () => {
 
   // Auto-redirect to dashboard when user logs in (but not during logout)
   useEffect(() => {
-    // ANTI-LOOP: Prevenir múltiplos redirecionamentos
-    if (user && currentSection === 'home' && !isLoggingOut) {
-      console.log('AppContent: Usuario logado detectado, redirecionando para dashboard (APENAS UMA VEZ)');
-      setCurrentSection('dashboard');
+    // CORREÇÃO: Aguardar loading e adicionar delay para prevenir condição de corrida
+    if (user && !authLoading && !loading && currentSection === 'home' && !isLoggingOut) {
+      console.log('AppContent: Usuario autenticado confirmado, redirecionando para dashboard');
+      
+      // Delay de 100ms para garantir estabilidade da autenticação
+      setTimeout(() => {
+        setCurrentSection('dashboard');
+      }, 100);
     }
-  }, [user, isLoggingOut]); // Removido currentSection da dependência para evitar loop
+  }, [user, authLoading, loading, isLoggingOut]); // Incluir authLoading e loading nas dependências
 
   const handleLogout = async () => {
     try {

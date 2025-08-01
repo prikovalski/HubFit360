@@ -42,55 +42,62 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const deviceInfo = getDeviceInfo();
     console.log('AuthProvider initialized for device:', deviceInfo);
+    
+    let hasInitialSessionCheck = false;
+    let loadingTimeout: NodeJS.Timeout;
 
-    // Função para verificar sessão com retry para iOS
-    const getSessionWithRetry = async (retries = 3) => {
-      for (let i = 0; i < retries; i++) {
+    // Timeout de segurança para loading (máximo 10 segundos)
+    loadingTimeout = setTimeout(() => {
+      console.log('Timeout de loading atingido, finalizando loading');
+      setLoading(false);
+    }, 10000);
+
+    // Função simplificada para verificar sessão
+    const getSessionWithRetry = async () => {
+      if (hasInitialSessionCheck) return;
+      hasInitialSessionCheck = true;
+      
+      const maxRetries = deviceInfo.isIOS ? 2 : 1; // Reduzido para 2 tentativas máximo
+      
+      for (let i = 0; i < maxRetries; i++) {
         try {
-          console.log(`Tentativa ${i + 1} de obter sessão`);
+          console.log(`Auth: Verificando sessão (tentativa ${i + 1}/${maxRetries})`);
           const { data: { session }, error } = await supabase.auth.getSession();
           
           if (error) {
-            console.warn(`Erro na tentativa ${i + 1}:`, error);
-            if (i === retries - 1) throw error;
+            console.warn(`Auth: Erro na tentativa ${i + 1}:`, error);
+            if (i === maxRetries - 1) {
+              setSession(null);
+              setUser(null);
+              setLoading(false);
+              clearTimeout(loadingTimeout);
+            }
             continue;
           }
 
-          // Verificar se a sessão é válida
           if (session?.access_token) {
-            console.log('Sessão válida encontrada:', session.user?.email);
+            console.log('Auth: Sessão válida encontrada:', session.user?.email);
             setSession(session);
             setUser(session.user);
           } else {
-            console.log('Nenhuma sessão válida encontrada');
-            
-            // Para iOS, tentar verificar storage alternativo
-            if (deviceInfo.isIOS) {
-              const storedToken = hybridStorage.getItem('sb-access-token');
-              if (storedToken) {
-                console.log('Token encontrado no storage alternativo, tentando restaurar sessão');
-                // Aguardar um pouco para o Supabase processar
-                await new Promise(resolve => setTimeout(resolve, 500));
-                continue;
-              }
-            }
-            
+            console.log('Auth: Nenhuma sessão válida encontrada');
             setSession(null);
             setUser(null);
           }
           
           setLoading(false);
+          clearTimeout(loadingTimeout);
           return;
         } catch (error) {
-          console.error(`Erro na tentativa ${i + 1} de obter sessão:`, error);
-          if (i === retries - 1) {
-            console.error('Falha em todas as tentativas de obter sessão');
+          console.error(`Auth: Erro na tentativa ${i + 1}:`, error);
+          if (i === maxRetries - 1) {
             setSession(null);
             setUser(null);
             setLoading(false);
+            clearTimeout(loadingTimeout);
           } else {
-            // Aguardar antes da próxima tentativa
-            await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+            // Delay reduzido
+            await new Promise(resolve => setTimeout(resolve, 1000));
           }
         }
       }
@@ -99,28 +106,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Set up auth state listener primeiro
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+        console.log('Auth: State changed:', event, session?.user?.email);
         
         // Validação adicional para iOS
         if (deviceInfo.isIOS && session && !session.access_token) {
-          console.warn('Sessão inválida detectada no iOS, ignorando');
+          console.warn('Auth: Sessão inválida detectada no iOS, ignorando');
           return;
         }
         
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Use setTimeout for any async operations if needed
-        setTimeout(() => {
-          setLoading(false);
-        }, 0);
+        // Garantir que loading seja false apenas uma vez
+        if (!hasInitialSessionCheck) {
+          setTimeout(() => {
+            setLoading(false);
+            clearTimeout(loadingTimeout);
+          }, 100);
+        }
       }
     );
 
-    // Depois tentar obter sessão inicial
+    // Verificar sessão inicial
     getSessionWithRetry();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(loadingTimeout);
+    };
   }, []);
 
   const signUp = async (email: string, password: string, metadata: any) => {
