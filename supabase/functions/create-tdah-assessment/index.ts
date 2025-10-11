@@ -1,4 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.8';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -6,199 +7,188 @@ const corsHeaders = {
 };
 
 interface TDAHAssessmentRequest {
-  userId: string;
-  patientName?: string;
-  patientAge?: number;
-  patientGender?: string;
-  patientBirthDate?: string;
-  assessmentType: 'adult' | 'child';
-  responses: Array<{
-    question: string;
-    category: string;
-    answer: number;
-  }>;
+  responses: number[];
+  assessment_type?: 'self' | 'other';
+  patient_name?: string;
+  patient_gender?: string;
+  patient_age?: number;
+  patient_birth_date?: string;
 }
 
-function calculateScore(responses: Array<{ answer: number; category: string }>) {
-  const totalScore = responses.reduce((sum, r) => sum + r.answer, 0);
-  const maxScore = responses.length * 4;
-  
-  const categoriesScores = {
-    inattention: 0,
-    hyperactivity: 0,
-    impulsivity: 0
-  };
-  
-  responses.forEach(r => {
-    if (r.category === 'inattention') categoriesScores.inattention += r.answer;
-    if (r.category === 'hyperactivity') categoriesScores.hyperactivity += r.answer;
-    if (r.category === 'impulsivity') categoriesScores.impulsivity += r.answer;
-  });
-  
-  return { totalScore, maxScore, categoriesScores };
+function calculateScore(responses: number[]): number {
+  return responses.reduce((sum, r) => sum + r, 0);
 }
 
-function getClassification(score: number, maxScore: number): string {
-  const percentage = (score / maxScore) * 100;
-  
-  if (percentage < 25) return 'Sem sinais significativos';
-  if (percentage < 50) return 'Sinais leves';
-  if (percentage < 75) return 'Sinais moderados';
-  return 'Sinais fortes';
+function getClassification(score: number): string {
+  if (score < 17) return 'Improvável';
+  if (score < 24) return 'Possível';
+  if (score < 36) return 'Provável';
+  return 'Altamente Provável';
 }
 
-function generateRecommendations(classification: string, assessmentType: string): string {
-  const baseRecommendations = {
-    'Sem sinais significativos': 'Os resultados não indicam sinais significativos de TDAH. Continue mantendo hábitos saudáveis e rotinas organizadas.',
-    'Sinais leves': 'Foram identificados alguns sinais leves. Considere implementar estratégias de organização e planejamento no dia a dia.',
-    'Sinais moderados': 'Os resultados indicam sinais moderados. Recomenda-se buscar avaliação profissional com psicólogo ou psiquiatra especializado em TDAH.',
-    'Sinais fortes': 'Os resultados indicam sinais significativos. É altamente recomendado buscar avaliação completa com profissional especializado em TDAH para diagnóstico adequado.'
-  };
-  
-  return baseRecommendations[classification] || baseRecommendations['Sem sinais significativos'];
+function generateRecommendations(score: number, classification: string): string {
+  if (score < 17) {
+    return `Com base na sua pontuação de ${score} pontos, os sintomas de TDAH são improváveis. No entanto, se você continua tendo dificuldades em sua vida diária, considere consultar um profissional de saúde mental para uma avaliação mais completa.`;
+  } else if (score < 24) {
+    return `Sua pontuação de ${score} pontos sugere que alguns sintomas de TDAH podem estar presentes. Recomendamos:\n\n1. Agendar uma consulta com um psiquiatra ou psicólogo especializado em TDAH para uma avaliação diagnóstica completa\n2. Manter um diário de sintomas para discussão com o profissional\n3. Implementar estratégias de organização e gerenciamento de tempo\n4. Considerar técnicas de mindfulness e exercícios regulares`;
+  } else if (score < 36) {
+    return `Sua pontuação de ${score} pontos indica uma probabilidade considerável de TDAH. Recomendamos fortemente:\n\n1. Consultar um psiquiatra especializado em TDAH o mais breve possível\n2. Trazer este relatório para a consulta\n3. Preparar exemplos específicos de como os sintomas afetam sua vida diária\n4. Considerar avaliação neuropsicológica completa\n5. Discutir opções de tratamento, incluindo terapia cognitivo-comportamental e, se apropriado, medicação`;
+  } else {
+    return `Sua pontuação de ${score} pontos sugere uma alta probabilidade de TDAH. É muito importante:\n\n1. URGENTE: Agendar consulta com psiquiatra especializado em TDAH\n2. Levar este relatório e exemplos detalhados de sintomas\n3. Solicitar avaliação neuropsicológica completa\n4. Discutir plano de tratamento abrangente (terapia + possível medicação)\n5. Considerar impactos no trabalho/estudos e possíveis adaptações necessárias\n6. Envolver família/parceiro no processo de tratamento, se apropriado`;
+  }
 }
 
 Deno.serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: req.headers.get('Authorization')! },
+        },
+      }
+    );
 
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('Autorização necessária');
-    }
+    // Get user from JWT
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseClient.auth.getUser();
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
     if (authError || !user) {
-      console.error('Erro de autenticação:', authError);
-      throw new Error('Usuário não autenticado');
+      console.error('Auth error:', authError);
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    console.log('Usuário autenticado:', user.id);
-
-    const { data: userData, error: userError } = await supabase
+    // Get user_id from users table
+    const { data: userData, error: userError } = await supabaseClient
       .from('users')
       .select('id')
       .eq('auth_user_id', user.id)
       .single();
 
     if (userError || !userData) {
-      console.error('Erro ao buscar usuário:', userError);
-      throw new Error('Usuário não encontrado');
+      console.error('User not found:', userError);
+      return new Response(JSON.stringify({ error: 'User not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    const requestData: TDAHAssessmentRequest = await req.json();
-    console.log('Dados da requisição:', { ...requestData, responses: requestData.responses.length });
+    const userId = userData.id;
 
-    const { data: credits, error: creditsError } = await supabase
+    // Check user credits
+    const { data: creditsData, error: creditsError } = await supabaseClient
       .from('user_credits')
       .select('balance')
-      .eq('user_id', userData.id)
+      .eq('user_id', userId)
       .single();
 
-    if (creditsError || !credits || credits.balance < 1) {
-      console.error('Créditos insuficientes:', creditsError);
-      throw new Error('Créditos insuficientes');
+    if (creditsError || !creditsData || creditsData.balance < 1) {
+      console.error('Insufficient credits:', creditsError);
+      return new Response(JSON.stringify({ error: 'Insufficient credits' }), {
+        status: 402,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    const { totalScore, maxScore, categoriesScores } = calculateScore(requestData.responses);
-    const classification = getClassification(totalScore, maxScore);
-    const recommendations = generateRecommendations(classification, requestData.assessmentType);
+    // Parse request body
+    const {
+      responses,
+      assessment_type = 'self',
+      patient_name,
+      patient_gender,
+      patient_age,
+      patient_birth_date,
+    }: TDAHAssessmentRequest = await req.json();
 
-    console.log('Calculando avaliação:', { totalScore, maxScore, classification });
+    if (!responses || responses.length !== 18) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid responses. Expected 18 answers.' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
 
-    const { data: assessment, error: assessmentError } = await supabase
+    // Calculate results
+    const totalScore = calculateScore(responses);
+    const classification = getClassification(totalScore);
+    const recommendations = generateRecommendations(totalScore, classification);
+
+    // Insert assessment into database
+    const { data: assessment, error: insertError } = await supabaseClient
       .from('tdah_assessments')
       .insert({
-        user_id: userData.id,
-        patient_name: requestData.patientName,
-        patient_age: requestData.patientAge,
-        patient_gender: requestData.patientGender,
-        patient_birth_date: requestData.patientBirthDate,
-        assessment_type: requestData.assessmentType,
-        responses: requestData.responses,
+        user_id: userId,
+        patient_name: patient_name || null,
+        patient_gender: patient_gender || null,
+        patient_age: patient_age || null,
+        patient_birth_date: patient_birth_date || null,
+        assessment_type: assessment_type,
+        responses,
         score: totalScore,
-        classification: classification,
-        recommendations: recommendations,
-        full_report: JSON.stringify({
-          totalScore,
-          maxScore,
-          percentage: (totalScore / maxScore) * 100,
-          categoriesScores,
-          classification,
-          recommendations
-        }),
+        classification,
+        recommendations,
+        full_report: '',
         is_premium: false,
-        status: 'completed'
+        status: 'completed',
       })
       .select()
       .single();
 
-    if (assessmentError) {
-      console.error('Erro ao criar avaliação:', assessmentError);
-      throw new Error('Erro ao criar avaliação');
+    if (insertError) {
+      console.error('Error inserting assessment:', insertError);
+      throw insertError;
     }
 
-    console.log('Avaliação criada:', assessment.id);
+    console.log('Assessment created:', assessment.id);
 
-    const { error: consumeError } = await supabase.rpc('consume_credit', {
-      p_user_id: userData.id,
-      p_assessment_id: assessment.id,
-      p_assessment_type: 'tdah'
+    // Consume 1 credit
+    const { error: creditError } = await supabaseClient
+      .from('user_credits')
+      .update({ balance: creditsData.balance - 1 })
+      .eq('user_id', userId);
+
+    if (creditError) {
+      console.error('Error consuming credit:', creditError);
+    }
+
+    // Record transaction
+    await supabaseClient.from('credit_transactions').insert({
+      user_id: userId,
+      type: 'debit',
+      amount: -1,
+      source: 'assessment',
+      reference_id: assessment.id,
+      description: 'Criação de avaliação TDAH',
+      assessment_id: assessment.id,
+      assessment_type: 'tdah',
     });
 
-    if (consumeError) {
-      console.error('Erro ao consumir crédito:', consumeError);
-    }
+    console.log('TDAH assessment completed successfully');
 
-    const { error: transactionError } = await supabase
-      .from('credit_transactions')
-      .insert({
-        user_id: userData.id,
-        type: 'debit',
-        amount: -1,
-        source: 'assessment',
-        reference_id: assessment.id,
-        description: `Avaliação TDAH - ${requestData.assessmentType === 'adult' ? 'Adulto' : 'Criança'}`,
-        assessment_type: 'tdah'
-      });
-
-    if (transactionError) {
-      console.error('Erro ao registrar transação:', transactionError);
-    }
-
-    console.log('Avaliação TDAH concluída com sucesso');
-
+    return new Response(JSON.stringify(assessment), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Error in create-tdah-assessment:', error);
     return new Response(
-      JSON.stringify({
-        success: true,
-        assessment: assessment,
-        score: totalScore,
-        classification: classification
-      }),
+      JSON.stringify({ error: error.message || 'Internal server error' }),
       {
+        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    );
-
-  } catch (error: any) {
-    console.error('Erro na função:', error);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message || 'Erro ao processar avaliação TDAH'
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
       }
     );
   }

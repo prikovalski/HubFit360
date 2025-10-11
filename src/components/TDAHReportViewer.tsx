@@ -1,9 +1,13 @@
-import { Brain, ArrowLeft, User, Calendar, TrendingUp } from 'lucide-react';
+import { Brain, ArrowLeft, User, Calendar, TrendingUp, Lock, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useUserCredits } from '@/hooks/useUserCredits';
 
 interface TDAHReportViewerProps {
   report: any;
@@ -11,6 +15,56 @@ interface TDAHReportViewerProps {
 }
 
 const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
+  const { toast } = useToast();
+  const { hasCredits, balance, fetchCredits } = useUserCredits();
+  const [upgrading, setUpgrading] = useState(false);
+  const [currentReport, setCurrentReport] = useState(report);
+
+  const handleUpgrade = async () => {
+    if (!hasCredits) {
+      toast({
+        title: "Créditos insuficientes",
+        description: "Você precisa de créditos para fazer upgrade do relatório.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUpgrading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('upgrade-tdah-assessment', {
+        body: { assessment_id: currentReport.id }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Upgrade realizado!",
+        description: "Seu relatório foi atualizado com análise detalhada por IA.",
+      });
+
+      // Update current report with the new data
+      setCurrentReport({
+        ...currentReport,
+        is_premium: true,
+        full_report: data.full_report,
+      });
+
+      // Refresh credits
+      await fetchCredits();
+    } catch (error: any) {
+      console.error('Erro ao fazer upgrade:', error);
+      toast({
+        title: "Erro ao fazer upgrade",
+        description: error.message || "Ocorreu um erro ao processar seu upgrade.",
+        variant: "destructive",
+      });
+    } finally {
+      setUpgrading(false);
+    }
+  };
+
   const getClassificationColor = (classification: string) => {
     switch (classification?.toLowerCase()) {
       case 'improvável':
@@ -127,7 +181,7 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
         </Card>
 
         {/* Recommendations */}
-        {report.recommendations && (
+        {currentReport.recommendations && (
           <Card>
             <CardHeader>
               <CardTitle>Recomendações</CardTitle>
@@ -137,28 +191,98 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
             </CardHeader>
             <CardContent>
               <div className="prose prose-sm max-w-none text-foreground">
-                <p className="whitespace-pre-wrap">{report.recommendations}</p>
+                <p className="whitespace-pre-wrap">{currentReport.recommendations}</p>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Full Report (Premium) */}
-        {report.is_premium && report.full_report && (
-          <Card>
+        {/* Premium Upgrade or Full Report */}
+        {!currentReport.is_premium ? (
+          <Card className="border-2 border-blue-500/20 bg-gradient-to-br from-blue-50/50 to-purple-50/50">
             <CardHeader>
-              <CardTitle>Análise Detalhada</CardTitle>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-500/10 rounded-lg">
+                    <Sparkles className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-blue-600">Análise Detalhada com IA</CardTitle>
+                    <CardDescription>
+                      Obtenha insights profundos e personalizados sobre seus resultados
+                    </CardDescription>
+                  </div>
+                </div>
+                <Lock className="h-8 w-8 text-blue-400" />
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p className="font-medium text-foreground">O que está incluído na análise premium:</p>
+                <ul className="space-y-1 ml-4">
+                  <li>✨ Interpretação detalhada dos seus sintomas por IA especializada</li>
+                  <li>📊 Análise de padrões específicos nas suas respostas</li>
+                  <li>💡 Impactos potenciais na sua vida diária</li>
+                  <li>🎯 Estratégias personalizadas de manejo</li>
+                  <li>📚 Recursos e materiais educativos recomendados</li>
+                  <li>🔍 Próximos passos detalhados e específicos</li>
+                </ul>
+              </div>
+
+              <div className="pt-4 border-t">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Custo do upgrade</p>
+                    <p className="text-2xl font-bold text-blue-600">1 Crédito</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Seus créditos</p>
+                    <p className="text-2xl font-bold">{balance}</p>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleUpgrade}
+                  disabled={!hasCredits || upgrading}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  size="lg"
+                >
+                  {upgrading ? (
+                    <>Gerando análise...</>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-5 w-5" />
+                      Fazer Upgrade (1 crédito)
+                    </>
+                  )}
+                </Button>
+
+                {!hasCredits && (
+                  <p className="text-sm text-destructive text-center mt-2">
+                    Você não possui créditos suficientes
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ) : currentReport.full_report ? (
+          <Card className="border-2 border-blue-500/20">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-blue-600" />
+                <CardTitle>Análise Detalhada com IA</CardTitle>
+              </div>
               <CardDescription>
-                Relatório completo gerado por IA
+                Relatório completo gerado por inteligência artificial especializada
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="prose prose-sm max-w-none text-foreground">
-                <p className="whitespace-pre-wrap">{report.full_report}</p>
+                <p className="whitespace-pre-wrap">{currentReport.full_report}</p>
               </div>
             </CardContent>
           </Card>
-        )}
+        ) : null}
 
         {/* Disclaimer */}
         <Card className="border-yellow-500/20 bg-yellow-500/5">

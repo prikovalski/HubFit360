@@ -6,3 +6,7 @@ verify_jwt = false
 
 [functions.mercadopago-webhook]
 verify_jwt = false
+
+[functions.upgrade-tdah-assessment]
+verify_jwt = true
+

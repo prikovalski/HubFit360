@@ -269,6 +269,28 @@ const TDAHAssessmentForm = ({ onBack, onSuccess }: TDAHAssessmentFormProps) => {
 
         {step === 'questions' && (
           <div className="space-y-6">
+            {/* Progress indicator */}
+            <Card className="bg-blue-50/50 border-blue-200">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-blue-900">
+                    Progresso: {Object.keys(responses).length} de {ASRS_QUESTIONS.length}
+                  </span>
+                  <span className="text-sm text-blue-700">
+                    {Math.round((Object.keys(responses).length / ASRS_QUESTIONS.length) * 100)}%
+                  </span>
+                </div>
+                <div className="w-full bg-blue-100 rounded-full h-2">
+                  <div
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{
+                      width: `${(Object.keys(responses).length / ASRS_QUESTIONS.length) * 100}%`,
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>Questionário ASRS-18</CardTitle>
@@ -286,17 +308,26 @@ const TDAHAssessmentForm = ({ onBack, onSuccess }: TDAHAssessmentFormProps) => {
                       value={responses[index] || ""}
                       onValueChange={(value) => handleResponseChange(index, value)}
                     >
-                      {RESPONSE_OPTIONS.map((option) => (
-                        <div key={option.value} className="flex items-center space-x-2">
-                          <RadioGroupItem value={option.value} id={`q${index}-${option.value}`} />
-                          <Label
-                            htmlFor={`q${index}-${option.value}`}
-                            className="font-normal cursor-pointer"
+                      <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+                        {RESPONSE_OPTIONS.map((option) => (
+                          <div
+                            key={option.value}
+                            className={`flex items-center space-x-2 p-3 rounded-lg border-2 transition-colors cursor-pointer ${
+                              responses[index] === option.value
+                                ? 'border-blue-500 bg-blue-50'
+                                : 'border-gray-200 hover:border-blue-300'
+                            }`}
                           >
-                            {option.label}
-                          </Label>
-                        </div>
-                      ))}
+                            <RadioGroupItem value={option.value} id={`q${index}-${option.value}`} />
+                            <Label
+                              htmlFor={`q${index}-${option.value}`}
+                              className="font-normal cursor-pointer text-sm flex-1"
+                            >
+                              {option.label}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
                     </RadioGroup>
                   </div>
                 ))}
@@ -314,7 +345,7 @@ const TDAHAssessmentForm = ({ onBack, onSuccess }: TDAHAssessmentFormProps) => {
               <Button
                 onClick={handleSubmit}
                 disabled={!allQuestionsAnswered || loading}
-                className="flex-1"
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
               >
                 {loading ? (
                   <>Processando...</>
