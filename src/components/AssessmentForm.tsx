@@ -21,9 +21,11 @@ interface AssessmentFormProps {
   onLogoClick: () => void;
   onProfileClick: () => void;
   onLogout: () => void;
+  currentPage: string;
+  onNavigate: (page: string) => void;
 }
 
-const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogout }: AssessmentFormProps) => {
+const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogout, currentPage, onNavigate }: AssessmentFormProps) => {
   const {
     loading,
     assessmentType,
@@ -94,9 +96,11 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
 
   return (
     <LoggedPageLayout
+      currentPage={currentPage}
       onLogoClick={onLogoClick}
       onProfileClick={onProfileClick}
       onLogout={onLogout}
+      onNavigate={onNavigate}
     >
       <LoadingOverlay 
         isVisible={loading} 

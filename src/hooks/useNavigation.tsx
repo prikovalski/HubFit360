@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 
-export type NavigationPage = 'dashboard' | 'profile' | 'assessment' | 'report';
+export type NavigationPage = 'main-dashboard' | 'physical-dashboard' | 'tdah-dashboard' | 'profile' | 'assessment' | 'tdah-assessment' | 'report' | 'tdah-report';
 
 interface NavigationState {
   currentPage: NavigationPage;
@@ -12,7 +12,7 @@ interface NavigationState {
 
 export const useNavigation = () => {
   const [navigationState, setNavigationState] = useState<NavigationState>({
-    currentPage: 'dashboard'
+    currentPage: 'main-dashboard'
   });
 
   const navigateTo = (page: NavigationPage, data?: any) => {
@@ -27,20 +27,24 @@ export const useNavigation = () => {
   const goBack = () => {
     if (navigationState.previousPage) {
       setNavigationState(prev => ({
-        currentPage: prev.previousPage || 'dashboard',
+        currentPage: prev.previousPage || 'main-dashboard',
         previousPage: undefined,
         reportData: prev.reportData,
         assessmentData: prev.assessmentData
       }));
     } else {
-      navigateTo('dashboard');
+      navigateTo('main-dashboard');
     }
   };
 
-  const goToDashboard = () => navigateTo('dashboard');
+  const goToMainDashboard = () => navigateTo('main-dashboard');
+  const goToPhysicalDashboard = () => navigateTo('physical-dashboard');
+  const goToTDAHDashboard = () => navigateTo('tdah-dashboard');
   const goToProfile = () => navigateTo('profile');
   const goToAssessment = () => navigateTo('assessment');
+  const goToTDAHAssessment = () => navigateTo('tdah-assessment');
   const goToReport = (reportData: any) => navigateTo('report', reportData);
+  const goToTDAHReport = (reportData: any) => navigateTo('tdah-report', reportData);
 
   return {
     currentPage: navigationState.currentPage,
@@ -49,9 +53,13 @@ export const useNavigation = () => {
     assessmentData: navigationState.assessmentData,
     navigateTo,
     goBack,
-    goToDashboard,
+    goToMainDashboard,
+    goToPhysicalDashboard,
+    goToTDAHDashboard,
     goToProfile,
     goToAssessment,
-    goToReport
+    goToTDAHAssessment,
+    goToReport,
+    goToTDAHReport
   };
 };

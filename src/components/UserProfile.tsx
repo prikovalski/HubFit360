@@ -17,9 +17,11 @@ interface UserProfileProps {
   onLogout: () => void;
   onLogoClick: () => void;
   onProfileClick: () => void;
+  currentPage: string;
+  onNavigate: (page: string) => void;
 }
 
-const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProfileProps) => {
+const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick, currentPage, onNavigate }: UserProfileProps) => {
   const {
     // User profile state
     name, setName,
@@ -76,9 +78,11 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
     return (
       <LoggedPageLayout
         userName={userProfile?.name}
+        currentPage={currentPage}
         onLogoClick={onLogoClick}
         onProfileClick={onProfileClick}
         onLogout={onLogout}
+        onNavigate={onNavigate}
       >
         <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
           <div className="text-center">
@@ -92,9 +96,11 @@ const UserProfile = ({ onBack, onLogout, onLogoClick, onProfileClick }: UserProf
   return (
     <LoggedPageLayout
       userName={userProfile?.name}
+      currentPage={currentPage}
       onLogoClick={onLogoClick}
       onProfileClick={onProfileClick}
       onLogout={onLogout}
+      onNavigate={onNavigate}
     >
       <div className="py-12 px-4">
         <div className="container mx-auto max-w-4xl space-y-8">

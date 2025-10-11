@@ -43,6 +43,8 @@ interface ReportViewerProps {
   onLogoClick: () => void;
   onProfileClick: () => void;
   onLogout: () => void;
+  currentPage: string;
+  onNavigate: (page: string) => void;
 }
 
 const ReportViewer = ({
@@ -50,7 +52,9 @@ const ReportViewer = ({
   onBack,
   onLogoClick,
   onProfileClick,
-  onLogout
+  onLogout,
+  currentPage,
+  onNavigate
 }: ReportViewerProps) => {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
@@ -195,10 +199,12 @@ const ReportViewer = ({
   if (loading) {
     return (
       <LoggedPageLayout 
-        userName={userName} 
+        userName={userName}
+        currentPage={currentPage}
         onLogoClick={onLogoClick} 
         onProfileClick={onProfileClick} 
         onLogout={onLogout}
+        onNavigate={onNavigate}
       >
         <div className="py-8 px-4">
           <div className="container mx-auto max-w-4xl">
@@ -213,10 +219,12 @@ const ReportViewer = ({
 
   return (
     <LoggedPageLayout 
-      userName={userName} 
+      userName={userName}
+      currentPage={currentPage}
       onLogoClick={onLogoClick} 
       onProfileClick={onProfileClick} 
       onLogout={onLogout}
+      onNavigate={onNavigate}
     >
       <div className="py-8 px-4">
         <div className="container mx-auto max-w-4xl">

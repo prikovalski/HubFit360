@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -29,24 +29,19 @@ export type Database = {
           id: string
           lean_mass: number | null
           neck_circumference: number | null
-          patient_avoid_food: string | null
           patient_birth_date: string | null
-          patient_chronic_disease: string | null
-          patient_fixed_meal_times: string | null
-          patient_food_allergy: string | null
           patient_gender: string | null
           patient_goal: string | null
           patient_height: number | null
           patient_hip_circumference: number | null
-          patient_medical_restriction: string | null
-          patient_must_have_food: string | null
           patient_name: string | null
           patient_neck_circumference: number | null
           patient_physical_activities: Json | null
-          patient_physical_activity: string | null
           patient_waist_circumference: number | null
           patient_weight: number | null
           prompt_text: string | null
+          reevaluation_applied: boolean | null
+          reevaluation_info: string | null
           side_photo: string
           status: string | null
           tier: string
@@ -68,24 +63,19 @@ export type Database = {
           id?: string
           lean_mass?: number | null
           neck_circumference?: number | null
-          patient_avoid_food?: string | null
           patient_birth_date?: string | null
-          patient_chronic_disease?: string | null
-          patient_fixed_meal_times?: string | null
-          patient_food_allergy?: string | null
           patient_gender?: string | null
           patient_goal?: string | null
           patient_height?: number | null
           patient_hip_circumference?: number | null
-          patient_medical_restriction?: string | null
-          patient_must_have_food?: string | null
           patient_name?: string | null
           patient_neck_circumference?: number | null
           patient_physical_activities?: Json | null
-          patient_physical_activity?: string | null
           patient_waist_circumference?: number | null
           patient_weight?: number | null
           prompt_text?: string | null
+          reevaluation_applied?: boolean | null
+          reevaluation_info?: string | null
           side_photo: string
           status?: string | null
           tier?: string
@@ -107,24 +97,19 @@ export type Database = {
           id?: string
           lean_mass?: number | null
           neck_circumference?: number | null
-          patient_avoid_food?: string | null
           patient_birth_date?: string | null
-          patient_chronic_disease?: string | null
-          patient_fixed_meal_times?: string | null
-          patient_food_allergy?: string | null
           patient_gender?: string | null
           patient_goal?: string | null
           patient_height?: number | null
           patient_hip_circumference?: number | null
-          patient_medical_restriction?: string | null
-          patient_must_have_food?: string | null
           patient_name?: string | null
           patient_neck_circumference?: number | null
           patient_physical_activities?: Json | null
-          patient_physical_activity?: string | null
           patient_waist_circumference?: number | null
           patient_weight?: number | null
           prompt_text?: string | null
+          reevaluation_applied?: boolean | null
+          reevaluation_info?: string | null
           side_photo?: string
           status?: string | null
           tier?: string
@@ -175,6 +160,7 @@ export type Database = {
         Row: {
           amount: number
           assessment_id: string | null
+          assessment_type: string | null
           created_at: string
           description: string | null
           id: string
@@ -186,6 +172,7 @@ export type Database = {
         Insert: {
           amount: number
           assessment_id?: string | null
+          assessment_type?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -197,6 +184,7 @@ export type Database = {
         Update: {
           amount?: number
           assessment_id?: string | null
+          assessment_type?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -420,6 +408,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tdah_assessments: {
+        Row: {
+          assessment_type: string
+          classification: string | null
+          created_at: string
+          full_report: string | null
+          id: string
+          is_premium: boolean
+          patient_age: number | null
+          patient_birth_date: string | null
+          patient_gender: string | null
+          patient_name: string | null
+          recommendations: string | null
+          responses: Json
+          score: number | null
+          status: string
+          updated_at: string
+          user_id: number
+        }
+        Insert: {
+          assessment_type?: string
+          classification?: string | null
+          created_at?: string
+          full_report?: string | null
+          id?: string
+          is_premium?: boolean
+          patient_age?: number | null
+          patient_birth_date?: string | null
+          patient_gender?: string | null
+          patient_name?: string | null
+          recommendations?: string | null
+          responses?: Json
+          score?: number | null
+          status?: string
+          updated_at?: string
+          user_id: number
+        }
+        Update: {
+          assessment_type?: string
+          classification?: string | null
+          created_at?: string
+          full_report?: string | null
+          id?: string
+          is_premium?: boolean
+          patient_age?: number | null
+          patient_birth_date?: string | null
+          patient_gender?: string | null
+          patient_name?: string | null
+          recommendations?: string | null
+          responses?: Json
+          score?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: number
+        }
+        Relationships: []
       }
       user_credits: {
         Row: {

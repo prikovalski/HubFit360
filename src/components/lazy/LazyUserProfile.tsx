@@ -9,6 +9,8 @@ interface LazyUserProfileProps {
   onLogout: () => void;
   onLogoClick: () => void;
   onProfileClick: () => void;
+  currentPage: string;
+  onNavigate: (page: string) => void;
 }
 
 const LazyUserProfile = (props: LazyUserProfileProps) => {

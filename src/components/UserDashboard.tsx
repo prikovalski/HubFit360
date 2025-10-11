@@ -19,9 +19,11 @@ interface UserDashboardProps {
   onLogoClick: () => void;
   onProfileClick: () => void;
   onLogout: () => void;
+  currentPage: string;
+  onNavigate: (page: string) => void;
 }
 
-const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileClick, onLogout }: UserDashboardProps) => {
+const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileClick, onLogout, currentPage, onNavigate }: UserDashboardProps) => {
   const [creditsModalOpen, setCreditsModalOpen] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   
@@ -59,9 +61,11 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
     return (
       <LoggedPageLayout
         userName="Carregando..."
+        currentPage={currentPage}
         onLogoClick={onLogoClick}
         onProfileClick={onProfileClick}
         onLogout={onLogout}
+        onNavigate={onNavigate}
       >
         <div className="py-12 px-4">
           <div className="container mx-auto max-w-6xl">
@@ -85,9 +89,11 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
   return (
     <LoggedPageLayout
       userName={userProfile?.name || 'Usuário'}
+      currentPage={currentPage}
       onLogoClick={onLogoClick}
       onProfileClick={onProfileClick}
       onLogout={onLogout}
+      onNavigate={onNavigate}
     >
       <div className="py-12 px-4">
         <div className="container mx-auto max-w-6xl">

@@ -10,6 +10,8 @@ interface LazyReportViewerProps {
   onLogoClick: () => void;
   onProfileClick: () => void;
   onLogout: () => void;
+  currentPage: string;
+  onNavigate: (page: string) => void;
 }
 
 const LazyReportViewer = (props: LazyReportViewerProps) => {

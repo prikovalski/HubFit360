@@ -3,8 +3,10 @@ import { Activity, Sparkles } from 'lucide-react';
 import AboutSection from '@/components/AboutSection';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { useNavigation } from '@/hooks/useNavigation';
 import Header from '@/components/home/Header';
 import HomePage from '@/components/home/HomePage';
+import MainDashboard from '@/components/MainDashboard';
 import LazyUserDashboard from '@/components/lazy/LazyUserDashboard';
 import LazyAuthSection from '@/components/lazy/LazyAuthSection';
 import LazyAssessmentForm from '@/components/lazy/LazyAssessmentForm';
@@ -15,6 +17,8 @@ const AppContent = () => {
   const [currentSection, setCurrentSection] = useState('home');
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  
+  const navigation = useNavigation();
   
   // Use try-catch to handle potential auth context issues
   let user = null;
@@ -33,21 +37,19 @@ const AppContent = () => {
     loading = profile.loading;
   } catch (error) {
     console.error('Error accessing auth context:', error);
-    // Fallback to unauthenticated state
   }
 
-  // Auto-redirect to dashboard when user logs in (but not during logout)
+  // Auto-redirect to main dashboard when user logs in
   useEffect(() => {
-    // CORREÇÃO: Aguardar loading e adicionar delay para prevenir condição de corrida
     if (user && !authLoading && !loading && currentSection === 'home' && !isLoggingOut) {
-      console.log('AppContent: Usuario autenticado confirmado, redirecionando para dashboard');
+      console.log('AppContent: Usuario autenticado confirmado, redirecionando para main dashboard');
       
-      // Delay de 100ms para garantir estabilidade da autenticação
       setTimeout(() => {
-        setCurrentSection('dashboard');
+        setCurrentSection('logged-in');
+        navigation.goToMainDashboard();
       }, 100);
     }
-  }, [user, authLoading, loading, isLoggingOut]); // Incluir authLoading e loading nas dependências
+  }, [user, authLoading, loading, isLoggingOut]);
 
   const handleLogout = async () => {
     try {
@@ -56,14 +58,13 @@ const AppContent = () => {
       
       await signOut();
       
-      // Resetar estado da aplicação
       setCurrentSection('home');
       setSelectedReport(null);
+      navigation.goToMainDashboard();
       
       console.log('AppContent: Logout concluído, redirecionando para home');
     } catch (error) {
       console.error('AppContent: Erro no logout:', error);
-      // Mesmo com erro, resetar o estado da aplicação
       setCurrentSection('home');
       setSelectedReport(null);
     } finally {
@@ -71,17 +72,22 @@ const AppContent = () => {
     }
   };
 
+  const handleNavigate = (page: string) => {
+    console.log('AppContent: Navegando para', page);
+    navigation.navigateTo(page as any);
+  };
+
   const handleNewAssessment = () => {
-    setCurrentSection('assessment');
+    navigation.goToAssessment();
   };
 
   const handleViewReport = (report: any) => {
     setSelectedReport(report);
-    setCurrentSection('report');
+    navigation.goToReport(report);
   };
 
-  const handleBackToDashboard = () => {
-    setCurrentSection('dashboard');
+  const handleBackToPhysicalDashboard = () => {
+    navigation.goToPhysicalDashboard();
     setSelectedReport(null);
   };
 
@@ -96,21 +102,17 @@ const AppContent = () => {
       fullAssessment: assessment
     });
 
-    // Garantir que todos os dados necessários estão presentes
     const completeReport = {
       ...assessment,
-      // Garantir compatibilidade com diferentes formatos de dados
       leanMass: assessment.leanMass,
       bodyFatPercentage: assessment.bodyFatPercentage,
       bmi: assessment.bmi,
       fatMass: assessment.fatMass,
-      // Garantir que os dados pessoais estão presentes
       patient_height: assessment.patient_height,
       patient_weight: assessment.patient_weight,
       patient_name: assessment.patient_name,
       patient_gender: assessment.patient_gender,
       patient_goal: assessment.patient_goal,
-      // Garantir preview para compatibilidade
       preview: assessment.preview || {
         leanMass: assessment.leanMass ? `${assessment.leanMass.toFixed(1)}kg` : 'N/A',
         bodyFat: assessment.bodyFatPercentage ? `${assessment.bodyFatPercentage.toFixed(1)}%` : 'N/A',
@@ -123,7 +125,7 @@ const AppContent = () => {
     console.log('AppContent: Relatório completo preparado:', completeReport);
 
     setSelectedReport(completeReport);
-    setCurrentSection('report');
+    navigation.goToReport(completeReport);
   };
 
   const renderSection = () => {
@@ -132,13 +134,11 @@ const AppContent = () => {
       if (loading) {
         return (
           <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center relative overflow-hidden">
-            {/* Background decorative elements */}
             <div className="absolute inset-0">
               <div className="absolute top-20 left-20 w-64 h-64 bg-gradient-to-br from-green-200/30 to-emerald-200/30 rounded-full blur-3xl animate-float"></div>
               <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-br from-teal-200/20 to-green-200/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '-3s' }}></div>
             </div>
             
-            {/* Grid pattern overlay */}
             <div className="absolute inset-0 grid-bg opacity-30"></div>
             
             <div className="text-center relative z-10">
@@ -159,45 +159,84 @@ const AppContent = () => {
         );
       }
 
-      // Renderizar seções baseadas no estado atual
-      switch (currentSection) {
-        case 'assessment':
+      // Renderizar seções baseadas no estado de navegação
+      switch (navigation.currentPage) {
+        case 'main-dashboard':
           return (
-            <LazyAssessmentForm
-              onBack={handleBackToDashboard}
-              onSuccess={handleAssessmentSuccess}
-              onLogoClick={handleBackToDashboard}
-              onProfileClick={() => setCurrentSection('profile')}
-              onLogout={handleLogout}
+            <MainDashboard
+              onNavigateToPhysical={() => navigation.goToPhysicalDashboard()}
+              onNavigateToTDAH={() => navigation.goToTDAHDashboard()}
+              physicalCount={0}
+              tdahCount={0}
             />
           );
-        case 'report':
-          return (
-            <LazyReportViewer
-              report={selectedReport}
-              onBack={handleBackToDashboard}
-              onLogoClick={handleBackToDashboard}
-              onProfileClick={() => setCurrentSection('profile')}
-              onLogout={handleLogout}
-            />
-          );
-        case 'profile':
-          return (
-            <LazyUserProfile
-              onBack={handleBackToDashboard}
-              onLogoClick={handleBackToDashboard}
-              onProfileClick={() => setCurrentSection('profile')}
-              onLogout={handleLogout}
-            />
-          );
-        default:
+        
+        case 'physical-dashboard':
           return (
             <LazyUserDashboard
               onNewAssessment={handleNewAssessment}
               onViewReport={handleViewReport}
-              onLogoClick={() => setCurrentSection('dashboard')}
-              onProfileClick={() => setCurrentSection('profile')}
+              onLogoClick={() => navigation.goToMainDashboard()}
+              onProfileClick={() => navigation.goToProfile()}
               onLogout={handleLogout}
+              currentPage={navigation.currentPage}
+              onNavigate={handleNavigate}
+            />
+          );
+        
+        case 'tdah-dashboard':
+          return (
+            <div className="container mx-auto px-4 py-8">
+              <h1 className="text-3xl font-bold mb-4">Avaliações TDAH</h1>
+              <p className="text-muted-foreground">Dashboard de avaliações TDAH em desenvolvimento...</p>
+            </div>
+          );
+        
+        case 'assessment':
+          return (
+            <LazyAssessmentForm
+              onBack={handleBackToPhysicalDashboard}
+              onSuccess={handleAssessmentSuccess}
+              onLogoClick={() => navigation.goToMainDashboard()}
+              onProfileClick={() => navigation.goToProfile()}
+              onLogout={handleLogout}
+              currentPage={navigation.currentPage}
+              onNavigate={handleNavigate}
+            />
+          );
+        
+        case 'report':
+          return (
+            <LazyReportViewer
+              report={selectedReport}
+              onBack={handleBackToPhysicalDashboard}
+              onLogoClick={() => navigation.goToMainDashboard()}
+              onProfileClick={() => navigation.goToProfile()}
+              onLogout={handleLogout}
+              currentPage={navigation.currentPage}
+              onNavigate={handleNavigate}
+            />
+          );
+        
+        case 'profile':
+          return (
+            <LazyUserProfile
+              onBack={() => navigation.goToMainDashboard()}
+              onLogoClick={() => navigation.goToMainDashboard()}
+              onProfileClick={() => navigation.goToProfile()}
+              onLogout={handleLogout}
+              currentPage={navigation.currentPage}
+              onNavigate={handleNavigate}
+            />
+          );
+        
+        default:
+          return (
+            <MainDashboard
+              onNavigateToPhysical={() => navigation.goToPhysicalDashboard()}
+              onNavigateToTDAH={() => navigation.goToTDAHDashboard()}
+              physicalCount={0}
+              tdahCount={0}
             />
           );
       }
