@@ -1,4 +1,4 @@
-import { Brain, Plus, Trash2, FileText, Calendar } from 'lucide-react';
+import { Brain, Plus, Trash2, FileText, Calendar, Sparkles, BarChart3, Info } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -73,18 +73,28 @@ const TDAHDashboard = ({ onNavigate }: TDAHDashboardProps) => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8 animate-fade-in">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-blue-500/10 rounded-lg">
-              <Brain className="h-8 w-8 text-blue-600" />
+            <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg shadow-lg">
+              <Brain className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Avaliações de TDAH</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-3xl font-bold text-foreground">Avaliações de TDAH</h1>
+                <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 gap-1">
+                  <Sparkles className="h-3 w-3" />
+                  Novo
+                </Badge>
+              </div>
               <p className="text-muted-foreground">Questionários baseados em escalas clínicas validadas</p>
             </div>
           </div>
-          <Button onClick={() => onNavigate('tdah-assessment')} className="bg-blue-600 hover:bg-blue-700">
+          <Button 
+            onClick={() => onNavigate('tdah-assessment')} 
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover-scale"
+            size="lg"
+          >
             <Plus className="mr-2 h-4 w-4" />
             Nova Avaliação
           </Button>
@@ -92,15 +102,20 @@ const TDAHDashboard = ({ onNavigate }: TDAHDashboardProps) => {
       </div>
 
       {/* Stats Card */}
-      <Card className="mb-8">
+      <Card className="mb-8 animate-fade-in border-2 border-blue-500/20" style={{ animationDelay: '0.1s' }}>
         <CardHeader>
-          <CardTitle>Estatísticas</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-blue-600" />
+            Estatísticas
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center p-4 bg-blue-500/5 rounded-lg">
-              <p className="text-3xl font-bold text-blue-600">{assessments.length}</p>
-              <p className="text-sm text-muted-foreground">Total de Avaliações</p>
+            <div className="text-center p-6 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-lg hover-scale transition-all duration-300 hover:shadow-lg">
+              <p className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                {assessments.length}
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">Total de Avaliações</p>
             </div>
           </div>
         </CardContent>
@@ -114,25 +129,36 @@ const TDAHDashboard = ({ onNavigate }: TDAHDashboardProps) => {
           </CardContent>
         </Card>
       ) : assessments.length === 0 ? (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-lg font-medium text-foreground mb-2">
-              Nenhuma avaliação TDAH encontrada
+        <Card className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <CardContent className="p-12 text-center">
+            <div className="mb-6 inline-block p-6 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full">
+              <Brain className="h-16 w-16 text-blue-600" />
+            </div>
+            <p className="text-xl font-semibold text-foreground mb-2">
+              Comece sua primeira avaliação TDAH
             </p>
-            <p className="text-muted-foreground mb-4">
-              Comece criando sua primeira avaliação TDAH
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+              O questionário ASRS-18 é uma ferramenta validada cientificamente para triagem de TDAH em adultos.
+              Leva apenas 5-10 minutos para completar.
             </p>
-            <Button onClick={() => onNavigate('tdah-assessment')} className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="mr-2 h-4 w-4" />
-              Nova Avaliação TDAH
+            <Button 
+              onClick={() => onNavigate('tdah-assessment')} 
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover-scale"
+              size="lg"
+            >
+              <Plus className="mr-2 h-5 w-5" />
+              Criar Primeira Avaliação
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
-          {assessments.map((assessment) => (
-            <Card key={assessment.id} className="hover:shadow-md transition-shadow">
+        <div className="grid grid-cols-1 gap-4 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          {assessments.map((assessment, index) => (
+            <Card 
+              key={assessment.id} 
+              className="hover:shadow-lg transition-all duration-300 hover-scale border-l-4 border-l-blue-500 animate-fade-in"
+              style={{ animationDelay: `${0.3 + index * 0.1}s` }}
+            >
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -180,14 +206,16 @@ const TDAHDashboard = ({ onNavigate }: TDAHDashboardProps) => {
                     <Button
                       size="sm"
                       onClick={() => onNavigate('tdah-report', assessment)}
-                      className="bg-blue-600 hover:bg-blue-700"
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover-scale"
                     >
+                      <FileText className="mr-2 h-4 w-4" />
                       Ver Relatório
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => openDeleteDialog(assessment.id)}
+                      className="hover:bg-destructive/10 hover:border-destructive"
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
@@ -200,10 +228,13 @@ const TDAHDashboard = ({ onNavigate }: TDAHDashboardProps) => {
       )}
 
       {/* Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-        <Card className="border-border/40">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+        <Card className="border-blue-200/40 hover:border-blue-400/60 transition-all duration-300 hover-scale">
           <CardHeader>
-            <CardTitle className="text-lg">Sobre as Avaliações TDAH</CardTitle>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Info className="h-5 w-5 text-blue-600" />
+              Sobre as Avaliações TDAH
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-2">
             <p>
@@ -217,9 +248,12 @@ const TDAHDashboard = ({ onNavigate }: TDAHDashboardProps) => {
           </CardContent>
         </Card>
 
-        <Card className="border-border/40">
+        <Card className="border-purple-200/40 hover:border-purple-400/60 transition-all duration-300 hover-scale bg-gradient-to-br from-blue-50/30 to-purple-50/30">
           <CardHeader>
-            <CardTitle className="text-lg">Como Funciona</CardTitle>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-purple-600" />
+              Como Funciona
+            </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-2">
             <p>
@@ -228,7 +262,7 @@ const TDAHDashboard = ({ onNavigate }: TDAHDashboardProps) => {
             </p>
             <p>
               Com base nas suas respostas, será gerado um relatório com pontuação e classificação, 
-              além de recomendações personalizadas.
+              além de recomendações personalizadas. Faça upgrade para análise detalhada por IA!
             </p>
           </CardContent>
         </Card>

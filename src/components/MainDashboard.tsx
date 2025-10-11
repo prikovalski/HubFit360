@@ -1,148 +1,236 @@
-import { Activity, Brain, ArrowRight, TrendingUp, Clock } from 'lucide-react';
+import { Activity, Brain, Plus, TrendingUp, Calendar, BarChart3, Sparkles, Info } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMainDashboardStats } from '@/hooks/useMainDashboardStats';
-import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface MainDashboardProps {
   onNavigateToPhysical: () => void;
   onNavigateToTDAH: () => void;
 }
 
-const MainDashboard = ({ 
-  onNavigateToPhysical, 
-  onNavigateToTDAH
-}: MainDashboardProps) => {
+const MainDashboard = ({ onNavigateToPhysical, onNavigateToTDAH }: MainDashboardProps) => {
   const { stats, loading } = useMainDashboardStats();
+  const [showInfoModal, setShowInfoModal] = useState(false);
 
-  const getAssessmentTypeLabel = (type: 'physical' | 'tdah') => {
-    return type === 'physical' ? 'Avaliação Física' : 'Avaliação TDAH';
-  };
-
-  const getAssessmentTypeColor = (type: 'physical' | 'tdah') => {
-    return type === 'physical' ? 'text-green-600' : 'text-blue-600';
-  };
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-foreground mb-2">
-          Bem-vindo ao HubFit360
-        </h1>
-        <p className="text-muted-foreground text-lg">
-          Escolha o tipo de avaliação que deseja realizar
-        </p>
+      <div className="mb-8 animate-fade-in">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-4xl font-bold text-foreground mb-2">
+              Dashboard Principal
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              Gerencie todas as suas avaliações em um só lugar
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowInfoModal(true)}
+            className="gap-2"
+          >
+            <Info className="h-4 w-4" />
+            Sobre o HubFit360
+          </Button>
+        </div>
       </div>
 
+      {/* Stats Grid */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="border-border/40">
-              <CardHeader className="pb-3">
-                <div className="h-4 w-32 bg-muted animate-pulse rounded"></div>
+            <Card key={i} className="animate-pulse">
+              <CardHeader className="space-y-2">
+                <div className="h-4 bg-muted rounded w-1/2"></div>
+                <div className="h-8 bg-muted rounded w-1/3"></div>
               </CardHeader>
-              <CardContent>
-                <div className="h-8 w-16 bg-muted animate-pulse rounded"></div>
-              </CardContent>
             </Card>
           ))}
         </div>
       ) : (
-        <>
-          {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card className="border-border/40 hover:border-primary/50 transition-colors">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total de Avaliações
-            </CardTitle>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in">
+          <Card className="border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover-scale">
+            <CardHeader>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Total de Avaliações
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <span className="text-3xl font-bold">{stats.totalCount}</span>
+                <div className="p-3 bg-primary/10 rounded-full">
+                  <BarChart3 className="h-8 w-8 text-primary" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/50 hover:border-green-500/50 transition-all duration-300 hover:shadow-lg hover-scale">
+            <CardHeader>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Avaliações Físicas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <span className="text-3xl font-bold">{stats.physicalCount}</span>
+                <div className="p-3 bg-green-500/10 rounded-full">
+                  <Activity className="h-8 w-8 text-green-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/50 hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover-scale relative overflow-hidden">
+            <div className="absolute top-2 right-2">
+              <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 gap-1">
+                <Sparkles className="h-3 w-3" />
+                Novo
+              </Badge>
+            </div>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Avaliações TDAH
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <span className="text-3xl font-bold">{stats.tdahCount}</span>
+                <div className="p-3 bg-blue-500/10 rounded-full">
+                  <Brain className="h-8 w-8 text-blue-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200/50 hover:shadow-xl transition-all duration-300 hover-scale group">
+          <CardHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-3 bg-green-500/10 rounded-lg group-hover:bg-green-500/20 transition-colors">
+                <Activity className="h-6 w-6 text-green-600" />
+              </div>
+              <CardTitle>Avaliação Física</CardTitle>
+            </div>
+            <CardDescription>
+              Análise corporal completa com composição corporal, IMC e recomendações personalizadas por IA
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold text-foreground">
-                {loading ? '...' : stats.totalCount}
-              </div>
-              <TrendingUp className="h-8 w-8 text-primary/70" />
-            </div>
+            <Button 
+              onClick={onNavigateToPhysical}
+              className="w-full bg-green-600 hover:bg-green-700 group-hover:scale-105 transition-transform"
+              size="lg"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Acessar Avaliações Físicas
+            </Button>
           </CardContent>
         </Card>
 
-        <Card className="border-border/40 hover:border-green-500/50 transition-colors">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Avaliações Físicas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold text-foreground">
-                {loading ? '...' : stats.physicalCount}
+        <Card className="bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 border-blue-200/50 hover:shadow-xl transition-all duration-300 hover-scale group relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-2xl -mr-16 -mt-16" />
+          <CardHeader className="relative">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-3 bg-blue-500/10 rounded-lg group-hover:bg-blue-500/20 transition-colors">
+                <Brain className="h-6 w-6 text-blue-600" />
               </div>
-              <Activity className="h-8 w-8 text-green-500/70" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/40 hover:border-blue-500/50 transition-colors">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Avaliações TDAH
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold text-foreground">
-                {loading ? '...' : stats.tdahCount}
+              <div className="flex items-center gap-2">
+                <CardTitle>Avaliação TDAH</CardTitle>
+                <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 gap-1 animate-pulse">
+                  <Sparkles className="h-3 w-3" />
+                  Novo
+                </Badge>
               </div>
-              <Brain className="h-8 w-8 text-blue-500/70" />
             </div>
+            <CardDescription>
+              Questionário ASRS-18 validado cientificamente com análise detalhada e recomendações especializadas
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="relative">
+            <Button 
+              onClick={onNavigateToTDAH}
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 group-hover:scale-105 transition-transform"
+              size="lg"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Acessar Avaliações TDAH
+            </Button>
           </CardContent>
         </Card>
       </div>
 
       {/* Recent Assessments */}
-      {stats.recentAssessments.length > 0 && (
-        <Card className="mb-8 border-border/40">
+      {!loading && stats.recentAssessments.length > 0 && (
+        <Card className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Avaliações Recentes
-            </CardTitle>
-            <CardDescription>Suas últimas avaliações realizadas</CardDescription>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-muted-foreground" />
+                <CardTitle>Avaliações Recentes</CardTitle>
+              </div>
+              <Badge variant="secondary">{stats.recentAssessments.length}</Badge>
+            </div>
+            <CardDescription>
+              Suas últimas avaliações realizadas
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {stats.recentAssessments.map((assessment) => (
-                <div 
-                  key={assessment.id} 
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+              {stats.recentAssessments.map((assessment, index) => (
+                <div
+                  key={assessment.id}
+                  className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-muted/50 hover:border-primary/30 transition-all duration-200 hover-scale animate-fade-in"
+                  style={{ animationDelay: `${0.3 + index * 0.1}s` }}
                 >
-                  <div className="flex items-center gap-3">
-                    {assessment.type === 'physical' ? (
-                      <div className="p-2 bg-green-500/10 rounded-lg">
-                        <Activity className="h-4 w-4 text-green-600" />
-                      </div>
-                    ) : (
-                      <div className="p-2 bg-blue-500/10 rounded-lg">
-                        <Brain className="h-4 w-4 text-blue-600" />
-                      </div>
-                    )}
+                  <div className="flex items-center gap-4">
+                    <div className={`p-2 rounded-lg transition-colors ${
+                      assessment.type === 'physical' 
+                        ? 'bg-green-500/10 hover:bg-green-500/20' 
+                        : 'bg-blue-500/10 hover:bg-blue-500/20'
+                    }`}>
+                      {assessment.type === 'physical' ? (
+                        <Activity className="h-5 w-5 text-green-600" />
+                      ) : (
+                        <Brain className="h-5 w-5 text-blue-600" />
+                      )}
+                    </div>
                     <div>
-                      <p className={`font-medium ${getAssessmentTypeColor(assessment.type)}`}>
-                        {getAssessmentTypeLabel(assessment.type)}
+                      <p className="font-medium">
+                        {assessment.type === 'physical' ? 'Avaliação Física' : 'Avaliação TDAH'}
+                        {assessment.type === 'tdah' && (
+                          <Badge className="ml-2 bg-blue-500/10 text-blue-700 border-0 text-xs">
+                            Novo
+                          </Badge>
+                        )}
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(assessment.created_at), { 
-                          addSuffix: true,
-                          locale: ptBR 
-                        })}
-                      </p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        {format(new Date(assessment.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                      </div>
                     </div>
                   </div>
-                  <Badge variant={assessment.status === 'completed' ? 'default' : 'secondary'}>
-                    {assessment.status === 'completed' ? 'Concluída' : 'Processando'}
+                  <Badge 
+                    variant={assessment.type === 'physical' ? 'default' : 'secondary'}
+                    className={assessment.type === 'physical' ? '' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'}
+                  >
+                    {assessment.type === 'physical' ? 'Física' : 'TDAH'}
                   </Badge>
                 </div>
               ))}
@@ -150,124 +238,90 @@ const MainDashboard = ({
           </CardContent>
         </Card>
       )}
-        </>
-      )}
 
-      {/* Assessment Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Physical Assessment Card */}
-        <Card className="border-2 border-green-500/20 hover:border-green-500/40 transition-all hover:shadow-lg group">
-          <CardHeader>
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-3 bg-green-500/10 rounded-lg">
-                <Activity className="h-8 w-8 text-green-500" />
-              </div>
-              <Badge variant="secondary" className="bg-green-500/10 text-green-700 dark:text-green-400">
-                IA Avançada
-              </Badge>
-            </div>
-            <CardTitle className="text-2xl font-bold group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-              Avaliação Física por IA
-            </CardTitle>
-            <CardDescription className="text-base mt-2">
-              Análise completa da composição corporal utilizando inteligência artificial. 
-              Obtenha métricas precisas de percentual de gordura, massa magra e IMC através de fotos.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+      {/* Info Modal */}
+      <Dialog open={showInfoModal} onOpenChange={setShowInfoModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              <Sparkles className="h-6 w-6 text-primary" />
+              Bem-vindo ao HubFit360
+            </DialogTitle>
+            <DialogDescription className="text-base">
+              Sua plataforma completa de avaliações em saúde e bem-estar
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
             <div className="space-y-4">
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                  Análise por fotos (frente, lado e costas)
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                  Cálculo de percentual de gordura e massa magra
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                  Recomendações personalizadas de treino e nutrição
-                </li>
-              </ul>
+              <div className="flex gap-4">
+                <div className="p-3 bg-green-500/10 rounded-lg h-fit">
+                  <Activity className="h-6 w-6 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-2">Avaliações Físicas</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Análise corporal detalhada com cálculo de composição corporal, IMC, massa magra e gordura.
+                    Receba recomendações personalizadas geradas por inteligência artificial para atingir seus objetivos.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="p-3 bg-blue-500/10 rounded-lg h-fit">
+                  <Brain className="h-6 w-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-2 flex items-center gap-2">
+                    Avaliações TDAH
+                    <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">
+                      Novo
+                    </Badge>
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Questionário ASRS-18 cientificamente validado para triagem de TDAH em adultos.
+                    Obtenha resultados imediatos com pontuação, classificação e recomendações profissionais.
+                    Faça upgrade para relatório premium com análise detalhada por IA.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-primary/5 rounded-lg border border-primary/10">
+              <h4 className="font-semibold mb-2 flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Sistema de Créditos
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                Cada avaliação consome 1 crédito. Você recebeu 1 crédito de boas-vindas! 
+                Adquira mais créditos para continuar usando todas as funcionalidades da plataforma.
+              </p>
+            </div>
+
+            <div className="flex gap-2">
               <Button 
-                onClick={onNavigateToPhysical} 
-                className="w-full bg-green-600 hover:bg-green-700 text-white group-hover:shadow-md transition-all"
-                size="lg"
+                onClick={() => {
+                  setShowInfoModal(false);
+                  onNavigateToPhysical();
+                }}
+                className="flex-1 bg-green-600 hover:bg-green-700"
               >
-                Acessar Avaliações Físicas
-                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                <Activity className="mr-2 h-4 w-4" />
+                Começar Avaliação Física
+              </Button>
+              <Button 
+                onClick={() => {
+                  setShowInfoModal(false);
+                  onNavigateToTDAH();
+                }}
+                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
+                <Brain className="mr-2 h-4 w-4" />
+                Experimentar Avaliação TDAH
               </Button>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* TDAH Assessment Card */}
-        <Card className="border-2 border-blue-500/20 hover:border-blue-500/40 transition-all hover:shadow-lg group">
-          <CardHeader>
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-3 bg-blue-500/10 rounded-lg">
-                <Brain className="h-8 w-8 text-blue-500" />
-              </div>
-              <Badge variant="secondary" className="bg-blue-500/10 text-blue-700 dark:text-blue-400">
-                Questionário
-              </Badge>
-            </div>
-            <CardTitle className="text-2xl font-bold group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-              Avaliação de TDAH
-            </CardTitle>
-            <CardDescription className="text-base mt-2">
-              Questionário baseado em escalas clínicas validadas (ASRS-18) para adultos e crianças. 
-              Identifique sinais de TDAH e receba orientações especializadas.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                  Questionário ASRS-18 validado clinicamente
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                  Avaliação para adultos e crianças
-                </li>
-                <li className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                  Análise de desatenção, hiperatividade e impulsividade
-                </li>
-              </ul>
-              <Button 
-                onClick={onNavigateToTDAH} 
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white group-hover:shadow-md transition-all"
-                size="lg"
-              >
-                Acessar Avaliações TDAH
-                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Info Section */}
-      <Card className="mt-8 border-border/40 bg-muted/30">
-        <CardHeader>
-          <CardTitle className="text-lg">Como funciona?</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground space-y-2">
-          <p>
-            O HubFit360 oferece duas modalidades de avaliação para ajudá-lo a alcançar seus objetivos de saúde e bem-estar:
-          </p>
-          <ul className="space-y-1 ml-4">
-            <li>• <strong>Avaliação Física:</strong> Análise corporal completa usando IA para identificar sua composição corporal</li>
-            <li>• <strong>Avaliação TDAH:</strong> Questionário clínico para identificação de sinais de TDAH em adultos e crianças</li>
-          </ul>
-          <p className="mt-4 text-xs">
-            Cada avaliação consome 1 crédito. Você pode adquirir mais créditos a qualquer momento.
-          </p>
-        </CardContent>
-      </Card>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
