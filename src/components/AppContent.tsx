@@ -13,10 +13,13 @@ import LazyAuthSection from '@/components/lazy/LazyAuthSection';
 import LazyAssessmentForm from '@/components/lazy/LazyAssessmentForm';
 import LazyReportViewer from '@/components/lazy/LazyReportViewer';
 import LazyUserProfile from '@/components/lazy/LazyUserProfile';
+import LazyTDAHAssessmentForm from '@/components/lazy/LazyTDAHAssessmentForm';
+import LazyTDAHReportViewer from '@/components/lazy/LazyTDAHReportViewer';
 
 const AppContent = () => {
   const [currentSection, setCurrentSection] = useState('home');
   const [selectedReport, setSelectedReport] = useState<any>(null);
+  const [selectedTDAHReport, setSelectedTDAHReport] = useState<any>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   
   const navigation = useNavigation();
@@ -129,6 +132,21 @@ const AppContent = () => {
     navigation.goToReport(completeReport);
   };
 
+  const handleTDAHAssessmentSuccess = (assessment: any) => {
+    setSelectedTDAHReport(assessment);
+    navigation.goToTDAHReport(assessment);
+  };
+
+  const handleViewTDAHReport = (report: any) => {
+    setSelectedTDAHReport(report);
+    navigation.goToTDAHReport(report);
+  };
+
+  const handleBackToTDAHDashboard = () => {
+    navigation.goToTDAHDashboard();
+    setSelectedTDAHReport(null);
+  };
+
   const renderSection = () => {
     // Se o usuário está logado, mostrar as seções do dashboard
     if (user) {
@@ -186,7 +204,29 @@ const AppContent = () => {
         case 'tdah-dashboard':
           return (
             <TDAHDashboard
-              onNavigate={handleNavigate}
+              onNavigate={(page, data) => {
+                if (page === 'tdah-report' && data) {
+                  handleViewTDAHReport(data);
+                } else {
+                  handleNavigate(page);
+                }
+              }}
+            />
+          );
+        
+        case 'tdah-assessment':
+          return (
+            <LazyTDAHAssessmentForm
+              onBack={handleBackToTDAHDashboard}
+              onSuccess={handleTDAHAssessmentSuccess}
+            />
+          );
+        
+        case 'tdah-report':
+          return (
+            <LazyTDAHReportViewer
+              report={selectedTDAHReport}
+              onBack={handleBackToTDAHDashboard}
             />
           );
         
