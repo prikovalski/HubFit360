@@ -7,7 +7,8 @@ import { useNavigation } from '@/hooks/useNavigation';
 import Header from '@/components/home/Header';
 import HomePage from '@/components/home/HomePage';
 import MainDashboard from '@/components/MainDashboard';
-import LazyUserDashboard from '@/components/lazy/LazyUserDashboard';
+import TDAHDashboard from '@/components/TDAHDashboard';
+import LazyPhysicalAssessmentDashboard from '@/components/lazy/LazyUserDashboard';
 import LazyAuthSection from '@/components/lazy/LazyAuthSection';
 import LazyAssessmentForm from '@/components/lazy/LazyAssessmentForm';
 import LazyReportViewer from '@/components/lazy/LazyReportViewer';
@@ -166,14 +167,12 @@ const AppContent = () => {
             <MainDashboard
               onNavigateToPhysical={() => navigation.goToPhysicalDashboard()}
               onNavigateToTDAH={() => navigation.goToTDAHDashboard()}
-              physicalCount={0}
-              tdahCount={0}
             />
           );
         
         case 'physical-dashboard':
           return (
-            <LazyUserDashboard
+            <LazyPhysicalAssessmentDashboard
               onNewAssessment={handleNewAssessment}
               onViewReport={handleViewReport}
               onLogoClick={() => navigation.goToMainDashboard()}
@@ -186,10 +185,9 @@ const AppContent = () => {
         
         case 'tdah-dashboard':
           return (
-            <div className="container mx-auto px-4 py-8">
-              <h1 className="text-3xl font-bold mb-4">Avaliações TDAH</h1>
-              <p className="text-muted-foreground">Dashboard de avaliações TDAH em desenvolvimento...</p>
-            </div>
+            <TDAHDashboard
+              onNavigate={handleNavigate}
+            />
           );
         
         case 'assessment':
@@ -235,8 +233,6 @@ const AppContent = () => {
             <MainDashboard
               onNavigateToPhysical={() => navigation.goToPhysicalDashboard()}
               onNavigateToTDAH={() => navigation.goToTDAHDashboard()}
-              physicalCount={0}
-              tdahCount={0}
             />
           );
       }

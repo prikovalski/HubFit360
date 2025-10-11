@@ -13,7 +13,7 @@ import CreditUserForm from './admin/CreditUserForm';
 import { DashboardStatsSkeleton } from '@/components/ui/dashboard-skeleton';
 import { Activity, Sparkles } from 'lucide-react';
 
-interface UserDashboardProps {
+interface PhysicalAssessmentDashboardProps {
   onNewAssessment: () => void;
   onViewReport: (report: any) => void;
   onLogoClick: () => void;
@@ -23,7 +23,7 @@ interface UserDashboardProps {
   onNavigate: (page: string) => void;
 }
 
-const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileClick, onLogout, currentPage, onNavigate }: UserDashboardProps) => {
+const PhysicalAssessmentDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileClick, onLogout, currentPage, onNavigate }: PhysicalAssessmentDashboardProps) => {
   const [creditsModalOpen, setCreditsModalOpen] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   
@@ -97,7 +97,12 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
     >
       <div className="py-12 px-4">
         <div className="container mx-auto max-w-6xl">
-          <DashboardHeader 
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-foreground mb-2">Avaliações Físicas por IA</h1>
+            <p className="text-muted-foreground">Gerencie suas avaliações corporais com análise de inteligência artificial</p>
+          </div>
+          
+          <DashboardHeader
             userName={userProfile?.name || 'Usuário'}
             onNewAssessment={handleNewAssessment}
             onUserProfile={onProfileClick}
@@ -138,4 +143,4 @@ const UserDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileCl
   );
 };
 
-export default UserDashboard;
+export default PhysicalAssessmentDashboard;

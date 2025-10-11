@@ -1,21 +1,29 @@
-import { Activity, Brain, ArrowRight, TrendingUp } from 'lucide-react';
+import { Activity, Brain, ArrowRight, TrendingUp, Clock } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useMainDashboardStats } from '@/hooks/useMainDashboardStats';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface MainDashboardProps {
   onNavigateToPhysical: () => void;
   onNavigateToTDAH: () => void;
-  physicalCount?: number;
-  tdahCount?: number;
 }
 
 const MainDashboard = ({ 
   onNavigateToPhysical, 
-  onNavigateToTDAH,
-  physicalCount = 0,
-  tdahCount = 0
+  onNavigateToTDAH
 }: MainDashboardProps) => {
+  const { stats, loading } = useMainDashboardStats();
+
+  const getAssessmentTypeLabel = (type: 'physical' | 'tdah') => {
+    return type === 'physical' ? 'Avaliação Física' : 'Avaliação TDAH';
+  };
+
+  const getAssessmentTypeColor = (type: 'physical' | 'tdah') => {
+    return type === 'physical' ? 'text-green-600' : 'text-blue-600';
+  };
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
@@ -28,8 +36,23 @@ const MainDashboard = ({
         </p>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="border-border/40">
+              <CardHeader className="pb-3">
+                <div className="h-4 w-32 bg-muted animate-pulse rounded"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 w-16 bg-muted animate-pulse rounded"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <>
+          {/* Stats Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card className="border-border/40 hover:border-primary/50 transition-colors">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -39,7 +62,7 @@ const MainDashboard = ({
           <CardContent>
             <div className="flex items-center justify-between">
               <div className="text-3xl font-bold text-foreground">
-                {physicalCount + tdahCount}
+                {loading ? '...' : stats.totalCount}
               </div>
               <TrendingUp className="h-8 w-8 text-primary/70" />
             </div>
@@ -55,7 +78,7 @@ const MainDashboard = ({
           <CardContent>
             <div className="flex items-center justify-between">
               <div className="text-3xl font-bold text-foreground">
-                {physicalCount}
+                {loading ? '...' : stats.physicalCount}
               </div>
               <Activity className="h-8 w-8 text-green-500/70" />
             </div>
@@ -71,13 +94,64 @@ const MainDashboard = ({
           <CardContent>
             <div className="flex items-center justify-between">
               <div className="text-3xl font-bold text-foreground">
-                {tdahCount}
+                {loading ? '...' : stats.tdahCount}
               </div>
               <Brain className="h-8 w-8 text-blue-500/70" />
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Recent Assessments */}
+      {stats.recentAssessments.length > 0 && (
+        <Card className="mb-8 border-border/40">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Avaliações Recentes
+            </CardTitle>
+            <CardDescription>Suas últimas avaliações realizadas</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {stats.recentAssessments.map((assessment) => (
+                <div 
+                  key={assessment.id} 
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    {assessment.type === 'physical' ? (
+                      <div className="p-2 bg-green-500/10 rounded-lg">
+                        <Activity className="h-4 w-4 text-green-600" />
+                      </div>
+                    ) : (
+                      <div className="p-2 bg-blue-500/10 rounded-lg">
+                        <Brain className="h-4 w-4 text-blue-600" />
+                      </div>
+                    )}
+                    <div>
+                      <p className={`font-medium ${getAssessmentTypeColor(assessment.type)}`}>
+                        {getAssessmentTypeLabel(assessment.type)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(assessment.created_at), { 
+                          addSuffix: true,
+                          locale: ptBR 
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant={assessment.status === 'completed' ? 'default' : 'secondary'}>
+                    {assessment.status === 'completed' ? 'Concluída' : 'Processando'}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+        </>
+      )}
 
       {/* Assessment Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

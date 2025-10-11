@@ -2,9 +2,9 @@
 import { lazy } from 'react';
 import LazyLoader from '@/components/LazyLoader';
 
-const UserDashboard = lazy(() => import('@/components/UserDashboard'));
+const PhysicalAssessmentDashboard = lazy(() => import('@/components/PhysicalAssessmentDashboard'));
 
-interface LazyUserDashboardProps {
+interface LazyPhysicalAssessmentDashboardProps {
   onNewAssessment: () => void;
   onViewReport: (report: any) => void;
   onLogoClick: () => void;
@@ -14,12 +14,12 @@ interface LazyUserDashboardProps {
   onNavigate: (page: string) => void;
 }
 
-const LazyUserDashboard = (props: LazyUserDashboardProps) => {
+const LazyPhysicalAssessmentDashboard = (props: LazyPhysicalAssessmentDashboardProps) => {
   return (
     <LazyLoader>
-      <UserDashboard {...props} />
+      <PhysicalAssessmentDashboard {...props} />
     </LazyLoader>
   );
 };
 
-export default LazyUserDashboard;
+export default LazyPhysicalAssessmentDashboard;
