@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useUserCredits } from '@/hooks/useUserCredits';
 import { useDashboardData } from '@/hooks/useDashboardData';
@@ -9,9 +9,8 @@ import DashboardHeader from './dashboard/DashboardHeader';
 import OptimizedDashboardStats from './dashboard/OptimizedDashboardStats';
 import OptimizedAssessmentsList from './dashboard/OptimizedAssessmentsList';
 import CreditsModal from './credits/CreditsModal';
-import CreditUserForm from './admin/CreditUserForm';
 import { DashboardStatsSkeleton } from '@/components/ui/dashboard-skeleton';
-import { Activity, Sparkles } from 'lucide-react';
+import { Activity } from 'lucide-react';
 
 interface PhysicalAssessmentDashboardProps {
   onNewAssessment: () => void;
@@ -25,7 +24,6 @@ interface PhysicalAssessmentDashboardProps {
 
 const PhysicalAssessmentDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileClick, onLogout, currentPage, onNavigate }: PhysicalAssessmentDashboardProps) => {
   const [creditsModalOpen, setCreditsModalOpen] = useState(false);
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
   
   // Parallel data loading - all hooks start loading simultaneously
   const { userProfile, loading: profileLoading } = useUserProfile();
@@ -33,13 +31,6 @@ const PhysicalAssessmentDashboard = ({ onNewAssessment, onViewReport, onLogoClic
   const { assessments, assessmentsLoading, assessmentsError, refetchAssessments } = useDashboardData();
   
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Check admin status when user profile loads
-    if (userProfile?.role === 'ADMIN') {
-      setShowAdminPanel(true);
-    }
-  }, [userProfile]);
 
   const handleNewAssessment = () => {
     console.log('Iniciando nova avaliação - sempre permitido agora');
@@ -111,18 +102,6 @@ const PhysicalAssessmentDashboard = ({ onNewAssessment, onViewReport, onLogoClic
           
           {/* Stats load immediately with available data */}
           <OptimizedDashboardStats assessments={assessments} />
-          
-          {showAdminPanel && (
-            <div className="mb-8 glass rounded-3xl p-6 backdrop-blur-xl border border-white/20 shadow-xl">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-white" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900">Painel Administrativo</h3>
-              </div>
-              <CreditUserForm />
-            </div>
-          )}
           
           {/* Assessments list with independent loading state */}
           <OptimizedAssessmentsList 
