@@ -229,5 +229,4 @@ Deno.serve(async (req) => {
     console.error('Error in create-tdah-assessment:', error);
     return createErrorResponse(error, 'DEFAULT', 500, corsHeaders);
   }
-  }
 });
