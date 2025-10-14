@@ -10,3 +10,6 @@ verify_jwt = false
 [functions.upgrade-tdah-assessment]
 verify_jwt = true
 
+[functions.manual-add-credits]
+verify_jwt = true
+

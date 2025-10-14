@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -13,18 +12,13 @@ serve(async (req) => {
   }
 
   try {
-    const body = await req.json();
-    const { user_email, credits_amount, reason, transaction_id } = body;
-
-    console.log('Adicionando créditos manualmente:', {
-      user_email,
-      credits_amount,
-      reason,
-      transaction_id
-    });
-
-    if (!user_email || !credits_amount) {
-      throw new Error('Email do usuário e quantidade de créditos são obrigatórios');
+    // Validate authorization header
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Unauthorized - Missing authorization header' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      });
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -34,32 +28,83 @@ serve(async (req) => {
       throw new Error('Configuração do Supabase incompleta');
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      console.error('Authentication error:', authError);
+      return new Response(JSON.stringify({ error: 'Unauthorized - Invalid token' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      });
+    }
+
+    // Check if user has admin role
+    const { data: userRole, error: roleError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .single();
+
+    if (roleError || !userRole) {
+      console.error('Admin check failed:', roleError);
+      return new Response(JSON.stringify({ error: 'Forbidden - Admin access required' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 403,
+      });
+    }
+
+    const body = await req.json();
+    const { user_email, credits_amount, reason, transaction_id } = body;
+
+    console.log('Admin user adding credits:', {
+      admin_user_id: user.id,
+      admin_email: user.email,
+      target_email: user_email,
+      credits: credits_amount
+    });
+
+    // Validate input
+    if (!user_email || typeof user_email !== 'string' || user_email.length > 254) {
+      throw new Error('Email inválido');
+    }
+
+    if (!credits_amount || typeof credits_amount !== 'number' || credits_amount <= 0 || credits_amount > 1000) {
+      throw new Error('Quantidade de créditos inválida (deve ser entre 1 e 1000)');
+    }
+
+    if (reason && typeof reason === 'string' && reason.length > 500) {
+      throw new Error('Motivo muito longo (máximo 500 caracteres)');
+    }
 
     // Buscar usuário por email
-    const { data: user, error: userError } = await supabase
+    const { data: targetUser, error: userError } = await supabase
       .from('users')
       .select('id, name, email')
       .eq('email', user_email)
       .single();
 
-    if (userError || !user) {
+    if (userError || !targetUser) {
       throw new Error(`Usuário não encontrado com email: ${user_email}`);
     }
 
-    console.log('Usuário encontrado:', user);
+    console.log('Target user found:', targetUser);
 
     // Buscar saldo atual
     const { data: currentCredits, error: fetchError } = await supabase
       .from('user_credits')
       .select('balance')
-      .eq('user_id', user.id)
+      .eq('user_id', targetUser.id)
       .single();
 
     let newBalance = credits_amount;
     
     if (currentCredits && !fetchError) {
-      // Atualizar saldo existente
       newBalance = currentCredits.balance + credits_amount;
       
       const { error: updateError } = await supabase
@@ -68,47 +113,46 @@ serve(async (req) => {
           balance: newBalance,
           updated_at: new Date().toISOString()
         })
-        .eq('user_id', user.id);
+        .eq('user_id', targetUser.id);
         
       if (updateError) throw updateError;
       
-      console.log('Saldo atualizado de', currentCredits.balance, 'para', newBalance);
+      console.log('Balance updated from', currentCredits.balance, 'to', newBalance);
     } else {
-      // Criar novo registro
       const { error: insertError } = await supabase
         .from('user_credits')
         .insert({
-          user_id: user.id,
+          user_id: targetUser.id,
           balance: newBalance
         });
         
       if (insertError) throw insertError;
       
-      console.log('Novo registro criado com saldo:', newBalance);
+      console.log('New credit record created with balance:', newBalance);
     }
 
     // Registrar transação
     const { error: transactionError } = await supabase
       .from('credit_transactions')
       .insert({
-        user_id: user.id,
+        user_id: targetUser.id,
         type: 'bonus',
         amount: credits_amount,
         source: 'manual',
         reference_id: transaction_id || `manual-${Date.now()}`,
-        description: reason || 'Créditos adicionados manualmente'
+        description: reason || 'Créditos adicionados manualmente por admin'
       });
 
     if (transactionError) throw transactionError;
 
-    console.log('Créditos adicionados com sucesso');
+    console.log('Credits added successfully');
 
     return new Response(JSON.stringify({
       success: true,
       user: {
-        id: user.id,
-        name: user.name,
-        email: user.email
+        id: targetUser.id,
+        name: targetUser.name,
+        email: targetUser.email
       },
       credits_added: credits_amount,
       new_balance: newBalance,
@@ -119,7 +163,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Erro ao adicionar créditos manualmente:', error);
+    console.error('Error adding credits manually:', error);
     
     return new Response(JSON.stringify({
       error: error.message,
