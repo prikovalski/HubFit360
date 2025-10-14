@@ -1,5 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { checkRateLimit, getRateLimitHeaders } from '../_shared/rateLimiter.ts';
+import { createErrorResponse } from '../_shared/errorHandler.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -63,10 +65,17 @@ Deno.serve(async (req) => {
 
     if (authError || !user) {
       console.error('Auth error:', authError);
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return createErrorResponse(authError, 'UNAUTHORIZED', 401, corsHeaders);
+    }
+
+    // Rate limiting: 10 assessments per minute per user
+    if (!checkRateLimit(user.id, { maxRequests: 10, windowMs: 60000 })) {
+      return createErrorResponse(
+        new Error('Rate limit exceeded'),
+        'RATE_LIMIT_EXCEEDED',
+        429,
+        { ...corsHeaders, ...getRateLimitHeaders(user.id) }
+      );
     }
 
     // Get user_id from users table
@@ -218,12 +227,7 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error('Error in create-tdah-assessment:', error);
-    return new Response(
-      JSON.stringify({ error: error.message || 'Internal server error' }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    return createErrorResponse(error, 'DEFAULT', 500, corsHeaders);
+  }
   }
 });

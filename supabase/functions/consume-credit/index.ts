@@ -1,6 +1,8 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkRateLimit, getRateLimitHeaders } from '../_shared/rateLimiter.ts';
+import { createErrorResponse } from '../_shared/errorHandler.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -51,7 +53,17 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
     if (authError || !user) {
-      throw new Error('Usuário não autenticado');
+      return createErrorResponse(authError, 'UNAUTHORIZED', 401, corsHeaders);
+    }
+
+    // Rate limiting: 10 requests per minute per user
+    if (!checkRateLimit(user.id, { maxRequests: 10, windowMs: 60000 })) {
+      return createErrorResponse(
+        new Error('Rate limit exceeded'),
+        'RATE_LIMIT_EXCEEDED',
+        429,
+        { ...corsHeaders, ...getRateLimitHeaders(user.id) }
+      );
     }
 
     // Buscar usuário no banco
@@ -130,12 +142,6 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Erro ao consumir crédito:', error);
-    
-    return new Response(JSON.stringify({
-      error: error.message
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    });
+    return createErrorResponse(error, 'DEFAULT', 500, corsHeaders);
   }
 });

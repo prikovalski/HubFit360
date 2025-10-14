@@ -1,6 +1,8 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkRateLimit, getRateLimitHeaders } from '../_shared/rateLimiter.ts';
+import { createErrorResponse } from '../_shared/errorHandler.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -72,12 +74,6 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Erro ao verificar créditos:', error);
-    
-    return new Response(JSON.stringify({
-      error: error.message
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    });
+    return createErrorResponse(error, 'DEFAULT', 500, corsHeaders);
   }
 });

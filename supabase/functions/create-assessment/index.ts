@@ -6,6 +6,8 @@ import { calculateBodyFatPercentage, calculateLeanMass, calculateFatMass } from 
 import { callOpenAI } from './openaiService.ts';
 import { buildAssessmentPrompt } from './promptBuilder.ts';
 import { shouldTriggerReevaluation, reevaluateBodyComposition } from './reevaluationService.ts';
+import { checkRateLimit, getRateLimitHeaders } from '../_shared/rateLimiter.ts';
+import { createErrorResponse } from '../_shared/errorHandler.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,6 +38,16 @@ serve(async (req) => {
 
   try {
     const data: AssessmentData = await req.json();
+    
+    // Rate limiting: 10 assessments per minute per user
+    if (!checkRateLimit(data.userId, { maxRequests: 10, windowMs: 60000 })) {
+      return createErrorResponse(
+        new Error('Rate limit exceeded'),
+        'RATE_LIMIT_EXCEEDED',
+        429,
+        { ...corsHeaders, ...getRateLimitHeaders(data.userId) }
+      );
+    }
     
     console.log('Dados recebidos na create-assessment:', {
       userId: data.userId,
@@ -331,13 +343,6 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Erro ao processar avaliação:', error);
-    
-    return new Response(JSON.stringify({
-      success: false,
-      error: error.message
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    });
+    return createErrorResponse(error, 'DEFAULT', 500, corsHeaders);
   }
 });

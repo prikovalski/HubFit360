@@ -1,5 +1,6 @@
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.8'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.8';
+import { createErrorResponse } from '../_shared/errorHandler.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -143,16 +144,7 @@ Deno.serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Error in delete-user-profile function:', error)
-    return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
-        success: false 
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      }
-    )
+    console.error('Error in delete-user-profile function:', error);
+    return createErrorResponse(error, 'DEFAULT', 400, corsHeaders);
   }
 })

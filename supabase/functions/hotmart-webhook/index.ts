@@ -395,11 +395,10 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('ERRO CRÍTICO no webhook Hotmart:', error);
-    console.error('Stack trace:', error.stack);
+    console.error('Stack trace:', error?.stack);
     
     return new Response(JSON.stringify({
-      error: error.message,
-      details: error.stack,
+      error: 'Erro ao processar webhook',
       timestamp: new Date().toISOString()
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
