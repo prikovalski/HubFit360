@@ -34,10 +34,12 @@ const HomeSection = ({ setCurrentSection }: HomeSectionProps) => {
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 animate-gradient"> 
                 Potencial Máximo
               </span>
-              <div className="flex items-center justify-center space-x-3 mt-2">
-                <Brain className="w-12 h-12 text-green-500 animate-pulse" />
-                <span className="text-4xl md:text-6xl">Físico</span>
-                <TrendingUp className="w-10 h-10 text-emerald-500 animate-bounce" />
+              <div className="flex flex-col items-center justify-center space-y-2 mt-2">
+                <div className="flex items-center space-x-3">
+                  <Brain className="w-12 h-12 text-green-500 animate-pulse" />
+                  <span className="text-4xl md:text-6xl">Físico & Mental</span>
+                  <TrendingUp className="w-10 h-10 text-emerald-500 animate-bounce" />
+                </div>
               </div>
             </h1>
             
@@ -45,9 +47,10 @@ const HomeSection = ({ setCurrentSection }: HomeSectionProps) => {
               className="text-xl md:text-2xl text-gray-700 mb-12 leading-relaxed max-w-3xl mx-auto animate-slide-up"
               style={{ animationDelay: '0.4s' }}
             >
-              <span className="font-semibold text-green-600">Avaliação física revolucionária</span> com 
+              <span className="font-semibold text-green-600">Avaliação física revolucionária</span> e 
+              <span className="font-semibold text-purple-600"> triagem de TDAH</span> com 
               <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent font-bold"> Inteligência Artificial avançada</span>. 
-              Transforme seu corpo com direcionamento personalizado de treinos e dieta.
+              Transforme seu corpo e entenda sua mente com análises personalizadas.
             </p>
             
             {/* Stats animados */}

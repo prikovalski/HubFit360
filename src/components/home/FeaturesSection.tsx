@@ -12,6 +12,13 @@ const FeaturesSection = () => {
       bgGradient: "from-green-50 to-emerald-50"
     },
     {
+      icon: Brain,
+      title: "Triagem TDAH",
+      description: "Avaliação completa baseada no questionário ASRS-18 com análise personalizada de sintomas e recomendações",
+      gradient: "from-purple-500 to-indigo-600",
+      bgGradient: "from-purple-50 to-indigo-50"
+    },
+    {
       icon: Eye,
       title: "Visão Computacional",
       description: "Análise visual avançada que identifica padrões invisíveis ao olho humano para avaliação completa",
@@ -28,14 +35,14 @@ const FeaturesSection = () => {
     {
       icon: Award,
       title: "Precisão Científica",
-      description: "Validado por profissionais da saúde com +99% de precisão em análises corporais",
+      description: "Validado por profissionais da saúde com +99% de precisão em análises corporais e mentais",
       gradient: "from-lime-500 to-green-600",
       bgGradient: "from-lime-50 to-green-50"
     },
     {
       icon: Zap,
       title: "Plano Personalizado",
-      description: "IA cria estratégias únicas de treino e nutrição baseadas no seu perfil e objetivos específicos",
+      description: "IA cria estratégias únicas de treino, nutrição e manejo de sintomas baseadas no seu perfil completo",
       gradient: "from-green-500 to-teal-600",
       bgGradient: "from-green-50 to-teal-50"
     },
@@ -77,7 +84,8 @@ const FeaturesSection = () => {
           </h2>
           <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
             Nossa <span className="font-bold text-green-600">inteligência artificial revolucionária</span> oferece 
-            uma análise completa e precisa do seu corpo como nunca antes
+            análises completas e precisas do seu <span className="font-bold text-green-600">corpo físico</span> e 
+            <span className="font-bold text-purple-600"> saúde mental</span> como nunca antes
           </p>
         </div>
         
