@@ -251,8 +251,20 @@ serve(async (req) => {
   try {
     const { assessment_id } = await req.json();
 
-    if (!assessment_id) {
-      throw new Error('ID da avaliação é obrigatório');
+    // Validate UUID format
+    if (!assessment_id || typeof assessment_id !== 'string') {
+      return new Response(JSON.stringify({ error: 'ID da avaliação é obrigatório' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(assessment_id)) {
+      return new Response(JSON.stringify({ error: 'Formato de ID inválido' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');

@@ -123,8 +123,17 @@ Deno.serve(async (req) => {
     // Parse request body
     const { assessment_id }: UpgradeRequest = await req.json();
 
-    if (!assessment_id) {
+    // Validate UUID format
+    if (!assessment_id || typeof assessment_id !== 'string') {
       return new Response(JSON.stringify({ error: 'Assessment ID is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(assessment_id)) {
+      return new Response(JSON.stringify({ error: 'Invalid UUID format' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

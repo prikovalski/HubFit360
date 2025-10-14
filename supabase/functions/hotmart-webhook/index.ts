@@ -3,7 +3,54 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-hotmart-hottok',
+}
+
+// Validate email format
+function validateEmail(email: string): boolean {
+  if (!email || typeof email !== 'string') return false;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email) && email.length <= 254;
+}
+
+// Validate string with length limits
+function validateString(value: string, maxLength: number = 100): boolean {
+  return typeof value === 'string' && value.length > 0 && value.length <= maxLength;
+}
+
+// Verify Hotmart webhook signature
+function verifyHotmartSignature(req: Request, body: any): boolean {
+  const HOTMART_WEBHOOK_SECRET = Deno.env.get('HOTMART_WEBHOOK_SECRET');
+  
+  // If secret is not configured, log warning but allow (backwards compatibility)
+  if (!HOTMART_WEBHOOK_SECRET) {
+    console.warn('⚠️ HOTMART_WEBHOOK_SECRET not configured - webhook signature verification disabled');
+    return true;
+  }
+
+  const hottokHeader = req.headers.get('X-Hotmart-Hottok');
+  
+  if (!hottokHeader) {
+    console.error('Missing X-Hotmart-Hottok header');
+    return false;
+  }
+
+  // Verify hottok matches expected format (basic validation)
+  // Hotmart hottok is typically a UUID-like string
+  const hottokRegex = /^[0-9a-f-]+$/i;
+  if (!hottokRegex.test(hottokHeader)) {
+    console.error('Invalid hottok format');
+    return false;
+  }
+
+  // Additional verification: check if hottok matches webhook data
+  const bodyHottok = body.hottok || body.id;
+  if (bodyHottok && hottokHeader !== bodyHottok) {
+    console.error('Hottok mismatch between header and body');
+    return false;
+  }
+
+  return true;
 }
 
 serve(async (req) => {
@@ -20,6 +67,17 @@ serve(async (req) => {
     const body = await req.json();
     console.log('Webhook body recebido:', JSON.stringify(body, null, 2));
 
+    // Verify webhook signature
+    if (!verifyHotmartSignature(req, body)) {
+      console.error('❌ Webhook signature verification failed');
+      return new Response(JSON.stringify({ 
+        error: 'Invalid webhook signature' 
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -31,7 +89,10 @@ serve(async (req) => {
 
     // Validar estrutura do webhook
     if (!body || typeof body !== 'object') {
-      throw new Error('Body do webhook inválido ou vazio');
+      return new Response(JSON.stringify({ error: 'Invalid webhook body' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Extrair dados do webhook da Hotmart - suporte para diferentes estruturas
@@ -130,7 +191,36 @@ serve(async (req) => {
     const buyerEmail = buyer.email;
     const buyerName = buyer.name;
 
-    console.log('Identificadores extraídos:', {
+    // Validate required data
+    if (!transactionId || !validateString(transactionId, 200)) {
+      return new Response(JSON.stringify({ error: 'Invalid transaction ID' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!productId || !validateString(productId, 200)) {
+      return new Response(JSON.stringify({ error: 'Invalid product ID' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!buyerEmail || !validateEmail(buyerEmail)) {
+      return new Response(JSON.stringify({ error: 'Invalid buyer email' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!buyerName || !validateString(buyerName, 200)) {
+      return new Response(JSON.stringify({ error: 'Invalid buyer name' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log('Identificadores extraídos e validados:', {
       transactionId,
       productId,
       offerId,

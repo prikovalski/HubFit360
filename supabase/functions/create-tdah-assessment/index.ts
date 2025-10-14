@@ -111,9 +111,43 @@ Deno.serve(async (req) => {
       patient_birth_date,
     }: TDAHAssessmentRequest = await req.json();
 
+    // Validate responses array
     if (!responses || responses.length !== 18) {
       return new Response(
         JSON.stringify({ error: 'Invalid responses. Expected 18 answers.' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Validate each response is in range 0-4
+    const invalidResponses = responses.filter(r => typeof r !== 'number' || r < 0 || r > 4);
+    if (invalidResponses.length > 0) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid response values. Each answer must be between 0 and 4.' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Validate optional fields
+    if (patient_name && patient_name.length > 100) {
+      return new Response(
+        JSON.stringify({ error: 'Patient name too long (max 100 characters)' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    if (patient_age && (patient_age < 13 || patient_age > 120)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid patient age (must be between 13 and 120)' }),
         {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },

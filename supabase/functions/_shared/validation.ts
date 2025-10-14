@@ -22,6 +22,46 @@ export function validateString(
   return typeof value === 'string' && value.length >= minLength && value.length <= maxLength;
 }
 
+export function validateUUID(value: string): boolean {
+  if (!value || typeof value !== 'string') return false;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(value);
+}
+
+export function validateHeight(height: number): boolean {
+  return validateNumber(height, 100, 250); // cm
+}
+
+export function validateWeight(weight: number): boolean {
+  return validateNumber(weight, 30, 300); // kg
+}
+
+export function validateAge(age: number): boolean {
+  return validateNumber(age, 13, 120); // years
+}
+
+export function validateCircumference(circumference: number): boolean {
+  return validateNumber(circumference, 20, 200); // cm
+}
+
+export function validateGender(gender: string): boolean {
+  const validGenders = ['male', 'female', 'MALE', 'FEMALE', 'masculino', 'feminino', 'Masculino', 'Feminino'];
+  return validGenders.includes(gender);
+}
+
+export function validateTDAHResponse(response: number): boolean {
+  return validateNumber(response, 0, 4);
+}
+
 export function sanitizeString(input: string): string {
   return input.trim().replace(/[<>]/g, '');
+}
+
+export interface ValidationError {
+  field: string;
+  message: string;
+}
+
+export function createValidationError(field: string, message: string): ValidationError {
+  return { field, message };
 }
