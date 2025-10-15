@@ -39,6 +39,35 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
 
   let pageNumber = 1;
 
+  // DIVA 2.0 - Mapeamento de perguntas por ID (mesmos IDs usados no formulário)
+  const DIVA_QUESTIONS: Array<{ id: string; section: 'inattention' | 'hyperactivity'; text: string }> = [
+    { id: 'a1_1', section: 'inattention', text: 'Não presta atenção em detalhes ou comete erros por descuido em trabalhos escolares, trabalho ou outras atividades' },
+    { id: 'a1_2', section: 'inattention', text: 'Tem dificuldade em manter a atenção em tarefas ou atividades lúdicas' },
+    { id: 'a1_3', section: 'inattention', text: 'Parece não escutar quando alguém lhe fala diretamente' },
+    { id: 'a1_4', section: 'inattention', text: 'Não segue instruções até o fim e não consegue terminar trabalhos escolares, tarefas ou deveres no local de trabalho' },
+    { id: 'a1_5', section: 'inattention', text: 'Tem dificuldade para organizar tarefas e atividades' },
+    { id: 'a1_6', section: 'inattention', text: 'Evita, não gosta ou reluta em se envolver em tarefas que exigem esforço mental prolongado' },
+    { id: 'a1_7', section: 'inattention', text: 'Perde coisas necessárias para tarefas ou atividades' },
+    { id: 'a1_8', section: 'inattention', text: 'É facilmente distraído por estímulos externos' },
+    { id: 'a1_9', section: 'inattention', text: 'Esquece atividades cotidianas' },
+    { id: 'a2_1', section: 'hyperactivity', text: 'Remexe ou batuca as mãos ou os pés ou se contorce na cadeira' },
+    { id: 'a2_2', section: 'hyperactivity', text: 'Levanta da cadeira em situações em que se espera que permaneça sentado' },
+    { id: 'a2_3', section: 'hyperactivity', text: 'Corre ou sobe nas coisas em situações em que isso é inapropriado' },
+    { id: 'a2_4', section: 'hyperactivity', text: 'É incapaz de brincar ou se envolver em atividades de lazer calmamente' },
+    { id: 'a2_5', section: 'hyperactivity', text: 'Está “a todo vapor” ou age como se estivesse “com o motor ligado”' },
+    { id: 'a2_6', section: 'hyperactivity', text: 'Fala demais' },
+    { id: 'a2_7', section: 'hyperactivity', text: 'Deixa escapar uma resposta antes que a pergunta tenha sido concluída' },
+    { id: 'a2_8', section: 'hyperactivity', text: 'Tem dificuldade para esperar sua vez' },
+    { id: 'a2_9', section: 'hyperactivity', text: 'Interrompe ou se intromete' },
+  ];
+
+  const DIVA_OPTION_LABELS: Record<string, string> = {
+    '0': 'Nunca ou raramente',
+    '1': 'Às vezes',
+    '2': 'Frequentemente',
+    '3': 'Muito frequentemente',
+  };
+
   const addHeader = () => {
     // Background do cabeçalho
     doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -231,66 +260,30 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
   addSection('PERGUNTAS E RESPOSTAS');
   
   if (report.assessment_method === 'DIVA 2.0') {
-    // DIVA 2.0 format
-    const responses = report.responses;
-    
-    if (responses?.inattention && Array.isArray(responses.inattention)) {
-      doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-      doc.setFontSize(12);
-      doc.setFont(undefined, 'bold');
-      doc.text('DESATENCAO', margin, currentY);
-      currentY += 8;
-      
-      responses.inattention.forEach((item: any, index: number) => {
-        if (currentY > pageHeight - 50) {
-          doc.addPage();
-          addPageNumber();
-          currentY = margin;
-        }
-        
-        doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-        doc.setFontSize(10);
-        doc.setFont(undefined, 'bold');
-        const questionLines = doc.splitTextToSize(`${index + 1}. ${item.question}`, pageWidth - 2 * margin);
-        questionLines.forEach((line: string) => {
-          if (currentY > pageHeight - 40) {
-            doc.addPage();
-            addPageNumber();
-            currentY = margin;
-          }
-          doc.text(line, margin, currentY);
-          currentY += 6;
-        });
-        
-        doc.setFontSize(9);
-        doc.setFont(undefined, 'normal');
-        doc.setTextColor(100, 100, 100);
-        doc.text(`   Infancia: ${item.childhood || 'Nao respondido'}`, margin, currentY);
-        currentY += 5;
-        doc.text(`   Vida Adulta: ${item.adulthood || 'Nao respondido'}`, margin, currentY);
-        currentY += 8;
-      });
-      currentY += 5;
-    }
+    // DIVA 2.0 format - respostas separadas por infância/idade adulta usando IDs
+    const responses = report.responses as any;
+    const childhood: Record<string, string | number> = responses?.childhood || {};
+    const adulthood: Record<string, string | number> = responses?.adulthood || {};
 
-    if (responses?.hyperactivity && Array.isArray(responses.hyperactivity)) {
+    const renderDivaGroup = (title: string, section: 'inattention' | 'hyperactivity') => {
+      // Título do grupo
       doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
       doc.setFontSize(12);
       doc.setFont(undefined, 'bold');
-      doc.text('HIPERATIVIDADE/IMPULSIVIDADE', margin, currentY);
+      doc.text(title, margin, currentY);
       currentY += 8;
-      
-      responses.hyperactivity.forEach((item: any, index: number) => {
-        if (currentY > pageHeight - 50) {
+
+      DIVA_QUESTIONS.filter(q => q.section === section).forEach((q, idx) => {
+        if (currentY > pageHeight - 60) {
           doc.addPage();
           addPageNumber();
           currentY = margin;
         }
-        
+        // Pergunta
         doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
         doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
-        const questionLines = doc.splitTextToSize(`${index + 1}. ${item.question}`, pageWidth - 2 * margin);
+        const questionLines = doc.splitTextToSize(`${idx + 1}. ${q.text}`, pageWidth - 2 * margin);
         questionLines.forEach((line: string) => {
           if (currentY > pageHeight - 40) {
             doc.addPage();
@@ -300,16 +293,27 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
           doc.text(line, margin, currentY);
           currentY += 6;
         });
-        
+
+        // Respostas
+        const childVal = String(childhood[q.id] ?? '');
+        const adultVal = String(adulthood[q.id] ?? '');
+        const childLabel = DIVA_OPTION_LABELS[childVal] || 'Não respondido';
+        const adultLabel = DIVA_OPTION_LABELS[adultVal] || 'Não respondido';
+
         doc.setFontSize(9);
         doc.setFont(undefined, 'normal');
         doc.setTextColor(100, 100, 100);
-        doc.text(`   Infancia: ${item.childhood || 'Nao respondido'}`, margin, currentY);
+        doc.text(`   Infância: ${childLabel}`, margin, currentY);
         currentY += 5;
-        doc.text(`   Vida Adulta: ${item.adulthood || 'Nao respondido'}`, margin, currentY);
+        doc.text(`   Vida Adulta: ${adultLabel}`, margin, currentY);
         currentY += 8;
       });
-    }
+
+      currentY += 5;
+    };
+
+    renderDivaGroup('DESATENÇÃO', 'inattention');
+    renderDivaGroup('HIPERATIVIDADE/IMPULSIVIDADE', 'hyperactivity');
   } else {
     // ASRS-18 format
     const questions = [
