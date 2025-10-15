@@ -168,7 +168,7 @@ const AppContent = () => {
       // Renderizar seções baseadas no estado de navegação
       switch (navigation.currentPage) {
         case 'main-dashboard':
-          return <MainDashboard onNavigateToPhysical={() => navigation.goToPhysicalDashboard()} onNavigateToTDAH={() => navigation.goToTDAHDashboard()} onLogout={handleLogout} />;
+          return <MainDashboard onNavigateToPhysical={() => navigation.goToPhysicalDashboard()} onNavigateToTDAH={() => navigation.goToTDAHDashboard()} onLogout={handleLogout} onViewPhysicalReport={handleViewReport} onViewTDAHReport={handleViewTDAHReport} />;
         case 'physical-dashboard':
           return <LazyPhysicalAssessmentDashboard onNewAssessment={handleNewAssessment} onViewReport={handleViewReport} onLogoClick={() => navigation.goToMainDashboard()} onProfileClick={() => navigation.goToProfile()} onLogout={handleLogout} currentPage={navigation.currentPage} onNavigate={handleNavigate} />;
         case 'tdah-dashboard':
@@ -192,7 +192,7 @@ const AppContent = () => {
         case 'profile':
           return <LazyUserProfile onBack={() => navigation.goToMainDashboard()} onLogoClick={() => navigation.goToMainDashboard()} onProfileClick={() => navigation.goToProfile()} onLogout={handleLogout} currentPage={navigation.currentPage} onNavigate={handleNavigate} />;
         default:
-          return <MainDashboard onNavigateToPhysical={() => navigation.goToPhysicalDashboard()} onNavigateToTDAH={() => navigation.goToTDAHDashboard()} onLogout={handleLogout} />;
+          return <MainDashboard onNavigateToPhysical={() => navigation.goToPhysicalDashboard()} onNavigateToTDAH={() => navigation.goToTDAHDashboard()} onLogout={handleLogout} onViewPhysicalReport={handleViewReport} onViewTDAHReport={handleViewTDAHReport} />;
       }
     }
 

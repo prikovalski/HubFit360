@@ -9,11 +9,15 @@ interface MainDashboardProps {
   onNavigateToPhysical: () => void;
   onNavigateToTDAH: () => void;
   onLogout: () => void;
+  onViewPhysicalReport?: (report: any) => void;
+  onViewTDAHReport?: (report: any) => void;
 }
 const MainDashboard = ({
   onNavigateToPhysical,
   onNavigateToTDAH,
-  onLogout
+  onLogout,
+  onViewPhysicalReport,
+  onViewTDAHReport
 }: MainDashboardProps) => {
   const {
     stats,
@@ -168,7 +172,13 @@ const MainDashboard = ({
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {stats.recentAssessments.map((assessment, index) => <div key={assessment.id} className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-muted/50 hover:border-primary/30 transition-all duration-200 hover-scale animate-fade-in" style={{
+              {stats.recentAssessments.map((assessment, index) => <div key={assessment.id} onClick={() => {
+            if (assessment.type === 'physical' && onViewPhysicalReport) {
+              onViewPhysicalReport(assessment);
+            } else if (assessment.type === 'tdah' && onViewTDAHReport) {
+              onViewTDAHReport(assessment);
+            }
+          }} className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-muted/50 hover:border-primary/30 transition-all duration-200 hover-scale animate-fade-in cursor-pointer" style={{
             animationDelay: `${0.3 + index * 0.1}s`
           }}>
                   <div className="flex items-center gap-4">
