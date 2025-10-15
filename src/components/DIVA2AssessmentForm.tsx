@@ -6,6 +6,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -137,6 +138,8 @@ const DIVA2AssessmentForm = ({ onBack, onSuccess }: DIVA2AssessmentFormProps) =>
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<'info' | 'questions'>('info');
   const [currentPeriod, setCurrentPeriod] = useState<'childhood' | 'adulthood'>('childhood');
+  const [showPeriodInfo, setShowPeriodInfo] = useState(false);
+  const [periodInfoType, setPeriodInfoType] = useState<'childhood' | 'adulthood'>('childhood');
   
   // Patient info
   const [patientName, setPatientName] = useState('');
@@ -171,6 +174,12 @@ const DIVA2AssessmentForm = ({ onBack, onSuccess }: DIVA2AssessmentFormProps) =>
   const childhoodAnswered = Object.keys(childhoodResponses).length;
   const adulthoodAnswered = Object.keys(adulthoodResponses).length;
   const allQuestionsAnswered = childhoodAnswered === totalQuestions && adulthoodAnswered === totalQuestions;
+
+  const handlePeriodChange = (newPeriod: 'childhood' | 'adulthood') => {
+    setCurrentPeriod(newPeriod);
+    setPeriodInfoType(newPeriod);
+    setShowPeriodInfo(true);
+  };
 
   const calculateScore = () => {
     const inattentionChildhood = DIVA_CRITERIA.inattention.childhood.filter(
@@ -446,7 +455,10 @@ const DIVA2AssessmentForm = ({ onBack, onSuccess }: DIVA2AssessmentFormProps) =>
                 Cancelar
               </Button>
               <Button
-                onClick={() => setStep('questions')}
+                onClick={() => {
+                  setStep('questions');
+                  setShowPeriodInfo(true);
+                }}
                 disabled={!isInfoComplete()}
               >
                 Iniciar Avaliação
@@ -488,7 +500,50 @@ const DIVA2AssessmentForm = ({ onBack, onSuccess }: DIVA2AssessmentFormProps) =>
         </CardHeader>
       </Card>
 
-      <Tabs value={currentPeriod} onValueChange={(v) => setCurrentPeriod(v as 'childhood' | 'adulthood')}>
+      <Dialog open={showPeriodInfo} onOpenChange={setShowPeriodInfo}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5 text-purple-600" />
+              {periodInfoType === 'childhood' ? 'Período: Infância' : 'Período: Idade Adulta'}
+            </DialogTitle>
+            <DialogDescription className="space-y-3 pt-2">
+              {periodInfoType === 'childhood' ? (
+                <>
+                  <p className="text-base font-semibold text-foreground">
+                    📅 Responda pensando em como você era ANTES DOS 12 ANOS DE IDADE
+                  </p>
+                  <p className="text-sm">
+                    Pense em situações da sua infância, como na escola, em casa, brincando com amigos, etc.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    É importante avaliar se os sintomas já estavam presentes nesta fase da vida.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-base font-semibold text-foreground">
+                    📅 Responda pensando em como você É ATUALMENTE (últimos 6 meses)
+                  </p>
+                  <p className="text-sm">
+                    Considere seu comportamento atual no trabalho, estudos, relacionamentos e atividades do dia a dia.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Avalie como os sintomas se manifestam na sua vida adulta.
+                  </p>
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end">
+            <Button onClick={() => setShowPeriodInfo(false)}>
+              Entendi, começar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Tabs value={currentPeriod} onValueChange={(v) => handlePeriodChange(v as 'childhood' | 'adulthood')}>
         <TabsList className="grid w-full grid-cols-2 mb-6">
           <TabsTrigger value="childhood" className="gap-2">
             Infância (antes dos 12 anos)
