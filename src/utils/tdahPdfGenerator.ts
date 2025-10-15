@@ -219,7 +219,7 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
 
   // Resultados
   addSection('RESULTADOS DA AVALIACAO');
-  const maxScore = report.assessment_method === 'DIVA 2.0' ? 18 : 72;
+  const maxScore = report.assessment_method?.includes('DIVA') ? 16 : 72;
   const effectiveScore = report.score ?? 0;
   
   if (report.classification) {
