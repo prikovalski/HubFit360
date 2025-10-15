@@ -1,4 +1,4 @@
-import { Brain, ArrowLeft, User, Calendar, TrendingUp, Lock, Sparkles } from 'lucide-react';
+import { Brain, ArrowLeft, User, Calendar, TrendingUp, Lock, Sparkles, Download } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserCredits } from '@/hooks/useUserCredits';
+import { generateTDAHAssessmentPDF } from '@/utils/tdahPdfGenerator';
 interface TDAHReportViewerProps {
   report: any;
   onBack: () => void;
@@ -25,7 +26,32 @@ const TDAHReportViewer = ({
     fetchCredits
   } = useUserCredits();
   const [upgrading, setUpgrading] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [currentReport, setCurrentReport] = useState(report);
+
+  const handleDownloadPDF = async () => {
+    setIsGeneratingPDF(true);
+    try {
+      const pdf = generateTDAHAssessmentPDF({ report: currentReport });
+      const fileName = `avaliacao-tdah-${currentReport.patient_name || 'paciente'}-${format(new Date(currentReport.created_at), 'dd-MM-yyyy')}.pdf`;
+      pdf.save(fileName);
+      
+      toast({
+        title: "PDF gerado com sucesso!",
+        description: "O arquivo foi baixado para o seu dispositivo."
+      });
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast({
+        title: "Erro ao gerar PDF",
+        description: "Ocorreu um erro ao gerar o arquivo PDF.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   const handleUpgrade = async () => {
     if (!hasCredits) {
       toast({
@@ -106,22 +132,33 @@ const TDAHReportViewer = ({
   return <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={onBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-blue-500/10 rounded-lg">
-              <Brain className="h-6 w-6 text-blue-600" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Relatório TDAH</h1>
-              <p className="text-sm text-muted-foreground">
-                Resultado da avaliação {currentReport?.assessment_method || 'ASRS-18'}
-              </p>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" onClick={onBack}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-blue-500/10 rounded-lg">
+                <Brain className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Relatório TDAH</h1>
+                <p className="text-sm text-muted-foreground">
+                  Resultado da avaliação {currentReport?.assessment_method || 'ASRS-18'}
+                </p>
+              </div>
             </div>
           </div>
+          <Button 
+            onClick={handleDownloadPDF} 
+            disabled={isGeneratingPDF}
+            variant="outline"
+            className="gap-2"
+          >
+            <Download className="h-4 w-4" />
+            {isGeneratingPDF ? 'Gerando...' : 'Baixar PDF'}
+          </Button>
         </div>
 
         {/* Patient Info */}
