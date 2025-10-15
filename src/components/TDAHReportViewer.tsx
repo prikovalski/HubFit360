@@ -80,11 +80,32 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
     }
   };
 
+  const getEffectiveScore = () => {
+    const method = currentReport.assessment_method || report.assessment_method;
+    const savedScore = Number(currentReport.score ?? report.score ?? 0);
+    if (savedScore > 0) return savedScore;
+
+    if (method === 'DIVA 2.0') {
+      const scores = (currentReport.responses || report.responses)?.scores || {};
+      const total = (scores.totalScore ?? scores.total ?? (
+        (scores.inattentionChildhood ?? 0) +
+        (scores.inattentionAdulthood ?? 0) +
+        (scores.hyperactivityChildhood ?? 0) +
+        (scores.hyperactivityAdulthood ?? 0)
+      ));
+      return Number(total) || 0;
+    }
+
+    return savedScore;
+  };
+
   const getScorePercentage = () => {
     // DIVA 2.0 has max score of 54 (18 criteria * 3 points max)
     // ASRS-18 has max score of 72 (18 questions * 4 points max)
-    const maxScore = report.assessment_method === 'DIVA 2.0' ? 54 : 72;
-    const score = report.score || 0;
+    const method = currentReport.assessment_method || report.assessment_method;
+    const maxScore = method === 'DIVA 2.0' ? 54 : 72;
+    const score = getEffectiveScore();
+    if (!maxScore) return 0;
     return (score / maxScore) * 100;
   };
 
@@ -161,7 +182,7 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-3xl font-bold text-foreground">
-                  {report.score}/{report.assessment_method === 'DIVA 2.0' ? '54' : '72'}
+                  {getEffectiveScore()}/{(currentReport.assessment_method || report.assessment_method) === 'DIVA 2.0' ? '54' : '72'}
                 </p>
                 <p className="text-sm text-muted-foreground">Pontuação Total</p>
               </div>

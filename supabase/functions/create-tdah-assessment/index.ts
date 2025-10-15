@@ -172,6 +172,15 @@ Deno.serve(async (req) => {
       
       // Calculate total score from DIVA scores
       totalScore = scores?.totalScore || scores?.total || 0;
+      
+      // If totalScore is still 0, try to calculate from individual scores
+      if (totalScore === 0 && scores) {
+        totalScore = (scores.inattentionChildhood || 0) + 
+                    (scores.inattentionAdulthood || 0) + 
+                    (scores.hyperactivityChildhood || 0) + 
+                    (scores.hyperactivityAdulthood || 0);
+      }
+      
       classification = providedClassification || 'Não classificado';
       
       // Generate DIVA-specific recommendations
