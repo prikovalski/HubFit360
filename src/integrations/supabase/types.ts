@@ -411,6 +411,7 @@ export type Database = {
       }
       tdah_assessments: {
         Row: {
+          assessment_method: string | null
           assessment_type: string
           classification: string | null
           created_at: string
@@ -429,6 +430,7 @@ export type Database = {
           user_id: number
         }
         Insert: {
+          assessment_method?: string | null
           assessment_type?: string
           classification?: string | null
           created_at?: string
@@ -447,6 +449,7 @@ export type Database = {
           user_id: number
         }
         Update: {
+          assessment_method?: string | null
           assessment_type?: string
           classification?: string | null
           created_at?: string

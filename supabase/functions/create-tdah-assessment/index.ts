@@ -9,12 +9,24 @@ const corsHeaders = {
 };
 
 interface TDAHAssessmentRequest {
-  responses: number[];
+  responses?: number[] | {
+    childhood?: Record<string, number>;
+    adulthood?: Record<string, number>;
+    scores?: any;
+    method?: string;
+  };
+  assessmentType?: 'self' | 'other';
   assessment_type?: 'self' | 'other';
+  patientName?: string;
   patient_name?: string;
+  patientGender?: string;
   patient_gender?: string;
+  patientAge?: number;
   patient_age?: number;
+  patientBirthDate?: string;
   patient_birth_date?: string;
+  assessmentMethod?: string;
+  classification?: string;
 }
 
 function calculateScore(responses: number[]): number {
@@ -111,40 +123,95 @@ Deno.serve(async (req) => {
     }
 
     // Parse request body
+    const requestBody: TDAHAssessmentRequest = await req.json();
+    
     const {
       responses,
-      assessment_type = 'self',
+      assessmentType,
+      assessment_type,
+      patientName,
       patient_name,
+      patientGender,
       patient_gender,
+      patientAge,
       patient_age,
+      patientBirthDate,
       patient_birth_date,
-    }: TDAHAssessmentRequest = await req.json();
+      assessmentMethod,
+      classification: providedClassification,
+    } = requestBody;
 
-    // Validate responses array
-    if (!responses || responses.length !== 18) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid responses. Expected 18 answers.' }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
+    const finalAssessmentType = assessmentType || assessment_type || 'self';
+    const finalPatientName = patientName || patient_name;
+    const finalPatientGender = patientGender || patient_gender;
+    const finalPatientAge = patientAge || patient_age;
+    const finalPatientBirthDate = patientBirthDate || patient_birth_date;
+    
+    // Check if this is DIVA 2.0 format
+    const isDIVA = assessmentMethod === 'DIVA 2.0' || (typeof responses === 'object' && !Array.isArray(responses));
+    
+    let totalScore: number;
+    let classification: string;
+    let recommendations: string;
+    let responsesData: any;
 
-    // Validate each response is in range 0-4
-    const invalidResponses = responses.filter(r => typeof r !== 'number' || r < 0 || r > 4);
-    if (invalidResponses.length > 0) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid response values. Each answer must be between 0 and 4.' }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
+    if (isDIVA) {
+      // DIVA 2.0 format
+      if (!responses || typeof responses !== 'object' || Array.isArray(responses)) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid DIVA 2.0 responses format' }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+      
+      responsesData = responses;
+      const scores = (responses as any).scores;
+      
+      // Calculate total score from DIVA scores
+      totalScore = scores?.total || 0;
+      classification = providedClassification || 'Não classificado';
+      
+      // Generate DIVA-specific recommendations
+      if (classification.includes('Presente')) {
+        recommendations = `Com base na avaliação DIVA 2.0, seus resultados indicam ${classification}. Recomendamos:\n\n1. Consultar um psiquiatra especializado em TDAH para confirmação diagnóstica\n2. Trazer este relatório para a consulta\n3. Considerar avaliação neuropsicológica completa\n4. Discutir opções de tratamento apropriadas`;
+      } else {
+        recommendations = `Com base na avaliação DIVA 2.0, seus resultados indicam ${classification}. Se você continua tendo dificuldades, considere consultar um profissional de saúde mental para uma avaliação mais completa.`;
+      }
+    } else {
+      // ASRS-18 format (original)
+      if (!responses || !Array.isArray(responses) || responses.length !== 18) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid responses. Expected 18 answers for ASRS.' }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+
+      // Validate each response is in range 0-4
+      const invalidResponses = responses.filter(r => typeof r !== 'number' || r < 0 || r > 4);
+      if (invalidResponses.length > 0) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid response values. Each answer must be between 0 and 4.' }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+      
+      responsesData = responses;
+      totalScore = calculateScore(responses);
+      classification = getClassification(totalScore);
+      recommendations = generateRecommendations(totalScore, classification);
     }
 
     // Validate optional fields
-    if (patient_name && patient_name.length > 100) {
+    if (finalPatientName && finalPatientName.length > 100) {
       return new Response(
         JSON.stringify({ error: 'Patient name too long (max 100 characters)' }),
         {
@@ -154,7 +221,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (patient_age && (patient_age < 13 || patient_age > 120)) {
+    if (finalPatientAge && (finalPatientAge < 13 || finalPatientAge > 120)) {
       return new Response(
         JSON.stringify({ error: 'Invalid patient age (must be between 13 and 120)' }),
         {
@@ -164,25 +231,21 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Calculate results
-    const totalScore = calculateScore(responses);
-    const classification = getClassification(totalScore);
-    const recommendations = generateRecommendations(totalScore, classification);
-
     // Insert assessment into database
     const { data: assessment, error: insertError } = await supabaseClient
       .from('tdah_assessments')
       .insert({
         user_id: userId,
-        patient_name: patient_name || null,
-        patient_gender: patient_gender || null,
-        patient_age: patient_age || null,
-        patient_birth_date: patient_birth_date || null,
-        assessment_type: assessment_type,
-        responses,
+        patient_name: finalPatientName || null,
+        patient_gender: finalPatientGender || null,
+        patient_age: finalPatientAge || null,
+        patient_birth_date: finalPatientBirthDate || null,
+        assessment_type: finalAssessmentType,
+        responses: responsesData,
         score: totalScore,
         classification,
         recommendations,
+        assessment_method: assessmentMethod || 'ASRS-18',
         full_report: '',
         is_premium: false,
         status: 'completed',
