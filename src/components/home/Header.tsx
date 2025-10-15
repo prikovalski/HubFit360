@@ -26,7 +26,7 @@ const Header = ({ setCurrentSection }: HeaderProps) => {
           >
             <div className="relative">
               <img 
-                src="/lovable-uploads/942e9b47-7e87-4781-86f5-532558bb73f6.webp" 
+                src="/lovable-uploads/logo.png" 
                 alt="HubFit360 - Logotipo da empresa" 
                 className="w-16 h-16 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
                 width="64"
