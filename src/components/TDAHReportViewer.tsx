@@ -288,12 +288,14 @@ const TDAHReportViewer = ({
               Esta avaliação é uma ferramenta de triagem e NÃO substitui um diagnóstico profissional.
             </p>
             <p>
-              O ASRS-18 é um questionário validado cientificamente para identificar sinais de TDAH,
-              mas apenas um profissional de saúde mental qualificado pode realizar um diagnóstico definitivo.
+              {currentReport?.assessment_method === 'DIVA 2.0' 
+                ? 'O DIVA 2.0 é uma entrevista diagnóstica estruturada validada cientificamente para identificar sinais de TDAH em adultos, baseada nos critérios do DSM-5. No entanto, apenas um profissional de saúde mental qualificado pode realizar um diagnóstico definitivo.'
+                : 'O ASRS-18 é um questionário validado cientificamente para identificar sinais de TDAH, mas apenas um profissional de saúde mental qualificado pode realizar um diagnóstico definitivo.'}
             </p>
             <p>
-              Se você pontuou na categoria "Possível", "Provável" ou "Altamente Provável",
-              recomendamos fortemente que você consulte um psiquiatra ou psicólogo especializado em TDAH.
+              {currentReport?.assessment_method === 'DIVA 2.0'
+                ? 'Se os resultados indicarem a presença de sintomas significativos de TDAH tanto na infância quanto na vida adulta, recomendamos fortemente que você consulte um psiquiatra ou psicólogo especializado em TDAH para uma avaliação diagnóstica completa.'
+                : 'Se você pontuou na categoria "Possível", "Provável" ou "Altamente Provável", recomendamos fortemente que você consulte um psiquiatra ou psicólogo especializado em TDAH.'}
             </p>
           </CardContent>
         </Card>
