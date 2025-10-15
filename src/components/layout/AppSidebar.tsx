@@ -40,7 +40,7 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
     >
       {/* Header */}
       <SidebarHeader className="border-b">
-        <div className={`flex items-center gap-2 py-3 ${isCollapsed ? 'justify-center px-2' : 'px-4'}`}>
+        <div className={`flex items-center gap-2 ${isCollapsed ? 'justify-center px-1 py-2' : 'px-4 py-3'}`}>
           <img 
             src="/lovable-uploads/logo-new.png" 
             alt="Logo HubFit360" 
