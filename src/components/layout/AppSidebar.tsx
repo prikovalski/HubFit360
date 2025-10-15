@@ -1,4 +1,4 @@
-import { User, Brain, Activity, LogOut, ChevronDown, Info } from 'lucide-react';
+import { User, Brain, Activity, LogOut, ChevronDown, Info, Dumbbell } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -105,7 +105,7 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
                 <SidebarMenuButton>
-                  <Activity className="h-4 w-4 text-green-600" />
+                  <Dumbbell className="h-4 w-4 text-green-600" />
                   {!isCollapsed && (
                     <>
                       <span>Avaliações Físicas</span>
