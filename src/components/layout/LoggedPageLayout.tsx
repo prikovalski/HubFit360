@@ -35,7 +35,7 @@ const LoggedPageLayout = ({
         {/* Grid pattern overlay */}
         <div className="absolute inset-0 grid-bg opacity-30"></div>
         
-        <AppSidebar currentPage={currentPage} onNavigate={onNavigate} />
+        <AppSidebar currentPage={currentPage} onNavigate={onNavigate} onLogout={onLogout} />
         
         <div className="flex-1 flex flex-col relative z-10">
           <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

@@ -1,83 +1,145 @@
-import { Home, Activity, Brain, User } from 'lucide-react';
+import { User, Brain, Activity, LogOut, ChevronDown } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
+  SidebarMenuSubButton,
   useSidebar,
+  SidebarHeader,
+  SidebarFooter,
 } from '@/components/ui/sidebar';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useSiteConfig } from '@/hooks/useSiteConfig';
 
 interface AppSidebarProps {
   currentPage: string;
   onNavigate: (page: string) => void;
+  onLogout: () => void;
 }
 
-const menuItems = [
-  { 
-    title: 'Dashboard', 
-    page: 'main-dashboard', 
-    icon: Home,
-    description: 'Visão geral'
-  },
-  { 
-    title: 'Avaliação Física', 
-    page: 'physical-dashboard', 
-    icon: Activity,
-    description: 'Análise corporal por IA'
-  },
-  { 
-    title: 'Avaliação TDAH', 
-    page: 'tdah-dashboard', 
-    icon: Brain,
-    description: 'Questionário de TDAH'
-  },
-  { 
-    title: 'Meu Perfil', 
-    page: 'profile', 
-    icon: User,
-    description: 'Dados pessoais'
-  },
-];
-
-export function AppSidebar({ currentPage, onNavigate }: AppSidebarProps) {
+export function AppSidebar({ currentPage, onNavigate, onLogout }: AppSidebarProps) {
   const { state } = useSidebar();
-  const isCollapsed = state === 'collapsed';
+  const { siteName } = useSiteConfig();
+  const isCollapsed = state === "collapsed";
+
+  const isActive = (page: string) => currentPage === page;
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border/40">
+    <Sidebar className={isCollapsed ? "w-14" : "w-64"} collapsible="icon">
+      {/* Header */}
+      <SidebarHeader className="border-b">
+        <div className="flex items-center gap-2 px-4 py-3">
+          <Activity className="h-6 w-6 text-green-600" />
+          {!isCollapsed && (
+            <span className="font-bold text-lg bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+              {siteName}
+            </span>
+          )}
+        </div>
+      </SidebarHeader>
+
       <SidebarContent>
+        {/* Perfil */}
         <SidebarGroup>
-          <SidebarGroupLabel className={isCollapsed ? 'opacity-0' : ''}>
-            Menu Principal
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => {
-                const isActive = currentPage === item.page;
-                const Icon = item.icon;
-                
-                return (
-                  <SidebarMenuItem key={item.page}>
-                    <SidebarMenuButton
-                      onClick={() => onNavigate(item.page)}
-                      isActive={isActive}
-                      tooltip={isCollapsed ? item.title : undefined}
-                      className={isActive ? 'bg-primary/10 text-primary font-medium' : ''}
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => onNavigate('profile')}
+                isActive={isActive('profile')}
+                className={isActive('profile') ? 'bg-green-50 text-green-700 hover:bg-green-100' : ''}
+              >
+                <User className="h-4 w-4" />
+                {!isCollapsed && <span>Perfil</span>}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        {/* Avaliações Psicológicas */}
+        <SidebarGroup>
+          <Collapsible defaultOpen={isActive('tdah-dashboard') || isActive('tdah-assessment') || isActive('tdah-report')}>
+            <SidebarMenuItem>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuButton>
+                  <Brain className="h-4 w-4 text-purple-600" />
+                  {!isCollapsed && (
+                    <>
+                      <span>Avaliações Psicológicas</span>
+                      <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                    </>
+                  )}
+                </SidebarMenuButton>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <SidebarMenuSub>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      onClick={() => onNavigate('tdah-dashboard')}
+                      isActive={isActive('tdah-dashboard')}
+                      className={isActive('tdah-dashboard') ? 'bg-purple-50 text-purple-700' : ''}
                     >
-                      <Icon className="h-4 w-4" />
-                      {!isCollapsed && <span>{item.title}</span>}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
+                      {!isCollapsed && <span>TDAH - Avaliação Rápida</span>}
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                </SidebarMenuSub>
+              </CollapsibleContent>
+            </SidebarMenuItem>
+          </Collapsible>
+        </SidebarGroup>
+
+        {/* Avaliações Físicas */}
+        <SidebarGroup>
+          <Collapsible defaultOpen={isActive('physical-dashboard') || isActive('assessment') || isActive('report')}>
+            <SidebarMenuItem>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuButton>
+                  <Activity className="h-4 w-4 text-green-600" />
+                  {!isCollapsed && (
+                    <>
+                      <span>Avaliações Físicas</span>
+                      <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                    </>
+                  )}
+                </SidebarMenuButton>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <SidebarMenuSub>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      onClick={() => onNavigate('physical-dashboard')}
+                      isActive={isActive('physical-dashboard')}
+                      className={isActive('physical-dashboard') ? 'bg-green-50 text-green-700' : ''}
+                    >
+                      {!isCollapsed && <span>Avaliação por IA</span>}
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                </SidebarMenuSub>
+              </CollapsibleContent>
+            </SidebarMenuItem>
+          </Collapsible>
         </SidebarGroup>
       </SidebarContent>
+
+      {/* Footer - Botão Sair */}
+      <SidebarFooter className="border-t">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={onLogout}
+              className="text-red-600 hover:bg-red-50 hover:text-red-700"
+            >
+              <LogOut className="h-4 w-4" />
+              {!isCollapsed && <span>Sair</span>}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }

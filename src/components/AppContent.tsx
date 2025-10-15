@@ -15,6 +15,8 @@ import LazyReportViewer from '@/components/lazy/LazyReportViewer';
 import LazyUserProfile from '@/components/lazy/LazyUserProfile';
 import LazyTDAHAssessmentForm from '@/components/lazy/LazyTDAHAssessmentForm';
 import LazyTDAHReportViewer from '@/components/lazy/LazyTDAHReportViewer';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/layout/AppSidebar';
 
 const AppContent = () => {
   const [currentSection, setCurrentSection] = useState('home');
@@ -291,6 +293,30 @@ const AppContent = () => {
     }
   };
 
+  // Se usuário está logado, renderizar com sidebar
+  if (user && !loading) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-gradient-to-br from-green-50 via-white to-emerald-50">
+          <AppSidebar 
+            currentPage={navigation.currentPage}
+            onNavigate={handleNavigate}
+            onLogout={handleLogout}
+          />
+          <main className="flex-1 flex flex-col">
+            <header className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center px-4 sticky top-0 z-10">
+              <SidebarTrigger />
+            </header>
+            <div className="flex-1 overflow-auto">
+              {renderSection()}
+            </div>
+          </main>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
+  // Se não está logado, renderizar sem sidebar
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
       {/* Header - apenas para usuários não logados */}
