@@ -8,47 +8,54 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserCredits } from '@/hooks/useUserCredits';
-
 interface TDAHReportViewerProps {
   report: any;
   onBack: () => void;
 }
-
-const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
-  const { toast } = useToast();
-  const { hasCredits, balance, fetchCredits } = useUserCredits();
+const TDAHReportViewer = ({
+  report,
+  onBack
+}: TDAHReportViewerProps) => {
+  const {
+    toast
+  } = useToast();
+  const {
+    hasCredits,
+    balance,
+    fetchCredits
+  } = useUserCredits();
   const [upgrading, setUpgrading] = useState(false);
   const [currentReport, setCurrentReport] = useState(report);
-
   const handleUpgrade = async () => {
     if (!hasCredits) {
       toast({
         title: "Créditos insuficientes",
         description: "Você precisa de créditos para fazer upgrade do relatório.",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     setUpgrading(true);
-
     try {
-      const { data, error } = await supabase.functions.invoke('upgrade-tdah-assessment', {
-        body: { assessment_id: currentReport.id }
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('upgrade-tdah-assessment', {
+        body: {
+          assessment_id: currentReport.id
+        }
       });
-
       if (error) throw error;
-
       toast({
         title: "Upgrade realizado!",
-        description: "Seu relatório foi atualizado com análise detalhada por IA.",
+        description: "Seu relatório foi atualizado com análise detalhada por IA."
       });
 
       // Update current report with the new data
       setCurrentReport({
         ...currentReport,
         is_premium: true,
-        full_report: data.full_report,
+        full_report: data.full_report
       });
 
       // Refresh credits
@@ -58,13 +65,12 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
       toast({
         title: "Erro ao fazer upgrade",
         description: error.message || "Ocorreu um erro ao processar seu upgrade.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setUpgrading(false);
     }
   };
-
   const getClassificationColor = (classification: string) => {
     switch (classification?.toLowerCase()) {
       case 'improvável':
@@ -79,38 +85,11 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
         return 'bg-gray-500/10 text-gray-700 border-gray-500/20';
     }
   };
-
-  const getEffectiveScore = () => {
-    const method = currentReport.assessment_method || report.assessment_method;
-    const savedScore = Number(currentReport.score ?? report.score ?? 0);
-    if (savedScore > 0) return savedScore;
-
-    if (method === 'DIVA 2.0') {
-      const scores = (currentReport.responses || report.responses)?.scores || {};
-      let total = scores?.totalScore ?? scores?.total;
-      if (total == null) {
-        const adultOnly = (scores.inattentionAdulthood ?? 0) + (scores.hyperactivityAdulthood ?? 0);
-        const allPeriods = adultOnly + (scores.inattentionChildhood ?? 0) + (scores.hyperactivityChildhood ?? 0);
-        total = adultOnly > 0 ? adultOnly : allPeriods;
-      }
-      return Number(total) || 0;
-    }
-
-    return savedScore;
-  };
-
   const getScorePercentage = () => {
-    // DIVA 2.0 → consideramos apenas a idade adulta: máximo 18 (9 inatenção + 9 hiperatividade)
-    // ASRS-18 → máximo 72 (18 questões * 4 pontos)
-    const method = currentReport.assessment_method || report.assessment_method;
-    const maxScore = method === 'DIVA 2.0' ? 18 : 72;
-    const score = getEffectiveScore();
-    if (!maxScore) return 0;
-    return (score / maxScore) * 100;
+    const maxScore = 72; // 18 questions * 4 points max
+    return (report.score || 0) / maxScore * 100;
   };
-
-  return (
-    <div className="min-h-screen bg-background p-4">
+  return <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
@@ -140,31 +119,26 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
             </CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {report.patient_name && (
-              <div>
+            {report.patient_name && <div>
                 <p className="text-sm text-muted-foreground">Nome</p>
                 <p className="font-medium">{report.patient_name}</p>
-              </div>
-            )}
-            {report.patient_gender && (
-              <div>
+              </div>}
+            {report.patient_gender && <div>
                 <p className="text-sm text-muted-foreground">Gênero</p>
                 <p className="font-medium">
-                  {report.patient_gender === 'MALE' ? 'Masculino' : 
-                   report.patient_gender === 'FEMALE' ? 'Feminino' : 'Outro'}
+                  {report.patient_gender === 'MALE' ? 'Masculino' : report.patient_gender === 'FEMALE' ? 'Feminino' : 'Outro'}
                 </p>
-              </div>
-            )}
-            {report.patient_age && (
-              <div>
+              </div>}
+            {report.patient_age && <div>
                 <p className="text-sm text-muted-foreground">Idade</p>
                 <p className="font-medium">{report.patient_age} anos</p>
-              </div>
-            )}
+              </div>}
             <div>
               <p className="text-sm text-muted-foreground">Data da Avaliação</p>
               <p className="font-medium">
-                {format(new Date(report.created_at), 'dd/MM/yyyy', { locale: ptBR })}
+                {format(new Date(report.created_at), 'dd/MM/yyyy', {
+                locale: ptBR
+              })}
               </p>
             </div>
           </CardContent>
@@ -181,9 +155,7 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-3xl font-bold text-foreground">
-                  {getEffectiveScore()}/{(currentReport.assessment_method || report.assessment_method) === 'DIVA 2.0' ? '18' : '72'}
-                </p>
+                <p className="text-3xl font-bold text-foreground">{report.score}/72</p>
                 <p className="text-sm text-muted-foreground">Pontuação Total</p>
               </div>
               <Badge className={getClassificationColor(report.classification)}>
@@ -194,10 +166,9 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
             {/* Score Bar */}
             <div className="space-y-2">
               <div className="h-4 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-blue-500 transition-all duration-500"
-                  style={{ width: `${getScorePercentage()}%` }}
-                />
+                <div className="h-full bg-blue-500 transition-all duration-500" style={{
+                width: `${getScorePercentage()}%`
+              }} />
               </div>
               <p className="text-xs text-muted-foreground text-center">
                 {getScorePercentage().toFixed(1)}% da pontuação máxima
@@ -207,8 +178,7 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
         </Card>
 
         {/* Recommendations */}
-        {currentReport.recommendations && (
-          <Card>
+        {currentReport.recommendations && <Card>
             <CardHeader>
               <CardTitle>Recomendações</CardTitle>
               <CardDescription>
@@ -220,12 +190,10 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
                 <p className="whitespace-pre-wrap">{currentReport.recommendations}</p>
               </div>
             </CardContent>
-          </Card>
-        )}
+          </Card>}
 
         {/* Premium Upgrade or Full Report */}
-        {!currentReport.is_premium ? (
-          <Card className="border-2 border-blue-500/20 bg-gradient-to-br from-blue-50/50 to-purple-50/50">
+        {!currentReport.is_premium ? <Card className="border-2 border-blue-500/20 bg-gradient-to-br from-blue-50/50 to-purple-50/50 font-extrabold">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -267,32 +235,19 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
                   </div>
                 </div>
 
-                <Button
-                  onClick={handleUpgrade}
-                  disabled={!hasCredits || upgrading}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                  size="lg"
-                >
-                  {upgrading ? (
-                    <>Gerando análise...</>
-                  ) : (
-                    <>
+                <Button onClick={handleUpgrade} disabled={!hasCredits || upgrading} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700" size="lg">
+                  {upgrading ? <>Gerando análise...</> : <>
                       <Sparkles className="mr-2 h-5 w-5" />
                       Fazer Upgrade (1 crédito)
-                    </>
-                  )}
+                    </>}
                 </Button>
 
-                {!hasCredits && (
-                  <p className="text-sm text-destructive text-center mt-2">
+                {!hasCredits && <p className="text-sm text-destructive text-center mt-2">
                     Você não possui créditos suficientes
-                  </p>
-                )}
+                  </p>}
               </div>
             </CardContent>
-          </Card>
-        ) : currentReport.full_report ? (
-          <Card className="border-2 border-blue-500/20">
+          </Card> : currentReport.full_report ? <Card className="border-2 border-blue-500/20">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-blue-600" />
@@ -307,8 +262,7 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
                 <p className="whitespace-pre-wrap">{currentReport.full_report}</p>
               </div>
             </CardContent>
-          </Card>
-        ) : null}
+          </Card> : null}
 
         {/* Disclaimer */}
         <Card className="border-yellow-500/20 bg-yellow-500/5">
@@ -330,8 +284,6 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default TDAHReportViewer;
