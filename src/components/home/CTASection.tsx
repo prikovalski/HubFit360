@@ -38,56 +38,58 @@ const CTASection = ({
           </div>
           
           <div className="mb-8">
-            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm border border-green-300/30 rounded-full px-4 py-2 mb-8">
-              <Zap className="w-4 h-4 text-green-400" />
-              <span className="text-sm font-medium text-green-300">Transformação Garantida</span>
+            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-green-500/20 to-purple-500/20 backdrop-blur-sm border border-green-300/30 rounded-full px-4 py-2 mb-8">
+              <Sparkles className="w-4 h-4 text-green-400" />
+              <span className="text-sm font-medium text-green-300">Evolução Completa</span>
             </div>
           </div>
           
-          <h2 id="cta-title" className="text-4xl md:text-6xl font-black mb-8 text-white leading-tight">
-            Pronto para 
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 animate-gradient">
-              Revolucionar
+          <h2 id="cta-title" className="text-3xl md:text-5xl font-black mb-8 text-white leading-tight">
+            <span className="block mb-2">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400">Compreender</span> o corpo.
             </span>
-            seus resultados?
+            <span className="block mb-2">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">Equilibrar</span> a mente.
+            </span>
+            <span className="block">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400">Evoluir</span> por inteiro.
+            </span>
           </h2>
           
-          <p className="text-xl md:text-2xl mb-12 text-gray-200 leading-relaxed max-w-2xl mx-auto">
-            Faça sua <span className="font-bold text-green-400">avaliação física completa</span> em apenas 
-            <span className="font-bold text-emerald-400"> 3 minutos</span> e descubra seu 
-            <span className="font-bold text-teal-400"> verdadeiro potencial</span>
+          <p className="text-lg md:text-xl mb-12 text-gray-200 leading-relaxed max-w-3xl mx-auto">
+            Comece sua jornada com avaliações <span className="font-bold text-green-400">físicas</span>, <span className="font-bold text-orange-400">nutricionais</span> e <span className="font-bold text-purple-400">psicológicas</span> integradas. Um <span className="font-semibold text-white">ecossistema completo</span> que entende você de forma holística.
           </p>
           
           {/* Stats row */}
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8 mb-12 text-gray-300">
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="font-medium">Gratuito para começar</span>
+              <span className="font-medium">Análise Holística</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" style={{
+              <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style={{
               animationDelay: '0.5s'
             }}></div>
-              <span className="font-medium">Sem instalação</span>
+              <span className="font-medium">Corpo & Mente</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-teal-400 rounded-full animate-pulse" style={{
               animationDelay: '1s'
             }}></div>
-              <span className="font-medium">Resultados instantâneos</span>
+              <span className="font-medium">Resultados em 3min</span>
             </div>
           </div>
           
-          <Button onClick={() => setCurrentSection('auth')} className="btn-modern-green text-white px-4 py-2 md:px-12 md:py-6 text-base md:text-2xl rounded-full transition-all duration-300 hover:shadow-2xl hover:scale-110 focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-green-900 font-bold group neon-accent-green relative overflow-hidden w-full max-w-xs md:max-w-none md:w-auto" aria-label="Iniciar avaliação física gratuita agora">
+          <Button onClick={() => setCurrentSection('auth')} className="btn-modern-green text-white px-4 py-2 md:px-12 md:py-6 text-base md:text-2xl rounded-full transition-all duration-300 hover:shadow-2xl hover:scale-110 focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-green-900 font-bold group neon-accent-green relative overflow-hidden w-full max-w-xs md:max-w-none md:w-auto" aria-label="Começar sua jornada de evolução completa">
             <div className="flex items-center justify-center">
-              <Zap className="mr-1 md:mr-3 w-4 h-4 md:w-7 md:h-7 group-hover:animate-spin" />
-              <span className="md:text-2xl text-sm">Avaliação Gratuita</span>
+              <Sparkles className="mr-1 md:mr-3 w-4 h-4 md:w-7 md:h-7 group-hover:animate-spin" />
+              <span className="md:text-2xl text-sm">Começar Minha Evolução</span>
               <ArrowRight className="ml-1 md:ml-3 w-4 h-4 md:w-7 md:h-7 group-hover:translate-x-2 transition-transform" />
             </div>
           </Button>
           
           <p className="mt-6 text-sm text-gray-400">
-            🔒 Seus dados estão 100% seguros e protegidos
+            🔒 Ambiente seguro • Resultados personalizados • Evolução garantida
           </p>
         </div>
       </div>
