@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Brain, ArrowLeft, Send } from 'lucide-react';
+import { Brain, ArrowLeft, Send, CheckCircle, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -575,6 +575,28 @@ const DIVA2AssessmentForm = ({ onBack, onSuccess }: DIVA2AssessmentFormProps) =>
               {DIVA_CRITERIA.hyperactivity.childhood.map(q => renderQuestion(q, 'childhood'))}
             </CardContent>
           </Card>
+
+          {childhoodAnswered === totalQuestions && (
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="pt-6 text-center space-y-4">
+                <div className="flex items-center justify-center gap-2 text-primary">
+                  <CheckCircle className="h-6 w-6" />
+                  <p className="text-lg font-semibold">Questionário da Infância Concluído!</p>
+                </div>
+                <p className="text-muted-foreground">
+                  Agora vamos avaliar os sintomas na idade adulta.
+                </p>
+                <Button 
+                  onClick={() => handlePeriodChange('adulthood')}
+                  className="mt-4"
+                  size="lg"
+                >
+                  Continuar para Idade Adulta
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="adulthood" className="space-y-6">
