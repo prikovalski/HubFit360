@@ -73,7 +73,7 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
 
         {/* Avaliações Psicológicas */}
         <SidebarGroup>
-          <Collapsible defaultOpen={isActive('tdah-dashboard') || isActive('tdah-assessment') || isActive('tdah-report')}>
+          <Collapsible defaultOpen={isActive('tdah-dashboard') || isActive('tdah-assessment') || isActive('tdah-report') || isActive('diva2-assessment')}>
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
                 <SidebarMenuButton>
@@ -95,6 +95,15 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
                       className={isActive('tdah-dashboard') ? 'bg-purple-50 text-purple-700' : ''}
                     >
                       {!isCollapsed && <span>TDAH - Avaliação Rápida</span>}
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      onClick={() => onNavigate('diva2-assessment')}
+                      isActive={isActive('diva2-assessment')}
+                      className={isActive('diva2-assessment') ? 'bg-purple-50 text-purple-700' : ''}
+                    >
+                      {!isCollapsed && <span>TDAH - DIVA 2.0</span>}
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                 </SidebarMenuSub>

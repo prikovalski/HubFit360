@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 
-export type NavigationPage = 'main-dashboard' | 'physical-dashboard' | 'tdah-dashboard' | 'profile' | 'assessment' | 'tdah-assessment' | 'report' | 'tdah-report';
+export type NavigationPage = 'main-dashboard' | 'physical-dashboard' | 'tdah-dashboard' | 'profile' | 'assessment' | 'tdah-assessment' | 'diva2-assessment' | 'report' | 'tdah-report';
 
 interface NavigationState {
   currentPage: NavigationPage;

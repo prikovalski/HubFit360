@@ -18,6 +18,7 @@ import LazyReportViewer from '@/components/lazy/LazyReportViewer';
 import LazyUserProfile from '@/components/lazy/LazyUserProfile';
 import LazyTDAHAssessmentForm from '@/components/lazy/LazyTDAHAssessmentForm';
 import LazyTDAHReportViewer from '@/components/lazy/LazyTDAHReportViewer';
+import LazyDIVA2AssessmentForm from '@/components/lazy/LazyDIVA2AssessmentForm';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 const AppContent = () => {
@@ -180,6 +181,8 @@ const AppContent = () => {
           }} />;
         case 'tdah-assessment':
           return <LazyTDAHAssessmentForm onBack={handleBackToTDAHDashboard} onSuccess={handleTDAHAssessmentSuccess} />;
+        case 'diva2-assessment':
+          return <LazyDIVA2AssessmentForm onBack={handleBackToTDAHDashboard} onSuccess={handleTDAHAssessmentSuccess} />;
         case 'tdah-report':
           return <LazyTDAHReportViewer report={selectedTDAHReport} onBack={handleBackToTDAHDashboard} />;
         case 'assessment':
