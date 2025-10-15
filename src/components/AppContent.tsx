@@ -185,6 +185,7 @@ const AppContent = () => {
             <MainDashboard
               onNavigateToPhysical={() => navigation.goToPhysicalDashboard()}
               onNavigateToTDAH={() => navigation.goToTDAHDashboard()}
+              onLogout={handleLogout}
             />
           );
         
@@ -273,6 +274,7 @@ const AppContent = () => {
             <MainDashboard
               onNavigateToPhysical={() => navigation.goToPhysicalDashboard()}
               onNavigateToTDAH={() => navigation.goToTDAHDashboard()}
+              onLogout={handleLogout}
             />
           );
       }

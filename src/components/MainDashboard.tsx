@@ -1,4 +1,4 @@
-import { Activity, Brain, Plus, TrendingUp, Calendar, BarChart3, Sparkles, Info } from 'lucide-react';
+import { Activity, Brain, Plus, TrendingUp, Calendar, BarChart3, Sparkles, Info, LogOut } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,9 +17,10 @@ import {
 interface MainDashboardProps {
   onNavigateToPhysical: () => void;
   onNavigateToTDAH: () => void;
+  onLogout: () => void;
 }
 
-const MainDashboard = ({ onNavigateToPhysical, onNavigateToTDAH }: MainDashboardProps) => {
+const MainDashboard = ({ onNavigateToPhysical, onNavigateToTDAH, onLogout }: MainDashboardProps) => {
   const { stats, loading } = useMainDashboardStats();
   const [showInfoModal, setShowInfoModal] = useState(false);
 
@@ -36,15 +37,26 @@ const MainDashboard = ({ onNavigateToPhysical, onNavigateToTDAH }: MainDashboard
               Gerencie todas as suas avaliações em um só lugar
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowInfoModal(true)}
-            className="gap-2"
-          >
-            <Info className="h-4 w-4" />
-            Sobre o HubFit360
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowInfoModal(true)}
+              className="gap-2"
+            >
+              <Info className="h-4 w-4" />
+              Sobre o HubFit360
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onLogout}
+              className="gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
+            >
+              <LogOut className="h-4 w-4" />
+              Sair
+            </Button>
+          </div>
         </div>
       </div>
 
