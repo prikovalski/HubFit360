@@ -27,30 +27,25 @@ const HomeSection = ({ setCurrentSection }: HomeSectionProps) => {
             
             <h1 
               id="hero-title"
-              className="text-5xl md:text-7xl font-black text-gray-900 mb-6 leading-tight animate-slide-up"
+              className="text-4xl md:text-6xl lg:text-7xl font-black text-gray-900 mb-8 leading-tight animate-slide-up"
               style={{ animationDelay: '0.2s' }}
             >
-              Descubra Seu
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 animate-gradient"> 
-                Potencial Máximo
+              <span className="block mb-3">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600">Compreender</span> o corpo.
               </span>
-              <div className="flex flex-col items-center justify-center space-y-2 mt-2">
-                <div className="flex items-center space-x-3">
-                  <Brain className="w-12 h-12 text-green-500 animate-pulse" />
-                  <span className="text-4xl md:text-6xl">Físico & Mental</span>
-                  <TrendingUp className="w-10 h-10 text-emerald-500 animate-bounce" />
-                </div>
-              </div>
+              <span className="block mb-3">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">Equilibrar</span> a mente.
+              </span>
+              <span className="block">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-600">Evoluir</span> por inteiro.
+              </span>
             </h1>
             
             <p 
-              className="text-xl md:text-2xl text-gray-700 mb-12 leading-relaxed max-w-3xl mx-auto animate-slide-up"
+              className="text-lg md:text-xl text-gray-600 mb-12 leading-relaxed max-w-4xl mx-auto animate-slide-up font-light"
               style={{ animationDelay: '0.4s' }}
             >
-              <span className="font-semibold text-green-600">Avaliação física revolucionária</span> e 
-              <span className="font-semibold text-purple-600"> triagem de TDAH</span> com 
-              <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent font-bold"> Inteligência Artificial avançada</span>. 
-              Transforme seu corpo e entenda sua mente com análises personalizadas.
+              Avaliações <span className="font-semibold text-green-600">físicas</span>, <span className="font-semibold text-orange-600">nutricionais</span> e <span className="font-semibold text-purple-600">psicológicas</span> conectadas em um <span className="font-medium text-gray-900">ecossistema inteligente</span> que entende você de forma completa.
             </p>
             
             {/* Stats animados */}
@@ -60,15 +55,15 @@ const HomeSection = ({ setCurrentSection }: HomeSectionProps) => {
             >
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-gradient-to-r from-green-400 to-green-600 rounded-full animate-pulse"></div>
-                <span className="text-gray-600 font-medium">Análise Precisa em 3min</span>
+                <span className="text-gray-600 font-medium">Visão Holística</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-                <span className="text-gray-600 font-medium">+99% de Precisão</span>
+                <div className="w-3 h-3 bg-gradient-to-r from-purple-400 to-purple-600 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                <span className="text-gray-600 font-medium">Análise Integrada</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-gradient-to-r from-teal-400 to-teal-600 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
-                <span className="text-gray-600 font-medium">Resultados Instantâneos</span>
+                <span className="text-gray-600 font-medium">Resultados em 3min</span>
               </div>
             </div>
             
@@ -79,10 +74,10 @@ const HomeSection = ({ setCurrentSection }: HomeSectionProps) => {
               <Button 
                 onClick={() => setCurrentSection('auth')}
                 className="btn-modern-green text-white px-10 py-4 text-xl rounded-full transition-all duration-300 hover:shadow-2xl hover:scale-105 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-bold group neon-accent-green"
-                aria-label="Começar avaliação física gratuita agora"
+                aria-label="Começar sua jornada de evolução completa"
               >
                 <Zap className="mr-3 w-6 h-6 group-hover:animate-spin" />
-                Começar Avaliação
+                Começar Minha Jornada
                 <ArrowRight className="ml-3 w-6 h-6 group-hover:translate-x-1 transition-transform" />
               </Button>
               
