@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import AboutSection from '@/components/AboutSection';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { useUserCredits } from '@/hooks/useUserCredits';
 import { useNavigation } from '@/hooks/useNavigation';
 import Header from '@/components/home/Header';
 import HomePage from '@/components/home/HomePage';
@@ -28,6 +29,7 @@ const AppContent = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const navigation = useNavigation();
+  const { balance } = useUserCredits();
 
   // Use try-catch to handle potential auth context issues
   let user = null;
@@ -222,6 +224,11 @@ const AppContent = () => {
           {/* Modal Sobre o HubFit360 */}
           <Dialog open={showAboutModal} onOpenChange={setShowAboutModal}>
             <DialogContent className="max-w-2xl">
+              <div className="text-center py-3 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-t-lg -mt-6 -mx-6 mb-4 border-b">
+                <p className="text-sm text-muted-foreground">
+                  Créditos Disponíveis: <span className="font-bold text-primary text-lg">{balance}</span>
+                </p>
+              </div>
               <DialogHeader>
                 <DialogTitle className="text-2xl flex items-center gap-2">
                   <Sparkles className="h-6 w-6 text-primary" />

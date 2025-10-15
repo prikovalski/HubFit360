@@ -7,6 +7,7 @@ import { Activity, Brain, Sparkles } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useUserCredits } from '@/hooks/useUserCredits';
 
 interface LoggedPageLayoutProps {
   children: React.ReactNode;
@@ -28,6 +29,7 @@ const LoggedPageLayout = ({
   onNavigate
 }: LoggedPageLayoutProps) => {
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const { balance } = useUserCredits();
 
   return (
     <SidebarProvider defaultOpen={false}>
@@ -69,6 +71,11 @@ const LoggedPageLayout = ({
         {/* Modal Sobre o HubFit360 */}
         <Dialog open={showAboutModal} onOpenChange={setShowAboutModal}>
           <DialogContent className="max-w-2xl">
+            <div className="text-center py-3 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-t-lg -mt-6 -mx-6 mb-4 border-b">
+              <p className="text-sm text-muted-foreground">
+                Créditos Disponíveis: <span className="font-bold text-primary text-lg">{balance}</span>
+              </p>
+            </div>
             <DialogHeader>
               <DialogTitle className="text-2xl flex items-center gap-2">
                 <Sparkles className="h-6 w-6 text-primary" />
