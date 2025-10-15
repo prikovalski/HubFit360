@@ -6,26 +6,23 @@ import { useMainDashboardStats } from '@/hooks/useMainDashboardStats';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 interface MainDashboardProps {
   onNavigateToPhysical: () => void;
   onNavigateToTDAH: () => void;
   onLogout: () => void;
 }
-
-const MainDashboard = ({ onNavigateToPhysical, onNavigateToTDAH, onLogout }: MainDashboardProps) => {
-  const { stats, loading } = useMainDashboardStats();
+const MainDashboard = ({
+  onNavigateToPhysical,
+  onNavigateToTDAH,
+  onLogout
+}: MainDashboardProps) => {
+  const {
+    stats,
+    loading
+  } = useMainDashboardStats();
   const [showInfoModal, setShowInfoModal] = useState(false);
-
-  return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+  return <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
       <div className="mb-8 animate-fade-in">
         <div className="flex items-center justify-between mb-4">
@@ -38,42 +35,24 @@ const MainDashboard = ({ onNavigateToPhysical, onNavigateToTDAH, onLogout }: Mai
             </p>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowInfoModal(true)}
-              className="gap-2"
-            >
+            <Button variant="outline" size="sm" onClick={() => setShowInfoModal(true)} className="gap-2">
               <Info className="h-4 w-4" />
               Sobre o HubFit360
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onLogout}
-              className="gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
-            >
-              <LogOut className="h-4 w-4" />
-              Sair
-            </Button>
+            
           </div>
         </div>
       </div>
 
       {/* Stats Grid */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
+      {loading ? <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {[1, 2, 3].map(i => <Card key={i} className="animate-pulse">
               <CardHeader className="space-y-2">
                 <div className="h-4 bg-muted rounded w-1/2"></div>
                 <div className="h-8 bg-muted rounded w-1/3"></div>
               </CardHeader>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in">
+            </Card>)}
+        </div> : <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in">
           <Card className="border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover-scale">
             <CardHeader>
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -127,11 +106,12 @@ const MainDashboard = ({ onNavigateToPhysical, onNavigateToTDAH, onLogout }: Mai
               </div>
             </CardContent>
           </Card>
-        </div>
-      )}
+        </div>}
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 animate-fade-in" style={{
+      animationDelay: '0.1s'
+    }}>
         <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200/50 hover:shadow-xl transition-all duration-300 hover-scale group">
           <CardHeader>
             <div className="flex items-center gap-3 mb-2">
@@ -145,11 +125,7 @@ const MainDashboard = ({ onNavigateToPhysical, onNavigateToTDAH, onLogout }: Mai
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button 
-              onClick={onNavigateToPhysical}
-              className="w-full bg-green-600 hover:bg-green-700 group-hover:scale-105 transition-transform"
-              size="lg"
-            >
+            <Button onClick={onNavigateToPhysical} className="w-full bg-green-600 hover:bg-green-700 group-hover:scale-105 transition-transform" size="lg">
               <Plus className="mr-2 h-4 w-4" />
               Acessar Avaliações Físicas
             </Button>
@@ -176,11 +152,7 @@ const MainDashboard = ({ onNavigateToPhysical, onNavigateToTDAH, onLogout }: Mai
             </CardDescription>
           </CardHeader>
           <CardContent className="relative">
-            <Button 
-              onClick={onNavigateToTDAH}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 group-hover:scale-105 transition-transform"
-              size="lg"
-            >
+            <Button onClick={onNavigateToTDAH} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 group-hover:scale-105 transition-transform" size="lg">
               <Plus className="mr-2 h-4 w-4" />
               Acessar Avaliações TDAH
             </Button>
@@ -189,8 +161,9 @@ const MainDashboard = ({ onNavigateToPhysical, onNavigateToTDAH, onLogout }: Mai
       </div>
 
       {/* Recent Assessments */}
-      {!loading && stats.recentAssessments.length > 0 && (
-        <Card className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+      {!loading && stats.recentAssessments.length > 0 && <Card className="animate-fade-in" style={{
+      animationDelay: '0.2s'
+    }}>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -205,51 +178,35 @@ const MainDashboard = ({ onNavigateToPhysical, onNavigateToTDAH, onLogout }: Mai
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {stats.recentAssessments.map((assessment, index) => (
-                <div
-                  key={assessment.id}
-                  className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-muted/50 hover:border-primary/30 transition-all duration-200 hover-scale animate-fade-in"
-                  style={{ animationDelay: `${0.3 + index * 0.1}s` }}
-                >
+              {stats.recentAssessments.map((assessment, index) => <div key={assessment.id} className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-muted/50 hover:border-primary/30 transition-all duration-200 hover-scale animate-fade-in" style={{
+            animationDelay: `${0.3 + index * 0.1}s`
+          }}>
                   <div className="flex items-center gap-4">
-                    <div className={`p-2 rounded-lg transition-colors ${
-                      assessment.type === 'physical' 
-                        ? 'bg-green-500/10 hover:bg-green-500/20' 
-                        : 'bg-blue-500/10 hover:bg-blue-500/20'
-                    }`}>
-                      {assessment.type === 'physical' ? (
-                        <Activity className="h-5 w-5 text-green-600" />
-                      ) : (
-                        <Brain className="h-5 w-5 text-blue-600" />
-                      )}
+                    <div className={`p-2 rounded-lg transition-colors ${assessment.type === 'physical' ? 'bg-green-500/10 hover:bg-green-500/20' : 'bg-blue-500/10 hover:bg-blue-500/20'}`}>
+                      {assessment.type === 'physical' ? <Activity className="h-5 w-5 text-green-600" /> : <Brain className="h-5 w-5 text-blue-600" />}
                     </div>
                     <div>
                       <p className="font-medium">
                         {assessment.type === 'physical' ? 'Avaliação Física' : 'Avaliação TDAH'}
-                        {assessment.type === 'tdah' && (
-                          <Badge className="ml-2 bg-blue-500/10 text-blue-700 border-0 text-xs">
+                        {assessment.type === 'tdah' && <Badge className="ml-2 bg-blue-500/10 text-blue-700 border-0 text-xs">
                             Novo
-                          </Badge>
-                        )}
+                          </Badge>}
                       </p>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="h-3 w-3" />
-                        {format(new Date(assessment.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                        {format(new Date(assessment.created_at), "dd/MM/yyyy 'às' HH:mm", {
+                    locale: ptBR
+                  })}
                       </div>
                     </div>
                   </div>
-                  <Badge 
-                    variant={assessment.type === 'physical' ? 'default' : 'secondary'}
-                    className={assessment.type === 'physical' ? '' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'}
-                  >
+                  <Badge variant={assessment.type === 'physical' ? 'default' : 'secondary'} className={assessment.type === 'physical' ? '' : 'bg-blue-100 text-blue-700 hover:bg-blue-200'}>
                     {assessment.type === 'physical' ? 'Física' : 'TDAH'}
                   </Badge>
-                </div>
-              ))}
+                </div>)}
             </div>
           </CardContent>
-        </Card>
-      )}
+        </Card>}
 
       {/* Info Modal */}
       <Dialog open={showInfoModal} onOpenChange={setShowInfoModal}>
@@ -310,23 +267,17 @@ const MainDashboard = ({ onNavigateToPhysical, onNavigateToTDAH, onLogout }: Mai
             </div>
 
             <div className="flex gap-2">
-              <Button 
-                onClick={() => {
-                  setShowInfoModal(false);
-                  onNavigateToPhysical();
-                }}
-                className="flex-1 bg-green-600 hover:bg-green-700"
-              >
+              <Button onClick={() => {
+              setShowInfoModal(false);
+              onNavigateToPhysical();
+            }} className="flex-1 bg-green-600 hover:bg-green-700">
                 <Activity className="mr-2 h-4 w-4" />
                 Começar Avaliação Física
               </Button>
-              <Button 
-                onClick={() => {
-                  setShowInfoModal(false);
-                  onNavigateToTDAH();
-                }}
-                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-              >
+              <Button onClick={() => {
+              setShowInfoModal(false);
+              onNavigateToTDAH();
+            }} className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                 <Brain className="mr-2 h-4 w-4" />
                 Experimentar Avaliação TDAH
               </Button>
@@ -334,8 +285,6 @@ const MainDashboard = ({ onNavigateToPhysical, onNavigateToTDAH, onLogout }: Mai
           </div>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 };
-
 export default MainDashboard;
