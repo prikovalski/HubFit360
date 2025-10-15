@@ -41,9 +41,9 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
       {/* Header */}
       <SidebarHeader className="border-b">
         <div className="flex items-center gap-2 px-4 py-3">
-          <img src="/lovable-uploads/logo.png" alt="Logo HubFit360" className="h-10 w-10" />
+          <img src="/lovable-uploads/logo-new.png" alt="Logo HubFit360" className="h-10 w-10" />
           {!isCollapsed && (
-            <span className="font-bold text-lg bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+            <span className="font-bold text-lg bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
               {siteName}
             </span>
           )}

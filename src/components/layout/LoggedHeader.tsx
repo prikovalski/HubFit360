@@ -50,10 +50,10 @@ const LoggedHeader = ({
           }
         }} tabIndex={0} role="button" aria-label="Ir para dashboard">
             <div className="relative">
-              <img src="/lovable-uploads/logo.png" alt="HubFit360 - Logotipo da empresa" className="w-12 h-12 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" width="48" height="48" loading="eager" />
+              <img src="/lovable-uploads/logo-new.png" alt="HubFit360 - Logotipo da empresa" className="w-12 h-12 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" width="48" height="48" loading="eager" />
               <Sparkles className="absolute -top-1 -right-1 w-3 h-3 text-green-400 animate-pulse opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
               HubFit360
             </span>
           </div>
