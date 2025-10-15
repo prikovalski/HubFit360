@@ -186,12 +186,12 @@ const MainDashboard = ({
                       {assessment.type === 'physical' ? <Activity className="h-5 w-5 text-green-600" /> : <Brain className="h-5 w-5 text-blue-600" />}
                     </div>
                     <div>
-                      <p className="font-medium">
-                        {assessment.type === 'physical' ? 'Avaliação Física' : 'Avaliação TDAH'}
+                      <div className="font-medium flex items-center">
+                        <span>{assessment.type === 'physical' ? 'Avaliação Física' : 'Avaliação TDAH'}</span>
                         {assessment.type === 'tdah' && <Badge className="ml-2 bg-blue-500/10 text-blue-700 border-0 text-xs">
                             Novo
                           </Badge>}
-                      </p>
+                      </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="h-3 w-3" />
                         {format(new Date(assessment.created_at), "dd/MM/yyyy 'às' HH:mm", {
