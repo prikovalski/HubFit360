@@ -1,4 +1,4 @@
-import { User, Brain, Activity, LogOut, ChevronDown } from 'lucide-react';
+import { User, Brain, Activity, LogOut, ChevronDown, Info } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -21,9 +21,10 @@ interface AppSidebarProps {
   currentPage: string;
   onNavigate: (page: string) => void;
   onLogout: () => void;
+  onShowAbout: () => void;
 }
 
-export function AppSidebar({ currentPage, onNavigate, onLogout }: AppSidebarProps) {
+export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: AppSidebarProps) {
   const { state } = useSidebar();
   const { siteName } = useSiteConfig();
   const isCollapsed = state === "collapsed";
@@ -126,9 +127,18 @@ export function AppSidebar({ currentPage, onNavigate, onLogout }: AppSidebarProp
         </SidebarGroup>
       </SidebarContent>
 
-      {/* Footer - Botão Sair */}
+      {/* Footer - Sobre e Sair */}
       <SidebarFooter className="border-t">
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={onShowAbout}
+              className="hover:bg-muted"
+            >
+              <Info className="h-4 w-4" />
+              {!isCollapsed && <span>Sobre o HubFit360</span>}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={onLogout}

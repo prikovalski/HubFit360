@@ -1,12 +1,10 @@
-import { Activity, Brain, Plus, TrendingUp, Calendar, BarChart3, Sparkles, Info, LogOut } from 'lucide-react';
+import { Activity, Brain, Plus, TrendingUp, Calendar, BarChart3, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMainDashboardStats } from '@/hooks/useMainDashboardStats';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 interface MainDashboardProps {
   onNavigateToPhysical: () => void;
   onNavigateToTDAH: () => void;
@@ -21,7 +19,6 @@ const MainDashboard = ({
     stats,
     loading
   } = useMainDashboardStats();
-  const [showInfoModal, setShowInfoModal] = useState(false);
   return <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
       <div className="mb-8 animate-fade-in">
@@ -33,13 +30,6 @@ const MainDashboard = ({
             <p className="text-muted-foreground text-lg">
               Gerencie todas as suas avaliações em um só lugar
             </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setShowInfoModal(true)} className="gap-2">
-              <Info className="h-4 w-4" />
-              Sobre o HubFit360
-            </Button>
-            
           </div>
         </div>
       </div>
@@ -207,84 +197,6 @@ const MainDashboard = ({
             </div>
           </CardContent>
         </Card>}
-
-      {/* Info Modal */}
-      <Dialog open={showInfoModal} onOpenChange={setShowInfoModal}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl flex items-center gap-2">
-              <Sparkles className="h-6 w-6 text-primary" />
-              Bem-vindo ao HubFit360
-            </DialogTitle>
-            <DialogDescription className="text-base">
-              Sua plataforma completa de avaliações em saúde e bem-estar
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-6 py-4">
-            <div className="space-y-4">
-              <div className="flex gap-4">
-                <div className="p-3 bg-green-500/10 rounded-lg h-fit">
-                  <Activity className="h-6 w-6 text-green-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold mb-2">Avaliações Físicas</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Análise corporal detalhada com cálculo de composição corporal, IMC, massa magra e gordura.
-                    Receba recomendações personalizadas geradas por inteligência artificial para atingir seus objetivos.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <div className="p-3 bg-blue-500/10 rounded-lg h-fit">
-                  <Brain className="h-6 w-6 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold mb-2 flex items-center gap-2">
-                    Avaliações TDAH
-                    <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">
-                      Novo
-                    </Badge>
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Questionário ASRS-18 cientificamente validado para triagem de TDAH em adultos.
-                    Obtenha resultados imediatos com pontuação, classificação e recomendações profissionais.
-                    Faça upgrade para relatório premium com análise detalhada por IA.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 bg-primary/5 rounded-lg border border-primary/10">
-              <h4 className="font-semibold mb-2 flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
-                Sistema de Créditos
-              </h4>
-              <p className="text-sm text-muted-foreground">
-                Cada avaliação consome 1 crédito. Você recebeu 1 crédito de boas-vindas! 
-                Adquira mais créditos para continuar usando todas as funcionalidades da plataforma.
-              </p>
-            </div>
-
-            <div className="flex gap-2">
-              <Button onClick={() => {
-              setShowInfoModal(false);
-              onNavigateToPhysical();
-            }} className="flex-1 bg-green-600 hover:bg-green-700">
-                <Activity className="mr-2 h-4 w-4" />
-                Começar Avaliação Física
-              </Button>
-              <Button onClick={() => {
-              setShowInfoModal(false);
-              onNavigateToTDAH();
-            }} className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-                <Brain className="mr-2 h-4 w-4" />
-                Experimentar Avaliação TDAH
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>;
 };
 export default MainDashboard;
