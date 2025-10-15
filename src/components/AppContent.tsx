@@ -300,7 +300,7 @@ const AppContent = () => {
   // Se usuário está logado, renderizar com sidebar
   if (user && !loading) {
     return (
-      <SidebarProvider>
+      <SidebarProvider defaultOpen={false}>
         <div className="min-h-screen flex w-full bg-gradient-to-br from-green-50 via-white to-emerald-50">
           <AppSidebar 
             currentPage={navigation.currentPage}

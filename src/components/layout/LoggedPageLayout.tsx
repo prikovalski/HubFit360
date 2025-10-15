@@ -30,7 +30,7 @@ const LoggedPageLayout = ({
   const [showAboutModal, setShowAboutModal] = useState(false);
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={false}>
       <div className="min-h-screen flex w-full bg-gradient-to-br from-green-50 via-white to-emerald-50 relative overflow-hidden">
         {/* Background decorative elements */}
         <div className="absolute inset-0">

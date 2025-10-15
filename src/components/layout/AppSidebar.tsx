@@ -25,14 +25,19 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: AppSidebarProps) {
-  const { state } = useSidebar();
+  const { state, setOpen } = useSidebar();
   const { siteName } = useSiteConfig();
   const isCollapsed = state === "collapsed";
 
   const isActive = (page: string) => currentPage === page;
 
   return (
-    <Sidebar className={isCollapsed ? "w-14" : "w-64"} collapsible="icon">
+    <Sidebar 
+      className={isCollapsed ? "w-14" : "w-64"} 
+      collapsible="icon"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
       {/* Header */}
       <SidebarHeader className="border-b">
         <div className="flex items-center gap-2 px-4 py-3">
