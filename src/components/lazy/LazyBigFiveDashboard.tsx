@@ -5,6 +5,7 @@ const BigFiveDashboard = lazy(() => import('@/components/BigFiveDashboard'));
 
 interface LazyBigFiveDashboardProps {
   onBack: () => void;
+  onNewAssessment?: () => void;
 }
 
 const LazyBigFiveDashboard = (props: LazyBigFiveDashboardProps) => {

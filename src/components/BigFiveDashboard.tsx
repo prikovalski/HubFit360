@@ -10,9 +10,10 @@ import BigFiveReportViewer from './BigFiveReportViewer';
 
 interface BigFiveDashboardProps {
   onBack: () => void;
+  onNewAssessment?: () => void;
 }
 
-const BigFiveDashboard = ({ onBack }: BigFiveDashboardProps) => {
+const BigFiveDashboard = ({ onBack, onNewAssessment }: BigFiveDashboardProps) => {
   const { toast } = useToast();
   const { assessments, loading, deleteAssessment } = useBigFiveAssessments();
   const [selectedAssessment, setSelectedAssessment] = useState<any>(null);
@@ -68,22 +69,33 @@ const BigFiveDashboard = ({ onBack }: BigFiveDashboardProps) => {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-6 flex items-center gap-4">
-          <Button variant="ghost" onClick={onBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-purple-500/10 rounded-lg">
-              <Sparkles className="h-6 w-6 text-purple-600" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Avaliações Big Five</h1>
-              <p className="text-sm text-muted-foreground">
-                Histórico de testes de personalidade
-              </p>
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" onClick={onBack}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-purple-500/10 rounded-lg">
+                <Sparkles className="h-6 w-6 text-purple-600" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Avaliações Big Five</h1>
+                <p className="text-sm text-muted-foreground">
+                  Histórico de testes de personalidade
+                </p>
+              </div>
             </div>
           </div>
+          {onNewAssessment && (
+            <Button 
+              onClick={onNewAssessment}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+            >
+              <Sparkles className="mr-2 h-4 w-4" />
+              Nova Avaliação
+            </Button>
+          )}
         </div>
 
         {loading ? (

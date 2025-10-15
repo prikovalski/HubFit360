@@ -1,4 +1,4 @@
-import { User, Brain, Activity, LogOut, ChevronDown, Info, Dumbbell, Home, Coins } from 'lucide-react';
+import { User, Brain, Activity, LogOut, ChevronDown, Info, Dumbbell, Home, Coins, Sparkles } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -113,7 +113,7 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
 
         {/* Avaliações Psicológicas */}
         <SidebarGroup>
-          <Collapsible defaultOpen={isActive('tdah-dashboard') || isActive('tdah-assessment') || isActive('tdah-report') || isActive('diva2-assessment')}>
+          <Collapsible defaultOpen={isActive('tdah-dashboard') || isActive('tdah-assessment') || isActive('tdah-report') || isActive('diva2-assessment') || isActive('big-five-dashboard') || isActive('big-five-assessment')}>
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
                 <SidebarMenuButton>
@@ -144,6 +144,22 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
                       className={isActive('diva2-assessment') ? 'bg-purple-50 text-purple-700' : ''}
                     >
                       {!isCollapsed && <span>TDAH - DIVA 2.0</span>}
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      onClick={() => onNavigate('big-five-dashboard')}
+                      isActive={isActive('big-five-dashboard') || isActive('big-five-assessment')}
+                      className={isActive('big-five-dashboard') || isActive('big-five-assessment') ? 'bg-purple-50 text-purple-700' : ''}
+                    >
+                      {!isCollapsed && (
+                        <div className="flex items-center gap-2">
+                          <span>Big Five - Personalidade</span>
+                          <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 text-[10px] px-1 py-0">
+                            Novo
+                          </Badge>
+                        </div>
+                      )}
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                 </SidebarMenuSub>

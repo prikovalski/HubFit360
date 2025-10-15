@@ -172,7 +172,7 @@ const AppContent = () => {
         case 'main-dashboard':
           return <MainDashboard onNavigateToPhysical={() => navigation.goToPhysicalDashboard()} onNavigateToTDAH={() => navigation.goToTDAHDashboard()} onNavigateToBigFive={() => navigation.goToBigFiveDashboard()} onLogout={handleLogout} onViewPhysicalReport={handleViewReport} onViewTDAHReport={handleViewTDAHReport} />;
         case 'big-five-dashboard':
-          return <LazyBigFiveDashboard onBack={() => navigation.goToMainDashboard()} />;
+          return <LazyBigFiveDashboard onBack={() => navigation.goToMainDashboard()} onNewAssessment={() => navigation.goToBigFiveAssessment()} />;
         case 'big-five-assessment':
           return <LazyBigFiveAssessmentForm onBack={() => navigation.goToBigFiveDashboard()} onSuccess={() => navigation.goToBigFiveDashboard()} />;
         case 'physical-dashboard':
