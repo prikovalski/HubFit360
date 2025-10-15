@@ -85,9 +85,23 @@ const TDAHReportViewer = ({
         return 'bg-gray-500/10 text-gray-700 border-gray-500/20';
     }
   };
+  const getEffectiveScore = () => {
+    const method = currentReport?.assessment_method;
+    const base = currentReport?.score ?? 0;
+    if (method === 'DIVA 2.0') {
+      if (base && base > 0) return base;
+      const scores = (currentReport?.responses as any)?.scores;
+      const adult = (scores?.inattentionAdulthood ?? 0) + (scores?.hyperactivityAdulthood ?? 0);
+      const totalScore = scores?.totalScore ?? adult;
+      return totalScore ?? 0;
+    }
+    return base ?? 0;
+  };
+  const getMaxScore = () => (currentReport?.assessment_method === 'DIVA 2.0' ? 18 : 72);
   const getScorePercentage = () => {
-    const maxScore = 72; // 18 questions * 4 points max
-    return (report.score || 0) / maxScore * 100;
+    const max = getMaxScore();
+    const score = getEffectiveScore();
+    return max > 0 ? (score / max) * 100 : 0;
   };
   return <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -104,7 +118,7 @@ const TDAHReportViewer = ({
             <div>
               <h1 className="text-2xl font-bold text-foreground">Relatório TDAH</h1>
               <p className="text-sm text-muted-foreground">
-                Resultado da avaliação ASRS-18
+                Resultado da avaliação {currentReport?.assessment_method || 'ASRS-18'}
               </p>
             </div>
           </div>
@@ -155,12 +169,12 @@ const TDAHReportViewer = ({
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-3xl font-bold text-foreground">{report.score}/72</p>
+                <p className="text-3xl font-bold text-foreground">{getEffectiveScore()}/{getMaxScore()}</p>
                 <p className="text-sm text-muted-foreground">Pontuação Total</p>
               </div>
-              <Badge className={getClassificationColor(report.classification)}>
-                {report.classification}
-              </Badge>
+                <Badge className={getClassificationColor(currentReport.classification)}>
+                  {currentReport.classification}
+                </Badge>
             </div>
 
             {/* Score Bar */}
