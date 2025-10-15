@@ -106,9 +106,9 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
                 <SidebarMenuSub>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      onClick={() => onNavigate('tdah-dashboard')}
-                      isActive={isActive('tdah-dashboard')}
-                      className={isActive('tdah-dashboard') ? 'bg-purple-50 text-purple-700' : ''}
+                      onClick={() => onNavigate('tdah-assessment')}
+                      isActive={isActive('tdah-assessment')}
+                      className={isActive('tdah-assessment') ? 'bg-purple-50 text-purple-700' : ''}
                     >
                       {!isCollapsed && <span>TDAH - Avaliação Rápida</span>}
                     </SidebarMenuSubButton>
