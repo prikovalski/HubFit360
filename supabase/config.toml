@@ -1,8 +1,31 @@
-
 project_id = "bqixlrinahtauahcnpoc"
+
+[functions.check-email-exists]
+verify_jwt = false
+
+[functions.check-transaction-status]
+verify_jwt = true
+
+[functions.check-user-credits]
+verify_jwt = true
+
+[functions.consume-credit]
+verify_jwt = true
+
+[functions.create-assessment]
+verify_jwt = true
+
+[functions.create-tdah-assessment]
+verify_jwt = true
+
+[functions.delete-user-profile]
+verify_jwt = true
 
 [functions.hotmart-webhook]
 verify_jwt = false
+
+[functions.upgrade-assessment]
+verify_jwt = true
 
 [functions.upgrade-tdah-assessment]
 verify_jwt = true
