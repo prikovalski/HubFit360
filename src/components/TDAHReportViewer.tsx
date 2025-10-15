@@ -81,8 +81,11 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
   };
 
   const getScorePercentage = () => {
-    const maxScore = 72; // 18 questions * 4 points max
-    return ((report.score || 0) / maxScore) * 100;
+    // DIVA 2.0 has max score of 54 (18 criteria * 3 points max)
+    // ASRS-18 has max score of 72 (18 questions * 4 points max)
+    const maxScore = report.assessment_method === 'DIVA 2.0' ? 54 : 72;
+    const score = report.score || 0;
+    return (score / maxScore) * 100;
   };
 
   return (
@@ -157,7 +160,9 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-3xl font-bold text-foreground">{report.score}/72</p>
+                <p className="text-3xl font-bold text-foreground">
+                  {report.score}/{report.assessment_method === 'DIVA 2.0' ? '54' : '72'}
+                </p>
                 <p className="text-sm text-muted-foreground">Pontuação Total</p>
               </div>
               <Badge className={getClassificationColor(report.classification)}>

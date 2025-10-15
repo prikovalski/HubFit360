@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
       const scores = (responses as any).scores;
       
       // Calculate total score from DIVA scores
-      totalScore = scores?.total || 0;
+      totalScore = scores?.totalScore || scores?.total || 0;
       classification = providedClassification || 'Não classificado';
       
       // Generate DIVA-specific recommendations
