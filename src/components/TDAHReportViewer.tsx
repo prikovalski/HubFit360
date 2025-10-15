@@ -87,12 +87,12 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
 
     if (method === 'DIVA 2.0') {
       const scores = (currentReport.responses || report.responses)?.scores || {};
-      const total = (scores.totalScore ?? scores.total ?? (
-        (scores.inattentionChildhood ?? 0) +
-        (scores.inattentionAdulthood ?? 0) +
-        (scores.hyperactivityChildhood ?? 0) +
-        (scores.hyperactivityAdulthood ?? 0)
-      ));
+      let total = scores?.totalScore ?? scores?.total;
+      if (total == null) {
+        const adultOnly = (scores.inattentionAdulthood ?? 0) + (scores.hyperactivityAdulthood ?? 0);
+        const allPeriods = adultOnly + (scores.inattentionChildhood ?? 0) + (scores.hyperactivityChildhood ?? 0);
+        total = adultOnly > 0 ? adultOnly : allPeriods;
+      }
       return Number(total) || 0;
     }
 
@@ -100,10 +100,10 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
   };
 
   const getScorePercentage = () => {
-    // DIVA 2.0 has max score of 54 (18 criteria * 3 points max)
-    // ASRS-18 has max score of 72 (18 questions * 4 points max)
+    // DIVA 2.0 → consideramos apenas a idade adulta: máximo 18 (9 inatenção + 9 hiperatividade)
+    // ASRS-18 → máximo 72 (18 questões * 4 pontos)
     const method = currentReport.assessment_method || report.assessment_method;
-    const maxScore = method === 'DIVA 2.0' ? 54 : 72;
+    const maxScore = method === 'DIVA 2.0' ? 18 : 72;
     const score = getEffectiveScore();
     if (!maxScore) return 0;
     return (score / maxScore) * 100;
@@ -182,7 +182,7 @@ const TDAHReportViewer = ({ report, onBack }: TDAHReportViewerProps) => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-3xl font-bold text-foreground">
-                  {getEffectiveScore()}/{(currentReport.assessment_method || report.assessment_method) === 'DIVA 2.0' ? '54' : '72'}
+                  {getEffectiveScore()}/{(currentReport.assessment_method || report.assessment_method) === 'DIVA 2.0' ? '18' : '72'}
                 </p>
                 <p className="text-sm text-muted-foreground">Pontuação Total</p>
               </div>
