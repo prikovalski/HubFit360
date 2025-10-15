@@ -10,6 +10,7 @@ export interface TDAHAssessment {
   patient_age?: number;
   patient_birth_date?: string;
   assessment_type: string;
+  assessment_method?: string;
   responses: any;
   score: number;
   classification: string;

@@ -175,7 +175,9 @@ const TDAHDashboard = ({ onNavigate }: TDAHDashboardProps) => {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
                         <p className="text-muted-foreground">Pontuação</p>
-                        <p className="font-medium">{assessment.score}/72</p>
+                        <p className="font-medium">
+                          {assessment.score}/{assessment.assessment_method?.includes('DIVA') ? 18 : 72}
+                        </p>
                       </div>
                       {assessment.patient_age && (
                         <div>
