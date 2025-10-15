@@ -19,6 +19,8 @@ import LazyUserProfile from '@/components/lazy/LazyUserProfile';
 import LazyTDAHAssessmentForm from '@/components/lazy/LazyTDAHAssessmentForm';
 import LazyTDAHReportViewer from '@/components/lazy/LazyTDAHReportViewer';
 import LazyDIVA2AssessmentForm from '@/components/lazy/LazyDIVA2AssessmentForm';
+import LazyBigFiveAssessmentForm from '@/components/lazy/LazyBigFiveAssessmentForm';
+import LazyBigFiveDashboard from '@/components/lazy/LazyBigFiveDashboard';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 const AppContent = () => {
@@ -168,7 +170,11 @@ const AppContent = () => {
       // Renderizar seções baseadas no estado de navegação
       switch (navigation.currentPage) {
         case 'main-dashboard':
-          return <MainDashboard onNavigateToPhysical={() => navigation.goToPhysicalDashboard()} onNavigateToTDAH={() => navigation.goToTDAHDashboard()} onLogout={handleLogout} onViewPhysicalReport={handleViewReport} onViewTDAHReport={handleViewTDAHReport} />;
+          return <MainDashboard onNavigateToPhysical={() => navigation.goToPhysicalDashboard()} onNavigateToTDAH={() => navigation.goToTDAHDashboard()} onNavigateToBigFive={() => navigation.goToBigFiveDashboard()} onLogout={handleLogout} onViewPhysicalReport={handleViewReport} onViewTDAHReport={handleViewTDAHReport} />;
+        case 'big-five-dashboard':
+          return <LazyBigFiveDashboard onBack={() => navigation.goToMainDashboard()} />;
+        case 'big-five-assessment':
+          return <LazyBigFiveAssessmentForm onBack={() => navigation.goToBigFiveDashboard()} onSuccess={() => navigation.goToBigFiveDashboard()} />;
         case 'physical-dashboard':
           return <LazyPhysicalAssessmentDashboard onNewAssessment={handleNewAssessment} onViewReport={handleViewReport} onLogoClick={() => navigation.goToMainDashboard()} onProfileClick={() => navigation.goToProfile()} onLogout={handleLogout} currentPage={navigation.currentPage} onNavigate={handleNavigate} />;
         case 'tdah-dashboard':

@@ -127,6 +127,71 @@ export type Database = {
           },
         ]
       }
+      big_five_assessments: {
+        Row: {
+          assessment_type: string
+          classification: string | null
+          created_at: string
+          full_report: string | null
+          id: string
+          is_premium: boolean
+          patient_age: number | null
+          patient_birth_date: string | null
+          patient_gender: string | null
+          patient_name: string | null
+          recommendations: string | null
+          responses: Json
+          scores: Json | null
+          status: string
+          updated_at: string
+          user_id: number
+        }
+        Insert: {
+          assessment_type?: string
+          classification?: string | null
+          created_at?: string
+          full_report?: string | null
+          id?: string
+          is_premium?: boolean
+          patient_age?: number | null
+          patient_birth_date?: string | null
+          patient_gender?: string | null
+          patient_name?: string | null
+          recommendations?: string | null
+          responses?: Json
+          scores?: Json | null
+          status?: string
+          updated_at?: string
+          user_id: number
+        }
+        Update: {
+          assessment_type?: string
+          classification?: string | null
+          created_at?: string
+          full_report?: string | null
+          id?: string
+          is_premium?: boolean
+          patient_age?: number | null
+          patient_birth_date?: string | null
+          patient_gender?: string | null
+          patient_name?: string | null
+          recommendations?: string | null
+          responses?: Json
+          scores?: Json | null
+          status?: string
+          updated_at?: string
+          user_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_user"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cidades: {
         Row: {
           estado_id: string

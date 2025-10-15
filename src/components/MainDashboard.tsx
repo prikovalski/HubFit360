@@ -8,6 +8,7 @@ import { ptBR } from 'date-fns/locale';
 interface MainDashboardProps {
   onNavigateToPhysical: () => void;
   onNavigateToTDAH: () => void;
+  onNavigateToBigFive?: () => void;
   onLogout: () => void;
   onViewPhysicalReport?: (report: any) => void;
   onViewTDAHReport?: (report: any) => void;
@@ -15,6 +16,7 @@ interface MainDashboardProps {
 const MainDashboard = ({
   onNavigateToPhysical,
   onNavigateToTDAH,
+  onNavigateToBigFive,
   onLogout,
   onViewPhysicalReport,
   onViewTDAHReport
@@ -79,13 +81,7 @@ const MainDashboard = ({
             </CardContent>
           </Card>
 
-          <Card className="border-border/50 hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover-scale relative overflow-hidden">
-            <div className="absolute top-2 right-2">
-              <Badge className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 gap-1">
-                <Sparkles className="h-3 w-3" />
-                Novo
-              </Badge>
-            </div>
+          <Card className="border-border/50 hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover-scale">
             <CardHeader>
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Avaliações TDAH
@@ -100,10 +96,32 @@ const MainDashboard = ({
               </div>
             </CardContent>
           </Card>
+
+          <Card className="border-border/50 hover:border-purple-500/50 transition-all duration-300 hover:shadow-lg hover-scale relative overflow-hidden">
+            <div className="absolute top-2 right-2">
+              <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 gap-1">
+                <Sparkles className="h-3 w-3" />
+                Novo
+              </Badge>
+            </div>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Testes Big Five
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <span className="text-3xl font-bold">0</span>
+                <div className="p-3 bg-purple-500/10 rounded-full">
+                  <Sparkles className="h-8 w-8 text-purple-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>}
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 animate-fade-in" style={{
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in" style={{
       animationDelay: '0.1s'
     }}>
         <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200/50 hover:shadow-xl transition-all duration-300 hover-scale group">
@@ -149,6 +167,37 @@ const MainDashboard = ({
             <Button onClick={onNavigateToTDAH} className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 group-hover:scale-105 transition-transform" size="lg">
               <Plus className="mr-2 h-4 w-4" />
               Acessar Avaliações TDAH
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 border-purple-200/50 hover:shadow-xl transition-all duration-300 hover-scale group relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-2xl -mr-16 -mt-16" />
+          <CardHeader className="relative">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-3 bg-purple-500/10 rounded-lg group-hover:bg-purple-500/20 transition-colors">
+                <Sparkles className="h-6 w-6 text-purple-600" />
+              </div>
+              <div className="flex items-center gap-2">
+                <CardTitle>Teste Big Five</CardTitle>
+                <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0 gap-1 animate-pulse">
+                  <Sparkles className="h-3 w-3" />
+                  Novo
+                </Badge>
+              </div>
+            </div>
+            <CardDescription>
+              Avaliação completa de personalidade pelos cinco grandes fatores (OCEAN)
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="relative">
+            <Button 
+              onClick={onNavigateToBigFive} 
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 group-hover:scale-105 transition-transform" 
+              size="lg"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Acessar Testes Big Five
             </Button>
           </CardContent>
         </Card>

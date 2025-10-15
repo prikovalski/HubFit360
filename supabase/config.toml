@@ -15,6 +15,9 @@ verify_jwt = true
 [functions.create-assessment]
 verify_jwt = true
 
+[functions.create-big-five-assessment]
+verify_jwt = true
+
 [functions.create-tdah-assessment]
 verify_jwt = true
 
