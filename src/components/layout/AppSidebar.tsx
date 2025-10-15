@@ -1,4 +1,4 @@
-import { User, Brain, Activity, LogOut, ChevronDown, Info, Dumbbell } from 'lucide-react';
+import { User, Brain, Activity, LogOut, ChevronDown, Info, Dumbbell, Home } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -55,6 +55,22 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
       </SidebarHeader>
 
       <SidebarContent>
+        {/* Tela Inicial */}
+        <SidebarGroup>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => onNavigate('main-dashboard')}
+                isActive={isActive('main-dashboard')}
+                className={isActive('main-dashboard') ? 'bg-primary/10 text-primary hover:bg-primary/20' : ''}
+              >
+                <Home className="h-4 w-4" />
+                {!isCollapsed && <span>Tela Inicial</span>}
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
         {/* Perfil */}
         <SidebarGroup>
           <SidebarMenu>
