@@ -20,23 +20,20 @@ import LazyTDAHAssessmentForm from '@/components/lazy/LazyTDAHAssessmentForm';
 import LazyTDAHReportViewer from '@/components/lazy/LazyTDAHReportViewer';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/AppSidebar';
-
 const AppContent = () => {
   const [currentSection, setCurrentSection] = useState('home');
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [selectedTDAHReport, setSelectedTDAHReport] = useState<any>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
-  
   const navigation = useNavigation();
-  
+
   // Use try-catch to handle potential auth context issues
   let user = null;
   let signOut = () => Promise.resolve();
   let userProfile = null;
   let loading = true;
   let authLoading = true;
-  
   try {
     const auth = useAuth();
     user = auth.user;
@@ -53,25 +50,20 @@ const AppContent = () => {
   useEffect(() => {
     if (user && !authLoading && !loading && currentSection === 'home' && !isLoggingOut) {
       console.log('AppContent: Usuario autenticado confirmado, redirecionando para main dashboard');
-      
       setTimeout(() => {
         setCurrentSection('logged-in');
         navigation.goToMainDashboard();
       }, 100);
     }
   }, [user, authLoading, loading, isLoggingOut]);
-
   const handleLogout = async () => {
     try {
       console.log('AppContent: Iniciando logout...');
       setIsLoggingOut(true);
-      
       await signOut();
-      
       setCurrentSection('home');
       setSelectedReport(null);
       navigation.goToMainDashboard();
-      
       console.log('AppContent: Logout concluído, redirecionando para home');
     } catch (error) {
       console.error('AppContent: Erro no logout:', error);
@@ -81,26 +73,21 @@ const AppContent = () => {
       setIsLoggingOut(false);
     }
   };
-
   const handleNavigate = (page: string) => {
     console.log('AppContent: Navegando para', page);
     navigation.navigateTo(page as any);
   };
-
   const handleNewAssessment = () => {
     navigation.goToAssessment();
   };
-
   const handleViewReport = (report: any) => {
     setSelectedReport(report);
     navigation.goToReport(report);
   };
-
   const handleBackToPhysicalDashboard = () => {
     navigation.goToPhysicalDashboard();
     setSelectedReport(null);
   };
-
   const handleAssessmentSuccess = (assessment: any) => {
     console.log('AppContent: Avaliação recebida com dados completos:', {
       id: assessment.id,
@@ -111,7 +98,6 @@ const AppContent = () => {
       hasGoal: !!assessment.patient_goal,
       fullAssessment: assessment
     });
-
     const completeReport = {
       ...assessment,
       leanMass: assessment.leanMass,
@@ -131,37 +117,32 @@ const AppContent = () => {
         summary: assessment.assessmentText || ''
       }
     };
-
     console.log('AppContent: Relatório completo preparado:', completeReport);
-
     setSelectedReport(completeReport);
     navigation.goToReport(completeReport);
   };
-
   const handleTDAHAssessmentSuccess = (assessment: any) => {
     setSelectedTDAHReport(assessment);
     navigation.goToTDAHReport(assessment);
   };
-
   const handleViewTDAHReport = (report: any) => {
     setSelectedTDAHReport(report);
     navigation.goToTDAHReport(report);
   };
-
   const handleBackToTDAHDashboard = () => {
     navigation.goToTDAHDashboard();
     setSelectedTDAHReport(null);
   };
-
   const renderSection = () => {
     // Se o usuário está logado, mostrar as seções do dashboard
     if (user) {
       if (loading) {
-        return (
-          <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center relative overflow-hidden">
+        return <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0">
               <div className="absolute top-20 left-20 w-64 h-64 bg-gradient-to-br from-green-200/30 to-emerald-200/30 rounded-full blur-3xl animate-float"></div>
-              <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-br from-teal-200/20 to-green-200/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '-3s' }}></div>
+              <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-br from-teal-200/20 to-green-200/20 rounded-full blur-3xl animate-float" style={{
+              animationDelay: '-3s'
+            }}></div>
             </div>
             
             <div className="absolute inset-0 grid-bg opacity-30"></div>
@@ -174,115 +155,41 @@ const AppContent = () => {
                 </div>
                 <p className="text-gray-700 text-lg font-medium mb-4">Carregando dashboard...</p>
                 <div className="flex justify-center space-x-1">
-                  {[1,2,3].map((i) => (
-                    <div key={i} className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.1}s` }}></div>
-                  ))}
+                  {[1, 2, 3].map(i => <div key={i} className="w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{
+                  animationDelay: `${i * 0.1}s`
+                }}></div>)}
                 </div>
               </div>
             </div>
-          </div>
-        );
+          </div>;
       }
 
       // Renderizar seções baseadas no estado de navegação
       switch (navigation.currentPage) {
         case 'main-dashboard':
-          return (
-            <MainDashboard
-              onNavigateToPhysical={() => navigation.goToPhysicalDashboard()}
-              onNavigateToTDAH={() => navigation.goToTDAHDashboard()}
-              onLogout={handleLogout}
-            />
-          );
-        
+          return <MainDashboard onNavigateToPhysical={() => navigation.goToPhysicalDashboard()} onNavigateToTDAH={() => navigation.goToTDAHDashboard()} onLogout={handleLogout} />;
         case 'physical-dashboard':
-          return (
-            <LazyPhysicalAssessmentDashboard
-              onNewAssessment={handleNewAssessment}
-              onViewReport={handleViewReport}
-              onLogoClick={() => navigation.goToMainDashboard()}
-              onProfileClick={() => navigation.goToProfile()}
-              onLogout={handleLogout}
-              currentPage={navigation.currentPage}
-              onNavigate={handleNavigate}
-            />
-          );
-        
+          return <LazyPhysicalAssessmentDashboard onNewAssessment={handleNewAssessment} onViewReport={handleViewReport} onLogoClick={() => navigation.goToMainDashboard()} onProfileClick={() => navigation.goToProfile()} onLogout={handleLogout} currentPage={navigation.currentPage} onNavigate={handleNavigate} />;
         case 'tdah-dashboard':
-          return (
-            <TDAHDashboard
-              onNavigate={(page, data) => {
-                if (page === 'tdah-report' && data) {
-                  handleViewTDAHReport(data);
-                } else {
-                  handleNavigate(page);
-                }
-              }}
-            />
-          );
-        
+          return <TDAHDashboard onNavigate={(page, data) => {
+            if (page === 'tdah-report' && data) {
+              handleViewTDAHReport(data);
+            } else {
+              handleNavigate(page);
+            }
+          }} />;
         case 'tdah-assessment':
-          return (
-            <LazyTDAHAssessmentForm
-              onBack={handleBackToTDAHDashboard}
-              onSuccess={handleTDAHAssessmentSuccess}
-            />
-          );
-        
+          return <LazyTDAHAssessmentForm onBack={handleBackToTDAHDashboard} onSuccess={handleTDAHAssessmentSuccess} />;
         case 'tdah-report':
-          return (
-            <LazyTDAHReportViewer
-              report={selectedTDAHReport}
-              onBack={handleBackToTDAHDashboard}
-            />
-          );
-        
+          return <LazyTDAHReportViewer report={selectedTDAHReport} onBack={handleBackToTDAHDashboard} />;
         case 'assessment':
-          return (
-            <LazyAssessmentForm
-              onBack={handleBackToPhysicalDashboard}
-              onSuccess={handleAssessmentSuccess}
-              onLogoClick={() => navigation.goToMainDashboard()}
-              onProfileClick={() => navigation.goToProfile()}
-              onLogout={handleLogout}
-              currentPage={navigation.currentPage}
-              onNavigate={handleNavigate}
-            />
-          );
-        
+          return <LazyAssessmentForm onBack={handleBackToPhysicalDashboard} onSuccess={handleAssessmentSuccess} onLogoClick={() => navigation.goToMainDashboard()} onProfileClick={() => navigation.goToProfile()} onLogout={handleLogout} currentPage={navigation.currentPage} onNavigate={handleNavigate} />;
         case 'report':
-          return (
-            <LazyReportViewer
-              report={selectedReport}
-              onBack={handleBackToPhysicalDashboard}
-              onLogoClick={() => navigation.goToMainDashboard()}
-              onProfileClick={() => navigation.goToProfile()}
-              onLogout={handleLogout}
-              currentPage={navigation.currentPage}
-              onNavigate={handleNavigate}
-            />
-          );
-        
+          return <LazyReportViewer report={selectedReport} onBack={handleBackToPhysicalDashboard} onLogoClick={() => navigation.goToMainDashboard()} onProfileClick={() => navigation.goToProfile()} onLogout={handleLogout} currentPage={navigation.currentPage} onNavigate={handleNavigate} />;
         case 'profile':
-          return (
-            <LazyUserProfile
-              onBack={() => navigation.goToMainDashboard()}
-              onLogoClick={() => navigation.goToMainDashboard()}
-              onProfileClick={() => navigation.goToProfile()}
-              onLogout={handleLogout}
-              currentPage={navigation.currentPage}
-              onNavigate={handleNavigate}
-            />
-          );
-        
+          return <LazyUserProfile onBack={() => navigation.goToMainDashboard()} onLogoClick={() => navigation.goToMainDashboard()} onProfileClick={() => navigation.goToProfile()} onLogout={handleLogout} currentPage={navigation.currentPage} onNavigate={handleNavigate} />;
         default:
-          return (
-            <MainDashboard
-              onNavigateToPhysical={() => navigation.goToPhysicalDashboard()}
-              onNavigateToTDAH={() => navigation.goToTDAHDashboard()}
-              onLogout={handleLogout}
-            />
-          );
+          return <MainDashboard onNavigateToPhysical={() => navigation.goToPhysicalDashboard()} onNavigateToTDAH={() => navigation.goToTDAHDashboard()} onLogout={handleLogout} />;
       }
     }
 
@@ -299,19 +206,11 @@ const AppContent = () => {
 
   // Se usuário está logado, renderizar com sidebar
   if (user && !loading) {
-    return (
-      <SidebarProvider defaultOpen={false}>
+    return <SidebarProvider defaultOpen={false}>
         <div className="min-h-screen flex w-full bg-gradient-to-br from-green-50 via-white to-emerald-50">
-          <AppSidebar 
-            currentPage={navigation.currentPage}
-            onNavigate={handleNavigate}
-            onLogout={handleLogout}
-            onShowAbout={() => setShowAboutModal(true)}
-          />
+          <AppSidebar currentPage={navigation.currentPage} onNavigate={handleNavigate} onLogout={handleLogout} onShowAbout={() => setShowAboutModal(true)} />
           <main className="flex-1 flex flex-col">
-            <header className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center px-4 sticky top-0 z-10">
-              <SidebarTrigger />
-            </header>
+            
             <div className="flex-1 overflow-auto">
               {renderSection()}
             </div>
@@ -376,23 +275,17 @@ const AppContent = () => {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button 
-                    onClick={() => {
-                      setShowAboutModal(false);
-                      navigation.goToPhysicalDashboard();
-                    }} 
-                    className="flex-1 bg-green-600 hover:bg-green-700"
-                  >
+                  <Button onClick={() => {
+                  setShowAboutModal(false);
+                  navigation.goToPhysicalDashboard();
+                }} className="flex-1 bg-green-600 hover:bg-green-700">
                     <Activity className="mr-2 h-4 w-4" />
                     Começar Avaliação Física
                   </Button>
-                  <Button 
-                    onClick={() => {
-                      setShowAboutModal(false);
-                      navigation.goToTDAHDashboard();
-                    }} 
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                  >
+                  <Button onClick={() => {
+                  setShowAboutModal(false);
+                  navigation.goToTDAHDashboard();
+                }} className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                     <Brain className="mr-2 h-4 w-4" />
                     Experimentar Avaliação TDAH
                   </Button>
@@ -401,24 +294,18 @@ const AppContent = () => {
             </DialogContent>
           </Dialog>
         </div>
-      </SidebarProvider>
-    );
+      </SidebarProvider>;
   }
 
   // Se não está logado, renderizar sem sidebar
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
+  return <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
       {/* Header - apenas para usuários não logados */}
-      {!user && (
-        <Header setCurrentSection={setCurrentSection} />
-      )}
+      {!user && <Header setCurrentSection={setCurrentSection} />}
 
       {/* Main Content */}
       <main>
         {renderSection()}
       </main>
-    </div>
-  );
+    </div>;
 };
-
 export default AppContent;
