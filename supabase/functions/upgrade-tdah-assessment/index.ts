@@ -15,8 +15,9 @@ interface UpgradeRequest {
 async function generateAIAnalysis(
   score: number,
   classification: string,
-  responses: number[],
-  patientData: any
+  responses: any,
+  patientData: any,
+  assessmentMethod: string
 ): Promise<string> {
   const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
   
@@ -24,15 +25,46 @@ async function generateAIAnalysis(
     throw new Error('LOVABLE_API_KEY not configured');
   }
 
-  const prompt = `Você é um especialista em TDAH (Transtorno de Déficit de Atenção e Hiperatividade). Analise os seguintes resultados de uma avaliação ASRS-18:
+  // Check if it's DIVA 2.0 or ASRS-18
+  const isDIVA = assessmentMethod === 'DIVA 2.0' || (typeof responses === 'object' && !Array.isArray(responses));
+  
+  let responsesText = '';
+  let maxScore = 72;
+  
+  if (isDIVA) {
+    // DIVA 2.0 format
+    maxScore = 18;
+    const scores = responses.scores || {};
+    responsesText = `
+Método de Avaliação: DIVA 2.0 (Diagnostic Interview for ADHD in Adults)
 
-Pontuação total: ${score}/72
+Pontuações por Critério:
+- Desatenção (Infância): ${scores.inattentionChildhood || 0}/9 critérios
+- Desatenção (Vida Adulta): ${scores.inattentionAdulthood || 0}/9 critérios
+- Hiperatividade/Impulsividade (Infância): ${scores.hyperactivityChildhood || 0}/9 critérios
+- Hiperatividade/Impulsividade (Vida Adulta): ${scores.hyperactivityAdulthood || 0}/9 critérios
+
+Total de Critérios Atendidos (Vida Adulta): ${score}/18
+
+O DIVA 2.0 avalia a presença de sintomas tanto na infância quanto na vida adulta, seguindo os critérios do DSM-5.
+Um critério é considerado presente quando a frequência é "Frequentemente" ou "Muito Frequentemente".`;
+  } else {
+    // ASRS-18 format
+    responsesText = `
+Método de Avaliação: ASRS-18 (Adult ADHD Self-Report Scale)
+
+Respostas do questionário (escala 0-4, onde 0=Nunca e 4=Muito Frequentemente):
+${(responses as number[]).map((r, i) => `Questão ${i + 1}: ${r}`).join('\n')}`;
+  }
+
+  const prompt = `Você é um especialista em TDAH (Transtorno de Déficit de Atenção e Hiperatividade). Analise os seguintes resultados:
+
+Pontuação total: ${score}/${maxScore}
 Classificação: ${classification}
 ${patientData.patient_age ? `Idade do paciente: ${patientData.patient_age} anos` : ''}
 ${patientData.patient_gender ? `Gênero: ${patientData.patient_gender === 'MALE' ? 'Masculino' : patientData.patient_gender === 'FEMALE' ? 'Feminino' : 'Outro'}` : ''}
 
-Respostas do questionário (escala 0-4, onde 0=Nunca e 4=Muito Frequentemente):
-${responses.map((r, i) => `Questão ${i + 1}: ${r}`).join('\n')}
+${responsesText}
 
 Por favor, forneça uma análise detalhada e personalizada em português que inclua:
 
@@ -190,11 +222,12 @@ Deno.serve(async (req) => {
     const fullReport = await generateAIAnalysis(
       assessment.score,
       assessment.classification,
-      assessment.responses as number[],
+      assessment.responses,
       {
         patient_age: assessment.patient_age,
         patient_gender: assessment.patient_gender,
-      }
+      },
+      assessment.assessment_method || 'ASRS-18'
     );
 
     // Update assessment to premium with AI analysis
