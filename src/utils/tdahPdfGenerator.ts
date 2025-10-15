@@ -52,7 +52,7 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
     
     doc.setFontSize(14);
     doc.setFont(undefined, 'normal');
-    doc.text('Relatório de Avaliação TDAH', margin, 32);
+    doc.text('Relatorio de Avaliacao TDAH', margin, 32);
     
     // Data
     doc.setFontSize(10);
@@ -66,7 +66,7 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
     doc.setFontSize(9);
     doc.setTextColor(150, 150, 150);
     doc.setFont(undefined, 'normal');
-    doc.text(`Página ${pageNumber}`, pageWidth - margin - 20, pageHeight - 10);
+    doc.text(`Pagina ${pageNumber}`, pageWidth - margin - 20, pageHeight - 10);
     pageNumber++;
   };
 
@@ -200,7 +200,7 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
   addHeader();
 
   // Dados do Paciente
-  addSection('DADOS DO PACIENTE', '📋');
+  addSection('DADOS DO PACIENTE');
   
   if (report.patient_name) {
     addInfoBox('Nome', report.patient_name);
@@ -208,29 +208,29 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
   if (report.patient_gender) {
     const gender = report.patient_gender === 'MALE' ? 'Masculino' : 
                    report.patient_gender === 'FEMALE' ? 'Feminino' : 'Outro';
-    addInfoBox('Gênero', gender);
+    addInfoBox('Genero', gender);
   }
   if (report.patient_age) {
     addInfoBox('Idade', `${report.patient_age} anos`);
   }
-  addInfoBox('Método de Avaliação', report.assessment_method || 'ASRS-18');
+  addInfoBox('Metodo de Avaliacao', report.assessment_method || 'ASRS-18');
   
   currentY += 5;
 
   // Resultados
-  addSection('RESULTADOS DA AVALIAÇÃO', '📊');
+  addSection('RESULTADOS DA AVALIACAO');
   const maxScore = report.assessment_method === 'DIVA 2.0' ? 18 : 72;
   const effectiveScore = report.score ?? 0;
   
   if (report.classification) {
     addScoreBox(effectiveScore, maxScore, report.classification);
   } else {
-    addInfoBox('Pontuação Total', `${effectiveScore}/${maxScore}`);
+    addInfoBox('Pontuacao Total', `${effectiveScore}/${maxScore}`);
     currentY += 5;
   }
 
   // Perguntas e Respostas
-  addSection('PERGUNTAS E RESPOSTAS', '❓');
+  addSection('PERGUNTAS E RESPOSTAS');
   
   if (report.assessment_method === 'DIVA 2.0') {
     // DIVA 2.0 format
@@ -238,7 +238,7 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
     
     if (responses.inattention) {
       doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-      addText('DESATENÇÃO', 12, true, secondaryColor);
+      addText('DESATENCAO', 12, true, secondaryColor);
       currentY += 2;
       
       responses.inattention.forEach((item: any, index: number) => {
@@ -252,15 +252,14 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
         addText(`${index + 1}. ${item.question}`, 10, false);
         doc.setFontSize(9);
         doc.setTextColor(100, 100, 100);
-        addText(`   👶 Infância: ${item.childhood || 'Não respondido'}`, 9, false, [100, 100, 100]);
-        addText(`   👤 Vida Adulta: ${item.adulthood || 'Não respondido'}`, 9, false, [100, 100, 100]);
+        addText(`   Infancia: ${item.childhood || 'Nao respondido'}`, 9, false, [100, 100, 100]);
+        addText(`   Vida Adulta: ${item.adulthood || 'Nao respondido'}`, 9, false, [100, 100, 100]);
         currentY += 3;
       });
       currentY += 5;
     }
 
     if (responses.hyperactivity) {
-      doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
       addText('HIPERATIVIDADE/IMPULSIVIDADE', 12, true, secondaryColor);
       currentY += 2;
       
@@ -275,35 +274,35 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
         addText(`${index + 1}. ${item.question}`, 10, false);
         doc.setFontSize(9);
         doc.setTextColor(100, 100, 100);
-        addText(`   👶 Infância: ${item.childhood || 'Não respondido'}`, 9, false, [100, 100, 100]);
-        addText(`   👤 Vida Adulta: ${item.adulthood || 'Não respondido'}`, 9, false, [100, 100, 100]);
+        addText(`   Infancia: ${item.childhood || 'Nao respondido'}`, 9, false, [100, 100, 100]);
+        addText(`   Vida Adulta: ${item.adulthood || 'Nao respondido'}`, 9, false, [100, 100, 100]);
         currentY += 3;
       });
     }
   } else {
     // ASRS-18 format
     const questions = [
-      "Com que frequência você comete erros por falta de atenção quando tem de trabalhar num projeto chato ou difícil?",
-      "Com que frequência você tem dificuldade para manter a atenção quando está fazendo um trabalho chato ou repetitivo?",
-      "Com que frequência você tem dificuldade para se concentrar no que as pessoas dizem, mesmo quando elas estão falando diretamente com você?",
-      "Com que frequência você deixa um projeto pela metade depois de já ter feito as partes mais difíceis?",
-      "Com que frequência você tem dificuldade para fazer um trabalho que exige organização?",
-      "Quando você precisa fazer algo que exige muita concentração, com que frequência você evita ou adia o início?",
-      "Com que frequência você coloca as coisas fora do lugar ou tem dificuldade de encontrar as coisas em casa ou no trabalho?",
-      "Com que frequência você se distrai com atividades ou barulho a sua volta?",
-      "Com que frequência você tem dificuldade para lembrar de compromissos ou obrigações?",
-      "Com que frequência você fica se mexendo na cadeira ou balançando as mãos ou os pés quando precisa ficar sentado por muito tempo?",
-      "Com que frequência você se levanta da cadeira em reuniões ou em outras situações onde deveria ficar sentado?",
-      "Com que frequência você se sente inquieto ou agitado?",
-      "Com que frequência você tem dificuldade para sossegar e relaxar quando tem tempo livre para você?",
-      "Com que frequência você se sente ativo demais e necessitado de fazer coisas, como se estivesse 'com um motor ligado'?",
-      "Com que frequência você se pega falando demais em situações sociais?",
-      "Quando você está conversando, com que frequência você se pega terminando as frases das pessoas antes delas?",
-      "Com que frequência você tem dificuldade para esperar nas situações onde cada um tem a sua vez?",
-      "Com que frequência você interrompe os outros quando eles estão ocupados?"
+      "Com que frequencia voce comete erros por falta de atencao quando tem de trabalhar num projeto chato ou dificil?",
+      "Com que frequencia voce tem dificuldade para manter a atencao quando esta fazendo um trabalho chato ou repetitivo?",
+      "Com que frequencia voce tem dificuldade para se concentrar no que as pessoas dizem, mesmo quando elas estao falando diretamente com voce?",
+      "Com que frequencia voce deixa um projeto pela metade depois de ja ter feito as partes mais dificeis?",
+      "Com que frequencia voce tem dificuldade para fazer um trabalho que exige organizacao?",
+      "Quando voce precisa fazer algo que exige muita concentracao, com que frequencia voce evita ou adia o inicio?",
+      "Com que frequencia voce coloca as coisas fora do lugar ou tem dificuldade de encontrar as coisas em casa ou no trabalho?",
+      "Com que frequencia voce se distrai com atividades ou barulho a sua volta?",
+      "Com que frequencia voce tem dificuldade para lembrar de compromissos ou obrigacoes?",
+      "Com que frequencia voce fica se mexendo na cadeira ou balancando as maos ou os pes quando precisa ficar sentado por muito tempo?",
+      "Com que frequencia voce se levanta da cadeira em reunioes ou em outras situacoes onde deveria ficar sentado?",
+      "Com que frequencia voce se sente inquieto ou agitado?",
+      "Com que frequencia voce tem dificuldade para sossegar e relaxar quando tem tempo livre para voce?",
+      "Com que frequencia voce se sente ativo demais e necessitado de fazer coisas, como se estivesse 'com um motor ligado'?",
+      "Com que frequencia voce se pega falando demais em situacoes sociais?",
+      "Quando voce esta conversando, com que frequencia voce se pega terminando as frases das pessoas antes delas?",
+      "Com que frequencia voce tem dificuldade para esperar nas situacoes onde cada um tem a sua vez?",
+      "Com que frequencia voce interrompe os outros quando eles estao ocupados?"
     ];
 
-    const responseOptions = ['Nunca', 'Raramente', 'Às vezes', 'Frequentemente', 'Muito frequentemente'];
+    const responseOptions = ['Nunca', 'Raramente', 'As vezes', 'Frequentemente', 'Muito frequentemente'];
     const responseColors: Array<[number, number, number]> = [
       [34, 197, 94],   // Verde - Nunca
       [132, 204, 22],  // Verde claro - Raramente
@@ -333,7 +332,7 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
           doc.setFontSize(9);
           doc.setFont(undefined, 'bold');
           doc.setTextColor(circleColor[0], circleColor[1], circleColor[2]);
-          addText(`   ▸ ${responseOptions[response] || 'Não respondido'}`, 9, true, circleColor);
+          addText(`   > ${responseOptions[response] || 'Nao respondido'}`, 9, true, circleColor);
           currentY += 3;
         }
       });
@@ -344,7 +343,7 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
 
   // Recomendações
   if (report.recommendations) {
-    addSection('RECOMENDAÇÕES', '💡');
+    addSection('RECOMENDACOES');
     
     // Box com fundo colorido
     const recLines = doc.splitTextToSize(report.recommendations, pageWidth - 2 * margin - 10);
@@ -366,7 +365,7 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
 
   // Análise Premium
   if (report.is_premium && report.full_report) {
-    addSection('ANÁLISE DETALHADA COM IA', '🤖');
+    addSection('ANALISE DETALHADA COM IA');
     
     doc.setFillColor(243, 232, 255); // Roxo claro
     const reportLines = doc.splitTextToSize(report.full_report, pageWidth - 2 * margin - 10);
@@ -380,13 +379,13 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
   }
 
   // Disclaimer
-  addSection('AVISO IMPORTANTE', '⚠️');
+  addSection('AVISO IMPORTANTE');
   
   // Box de aviso
-  const disclaimerText = 'Esta avaliação é uma ferramenta de triagem e NÃO substitui um diagnóstico profissional. ' +
+  const disclaimerText = 'Esta avaliacao e uma ferramenta de triagem e NAO substitui um diagnostico profissional. ' +
     (report.assessment_method === 'DIVA 2.0'
-      ? 'O DIVA 2.0 é uma entrevista diagnóstica estruturada validada cientificamente para identificar sinais de TDAH em adultos, baseada nos critérios do DSM-5. No entanto, apenas um profissional de saúde mental qualificado pode realizar um diagnóstico definitivo.'
-      : 'O ASRS-18 é um questionário validado cientificamente para identificar sinais de TDAH, mas apenas um profissional de saúde mental qualificado pode realizar um diagnóstico definitivo.');
+      ? 'O DIVA 2.0 e uma entrevista diagnostica estruturada validada cientificamente para identificar sinais de TDAH em adultos, baseada nos criterios do DSM-5. No entanto, apenas um profissional de saude mental qualificado pode realizar um diagnostico definitivo.'
+      : 'O ASRS-18 e um questionario validado cientificamente para identificar sinais de TDAH, mas apenas um profissional de saude mental qualificado pode realizar um diagnostico definitivo.');
   
   const disclaimerLines = doc.splitTextToSize(disclaimerText, pageWidth - 2 * margin - 10);
   const disclaimerHeight = disclaimerLines.length * 6 + 10;
@@ -409,7 +408,7 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
   doc.setPage(1);
   doc.setFontSize(8);
   doc.setTextColor(200, 200, 200);
-  doc.text(`Total de páginas: ${totalPages}`, pageWidth - margin - 30, pageHeight - 10);
+  doc.text(`Total de paginas: ${totalPages}`, pageWidth - margin - 30, pageHeight - 10);
 
   return doc;
 };
