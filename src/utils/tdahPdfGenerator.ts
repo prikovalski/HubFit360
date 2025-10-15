@@ -106,18 +106,18 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
     
     currentY += 8;
     
-    // Linha decorativa
-    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.setLineWidth(0.5);
-    doc.line(margin, currentY, margin + 15, currentY);
-    
-    currentY += 2;
-    
     // Título da seção
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.setFontSize(14);
     doc.setFont(undefined, 'bold');
     doc.text((icon ? icon + ' ' : '') + title, margin, currentY);
+    
+    currentY += 2;
+    
+    // Linha decorativa ABAIXO do título
+    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.setLineWidth(0.5);
+    doc.line(margin, currentY, margin + 40, currentY);
     
     currentY += 8;
     doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
@@ -161,7 +161,7 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
       currentY = margin;
     }
     
-    const boxHeight = 35;
+    const boxHeight = 40;
     const boxWidth = pageWidth - 2 * margin;
     
     // Determinar cor baseada na classificação
@@ -178,20 +178,18 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
     doc.setLineWidth(1);
     doc.roundedRect(margin, currentY, boxWidth, boxHeight, 3, 3, 'S');
     
-    // Score grande
+    // Score grande centralizado lado a lado
     doc.setTextColor(scoreColor[0], scoreColor[1], scoreColor[2]);
     doc.setFontSize(32);
     doc.setFont(undefined, 'bold');
-    doc.text(`${score}`, margin + 15, currentY + 22);
+    const scoreText = `${score} / ${maxScore}`;
+    const scoreWidth = doc.getTextWidth(scoreText);
+    doc.text(scoreText, margin + 15, currentY + 20);
     
-    doc.setFontSize(16);
-    doc.setFont(undefined, 'normal');
-    doc.text(`/ ${maxScore}`, margin + 15 + doc.getTextWidth(`${score}`), currentY + 22);
-    
-    // Classificação
+    // Classificação abaixo do score
     doc.setFontSize(12);
     doc.setFont(undefined, 'bold');
-    doc.text(classification, margin + 15, currentY + 30);
+    doc.text(classification, margin + 15, currentY + 32);
     
     currentY += boxHeight + 10;
   };
@@ -236,10 +234,12 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
     // DIVA 2.0 format
     const responses = report.responses;
     
-    if (responses.inattention) {
+    if (responses?.inattention && Array.isArray(responses.inattention)) {
       doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-      addText('DESATENCAO', 12, true, secondaryColor);
-      currentY += 2;
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      doc.text('DESATENCAO', margin, currentY);
+      currentY += 8;
       
       responses.inattention.forEach((item: any, index: number) => {
         if (currentY > pageHeight - 50) {
@@ -249,19 +249,36 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
         }
         
         doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-        addText(`${index + 1}. ${item.question}`, 10, false);
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        const questionLines = doc.splitTextToSize(`${index + 1}. ${item.question}`, pageWidth - 2 * margin);
+        questionLines.forEach((line: string) => {
+          if (currentY > pageHeight - 40) {
+            doc.addPage();
+            addPageNumber();
+            currentY = margin;
+          }
+          doc.text(line, margin, currentY);
+          currentY += 6;
+        });
+        
         doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
         doc.setTextColor(100, 100, 100);
-        addText(`   Infancia: ${item.childhood || 'Nao respondido'}`, 9, false, [100, 100, 100]);
-        addText(`   Vida Adulta: ${item.adulthood || 'Nao respondido'}`, 9, false, [100, 100, 100]);
-        currentY += 3;
+        doc.text(`   Infancia: ${item.childhood || 'Nao respondido'}`, margin, currentY);
+        currentY += 5;
+        doc.text(`   Vida Adulta: ${item.adulthood || 'Nao respondido'}`, margin, currentY);
+        currentY += 8;
       });
       currentY += 5;
     }
 
-    if (responses.hyperactivity) {
-      addText('HIPERATIVIDADE/IMPULSIVIDADE', 12, true, secondaryColor);
-      currentY += 2;
+    if (responses?.hyperactivity && Array.isArray(responses.hyperactivity)) {
+      doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      doc.text('HIPERATIVIDADE/IMPULSIVIDADE', margin, currentY);
+      currentY += 8;
       
       responses.hyperactivity.forEach((item: any, index: number) => {
         if (currentY > pageHeight - 50) {
@@ -271,12 +288,26 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
         }
         
         doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-        addText(`${index + 1}. ${item.question}`, 10, false);
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        const questionLines = doc.splitTextToSize(`${index + 1}. ${item.question}`, pageWidth - 2 * margin);
+        questionLines.forEach((line: string) => {
+          if (currentY > pageHeight - 40) {
+            doc.addPage();
+            addPageNumber();
+            currentY = margin;
+          }
+          doc.text(line, margin, currentY);
+          currentY += 6;
+        });
+        
         doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
         doc.setTextColor(100, 100, 100);
-        addText(`   Infancia: ${item.childhood || 'Nao respondido'}`, 9, false, [100, 100, 100]);
-        addText(`   Vida Adulta: ${item.adulthood || 'Nao respondido'}`, 9, false, [100, 100, 100]);
-        currentY += 3;
+        doc.text(`   Infancia: ${item.childhood || 'Nao respondido'}`, margin, currentY);
+        currentY += 5;
+        doc.text(`   Vida Adulta: ${item.adulthood || 'Nao respondido'}`, margin, currentY);
+        currentY += 8;
       });
     }
   } else {
@@ -363,19 +394,91 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
     currentY += 5;
   }
 
-  // Análise Premium
+  // Análise Premium com subseções
   if (report.is_premium && report.full_report) {
     addSection('ANALISE DETALHADA COM IA');
     
-    doc.setFillColor(243, 232, 255); // Roxo claro
-    const reportLines = doc.splitTextToSize(report.full_report, pageWidth - 2 * margin - 10);
-    const boxHeight = Math.min(reportLines.length * 6 + 10, pageHeight - currentY - 60);
+    // Dividir o texto em subseções
+    const fullText = report.full_report;
+    const sections = fullText.split(/(?=#{1,3}\s)/); // Dividir por cabeçalhos markdown
     
-    doc.roundedRect(margin, currentY - 5, pageWidth - 2 * margin, boxHeight, 3, 3, 'F');
+    sections.forEach((section) => {
+      if (!section.trim()) return;
+      
+      // Identificar se é um título (começa com #)
+      const titleMatch = section.match(/^(#{1,3})\s+(.+?)(?:\n|$)/);
+      
+      if (titleMatch) {
+        const level = titleMatch[1].length;
+        const title = titleMatch[2];
+        const content = section.substring(titleMatch[0].length).trim();
+        
+        // Verificar se precisa de nova página
+        if (currentY > pageHeight - 60) {
+          doc.addPage();
+          addPageNumber();
+          currentY = margin;
+        }
+        
+        currentY += 5;
+        
+        // Renderizar título da subseção
+        doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+        doc.setFontSize(level === 1 ? 13 : level === 2 ? 11 : 10);
+        doc.setFont(undefined, 'bold');
+        const titleLines = doc.splitTextToSize(title, pageWidth - 2 * margin);
+        titleLines.forEach((line: string) => {
+          if (currentY > pageHeight - 40) {
+            doc.addPage();
+            addPageNumber();
+            currentY = margin;
+          }
+          doc.text(line, margin, currentY);
+          currentY += level === 1 ? 7 : 6;
+        });
+        
+        currentY += 2;
+        
+        // Renderizar conteúdo
+        if (content) {
+          doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+          doc.setFontSize(10);
+          doc.setFont(undefined, 'normal');
+          
+          const contentLines = doc.splitTextToSize(content, pageWidth - 2 * margin);
+          contentLines.forEach((line: string) => {
+            if (currentY > pageHeight - 40) {
+              doc.addPage();
+              addPageNumber();
+              currentY = margin;
+            }
+            doc.text(line, margin, currentY);
+            currentY += 6;
+          });
+        }
+        
+        currentY += 3;
+      } else {
+        // Conteúdo sem título
+        doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        
+        const contentLines = doc.splitTextToSize(section.trim(), pageWidth - 2 * margin);
+        contentLines.forEach((line: string) => {
+          if (currentY > pageHeight - 40) {
+            doc.addPage();
+            addPageNumber();
+            currentY = margin;
+          }
+          doc.text(line, margin, currentY);
+          currentY += 6;
+        });
+        currentY += 3;
+      }
+    });
     
-    doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-    addText(report.full_report, 10);
-    currentY += 10;
+    currentY += 5;
   }
 
   // Disclaimer
