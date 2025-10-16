@@ -7,6 +7,7 @@ import { PhysicalActivity } from '@/components/PhysicalActivitiesSection';
 export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
   const [loading, setLoading] = useState(false);
   const [assessmentType, setAssessmentType] = useState<'self' | 'patient'>('self');
+  const [measurementMethod, setMeasurementMethod] = useState<'navy' | 'pollock_7'>('navy');
   const [photos, setPhotos] = useState({
     front: null as string | null,
     side: null as string | null,
@@ -17,6 +18,13 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
   const [neckCircumference, setNeckCircumference] = useState('');
   const [waistCircumference, setWaistCircumference] = useState('');
   const [hipCircumference, setHipCircumference] = useState('');
+  const [chestFold, setChestFold] = useState('');
+  const [midaxillaryFold, setMidaxillaryFold] = useState('');
+  const [tricepsFold, setTricepsFold] = useState('');
+  const [subscapularFold, setSubscapularFold] = useState('');
+  const [abdominalFold, setAbdominalFold] = useState('');
+  const [suprailiacFold, setSuprailiacFold] = useState('');
+  const [thighFold, setThighFold] = useState('');
   const [patientName, setPatientName] = useState('');
   const [goal, setGoal] = useState('');
   const [physicalActivities, setPhysicalActivities] = useState<PhysicalActivity[]>([]);
@@ -44,10 +52,14 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
 
   const { toast } = useToast();
 
-  // Enhanced validation with mandatory circumferences and goal
+  // Enhanced validation with mandatory measurements and goal
   const canSubmit = photos.front && photos.side && photos.back && 
     (assessmentType === 'self' 
-      ? height && weight && neckCircumference && waistCircumference && hipCircumference && goal
+      ? height && weight && goal && (
+          measurementMethod === 'navy' 
+            ? (neckCircumference && waistCircumference && hipCircumference)
+            : (chestFold && midaxillaryFold && tricepsFold && subscapularFold && abdominalFold && suprailiacFold && thighFold)
+        )
       : patientData.name && patientData.gender && patientData.birthDate && 
         patientData.height && patientData.weight && 
         patientData.neckCircumference && patientData.waistCircumference && patientData.hipCircumference
@@ -73,8 +85,10 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
       
       // More specific error messages
       if (assessmentType === 'self') {
-        if (!neckCircumference || !waistCircumference || !hipCircumference) {
-          errorMessage = "As medidas de circunferência (pescoço, cintura e quadril) são obrigatórias para uma análise detalhada da composição corporal.";
+        if (measurementMethod === 'navy' && (!neckCircumference || !waistCircumference || !hipCircumference)) {
+          errorMessage = "As medidas de circunferência (pescoço, cintura e quadril) são obrigatórias para o método Navy.";
+        } else if (measurementMethod === 'pollock_7' && (!chestFold || !midaxillaryFold || !tricepsFold || !subscapularFold || !abdominalFold || !suprailiacFold || !thighFold)) {
+          errorMessage = "Todas as 7 dobras cutâneas são obrigatórias para o método Pollock.";
         }
       } else {
         if (!patientData.neckCircumference || !patientData.waistCircumference || !patientData.hipCircumference) {
@@ -115,14 +129,25 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
         sidePhoto: photos.side,
         backPhoto: photos.back,
         assessmentType,
-        // For self assessment, use current form data including circumferences and goal
+        measurementMethod,
+        // For self assessment, use current form data including measurements and goal
         ...(assessmentType === 'self' && {
           sex: userData.gender || 'Não informado',
           height: parseFloat(height),
           weight: parseFloat(weight),
-          neckCircumference: parseFloat(neckCircumference),
-          waistCircumference: parseFloat(waistCircumference),
-          hipCircumference: parseFloat(hipCircumference),
+          ...(measurementMethod === 'navy' ? {
+            neckCircumference: parseFloat(neckCircumference),
+            waistCircumference: parseFloat(waistCircumference),
+            hipCircumference: parseFloat(hipCircumference),
+          } : {
+            chestFold: parseFloat(chestFold),
+            midaxillaryFold: parseFloat(midaxillaryFold),
+            tricepsFold: parseFloat(tricepsFold),
+            subscapularFold: parseFloat(subscapularFold),
+            abdominalFold: parseFloat(abdominalFold),
+            suprailiacFold: parseFloat(suprailiacFold),
+            thighFold: parseFloat(thighFold),
+          }),
           patientName: patientName.trim() || null,
           patientData: {
             goal: goal || null,
@@ -196,23 +221,39 @@ export const useAssessmentForm = (onSuccess: (assessment: any) => void) => {
   return {
     loading,
     assessmentType,
+    measurementMethod,
     photos,
     height,
     weight,
     neckCircumference,
     waistCircumference,
     hipCircumference,
+    chestFold,
+    midaxillaryFold,
+    tricepsFold,
+    subscapularFold,
+    abdominalFold,
+    suprailiacFold,
+    thighFold,
     patientName,
     goal,
     physicalActivities,
     patientData,
     canSubmit,
     setAssessmentType,
+    setMeasurementMethod,
     setHeight,
     setWeight,
     setNeckCircumference,
     setWaistCircumference,
     setHipCircumference,
+    setChestFold,
+    setMidaxillaryFold,
+    setTricepsFold,
+    setSubscapularFold,
+    setAbdominalFold,
+    setSuprailiacFold,
+    setThighFold,
     setPatientName,
     setGoal,
     setPhysicalActivities,

@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { saveAssessment } from './assessmentService.ts';
 import { calculateBodyFatPercentage, calculateLeanMass, calculateFatMass } from './deurenbergFormula.ts';
+import { calculateBodyFatPollock7Fold, calculateLeanMassPollock, calculateFatMassPollock } from './pollockFormula.ts';
 import { callOpenAI } from './openaiService.ts';
 import { buildAssessmentPrompt } from './promptBuilder.ts';
 import { shouldTriggerReevaluation, reevaluateBodyComposition } from './reevaluationService.ts';
@@ -23,12 +24,21 @@ interface AssessmentData {
   height: number;
   weight: number;
   assessmentType: 'self' | 'patient';
+  measurementMethod?: 'navy' | 'pollock_7';
   patientName?: string;
   patientData?: any;
-  // Add circumference fields
+  // Add circumference fields (for Navy method)
   neckCircumference?: number;
   waistCircumference?: number;
   hipCircumference?: number;
+  // Add skinfold fields (for Pollock method)
+  chestFold?: number;
+  midaxillaryFold?: number;
+  tricepsFold?: number;
+  subscapularFold?: number;
+  abdominalFold?: number;
+  suprailiacFold?: number;
+  thighFold?: number;
 }
 
 serve(async (req) => {
@@ -128,28 +138,74 @@ serve(async (req) => {
 
     console.log('Idade calculada:', calculatedAge);
 
-    // Calculate body composition using Deurenberg formula
-    let bodyFatPercentage = calculateBodyFatPercentage(
-      data.weight,
-      data.height,
-      calculatedAge,
-      data.sex.toLowerCase()
-    );
-    
-    console.log('=== CÁLCULO INICIAL COM DEURENBERG ===');
-    console.log('Percentual de gordura inicial:', bodyFatPercentage.toFixed(1) + '%');
+    const measurementMethod = data.measurementMethod || 'navy';
+    console.log('Método de medição:', measurementMethod);
 
-    // Check if reevaluation is needed
-    const needsReevaluation = shouldTriggerReevaluation(
-      bodyFatPercentage,
-      data.waistCircumference || 0,
-      data.height
-    );
+    // Calculate body composition based on method
+    let bodyFatPercentage: number;
+    let leanMass: number;
+    let fatMass: number;
 
+    if (measurementMethod === 'pollock_7') {
+      // Use Pollock 7-fold method
+      if (!data.chestFold || !data.midaxillaryFold || !data.tricepsFold || 
+          !data.subscapularFold || !data.abdominalFold || !data.suprailiacFold || !data.thighFold) {
+        throw new Error('Todas as 7 dobras cutâneas são obrigatórias para o método Pollock');
+      }
+
+      console.log('=== CÁLCULO COM MÉTODO POLLOCK 7 DOBRAS ===');
+      console.log('Dobras:', {
+        peitoral: data.chestFold,
+        axilar: data.midaxillaryFold,
+        triceps: data.tricepsFold,
+        subescapular: data.subscapularFold,
+        abdominal: data.abdominalFold,
+        suprailiaca: data.suprailiacFold,
+        coxa: data.thighFold
+      });
+
+      bodyFatPercentage = calculateBodyFatPollock7Fold(
+        data.chestFold,
+        data.midaxillaryFold,
+        data.tricepsFold,
+        data.subscapularFold,
+        data.abdominalFold,
+        data.suprailiacFold,
+        data.thighFold,
+        calculatedAge,
+        data.sex.toLowerCase()
+      );
+
+      leanMass = calculateLeanMassPollock(data.weight, bodyFatPercentage);
+      fatMass = calculateFatMassPollock(data.weight, bodyFatPercentage);
+
+      console.log('Percentual de gordura (Pollock):', bodyFatPercentage.toFixed(1) + '%');
+    } else {
+      // Use Navy method (Deurenberg formula)
+      console.log('=== CÁLCULO INICIAL COM DEURENBERG (NAVY) ===');
+      
+      bodyFatPercentage = calculateBodyFatPercentage(
+        data.weight,
+        data.height,
+        calculatedAge,
+        data.sex.toLowerCase()
+      );
+      
+      console.log('Percentual de gordura inicial:', bodyFatPercentage.toFixed(1) + '%');
+    }
+
+    // Check if reevaluation is needed (only for Navy method)
     let reevaluationInfo = '';
     let wasReevaluated = false;
 
-    if (needsReevaluation && data.waistCircumference) {
+    if (measurementMethod === 'navy' && data.waistCircumference) {
+      const needsReevaluation = shouldTriggerReevaluation(
+        bodyFatPercentage,
+        data.waistCircumference,
+        data.height
+      );
+
+      if (needsReevaluation) {
       console.log('=== ACIONANDO REAVALIAÇÃO ===');
       console.log('Condições atendidas para reavaliação:', {
         bodyFatPercentage: bodyFatPercentage.toFixed(1),
@@ -170,20 +226,28 @@ serve(async (req) => {
         data.backPhoto
       );
 
-      if (reevaluationResult.wasReevaluated) {
-        console.log('=== REAVALIAÇÃO APLICADA ===');
-        console.log('Percentual original:', bodyFatPercentage.toFixed(1) + '%');
-        console.log('Percentual reavaliado:', reevaluationResult.newBodyFatPercentage.toFixed(1) + '%');
-        console.log('Justificativa:', reevaluationResult.justification);
+        if (reevaluationResult.wasReevaluated) {
+          console.log('=== REAVALIAÇÃO APLICADA ===');
+          console.log('Percentual original:', bodyFatPercentage.toFixed(1) + '%');
+          console.log('Percentual reavaliado:', reevaluationResult.newBodyFatPercentage.toFixed(1) + '%');
+          console.log('Justificativa:', reevaluationResult.justification);
 
-        bodyFatPercentage = reevaluationResult.newBodyFatPercentage;
-        reevaluationInfo = reevaluationResult.justification;
-        wasReevaluated = true;
+          bodyFatPercentage = reevaluationResult.newBodyFatPercentage;
+          reevaluationInfo = reevaluationResult.justification;
+          wasReevaluated = true;
+
+          // Recalculate lean and fat mass with new percentage
+          leanMass = calculateLeanMass(data.weight, bodyFatPercentage);
+          fatMass = calculateFatMass(data.weight, bodyFatPercentage);
+        }
       }
     }
 
-    const leanMass = calculateLeanMass(data.weight, bodyFatPercentage);
-    const fatMass = calculateFatMass(data.weight, bodyFatPercentage);
+    // If not reevaluated and using Navy method, calculate normally
+    if (!wasReevaluated && measurementMethod === 'navy') {
+      leanMass = calculateLeanMass(data.weight, bodyFatPercentage);
+      fatMass = calculateFatMass(data.weight, bodyFatPercentage);
+    }
     
     // Calculate BMI
     const heightM = data.height / 100;
@@ -224,25 +288,28 @@ serve(async (req) => {
       leanMass,
       fatMass,
       bmi,
-      null, // No assessment text for basic
+      null,
       'basic',
       data.patientName || null,
       data.assessmentType,
       data.patientData,
-      // Pass circumferences for all assessment types
       data.neckCircumference,
       data.waistCircumference,
       data.hipCircumference,
-      // Pass height and weight for all assessment types
       data.height,
       data.weight,
-      // Pass the prompt text
       assessmentPrompt,
-      // Pass user data to copy physical activities for self assessments
       userData,
-      // Add reevaluation parameters
       wasReevaluated,
-      reevaluationInfo
+      reevaluationInfo,
+      measurementMethod,
+      data.chestFold,
+      data.midaxillaryFold,
+      data.tricepsFold,
+      data.subscapularFold,
+      data.abdominalFold,
+      data.suprailiacFold,
+      data.thighFold
     );
 
     console.log('Avaliação básica salva com ID:', savedAssessment.id);

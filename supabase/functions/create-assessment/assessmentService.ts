@@ -16,20 +16,23 @@ export async function saveAssessment(
   patientName: string | null = null,
   assessmentType: 'self' | 'patient' = 'self',
   patientData?: PatientData,
-  // Add circumference parameters for all assessment types
   neckCircumference?: number,
   waistCircumference?: number,
   hipCircumference?: number,
-  // Add height and weight parameters for all assessment types
   height?: number,
   weight?: number,
-  // Add prompt parameter
   promptText?: string,
-  // Add userData parameter to access user profile data
   userData?: any,
-  // Add reevaluation parameters
   wasReevaluated?: boolean,
-  reevaluationInfo?: string
+  reevaluationInfo?: string,
+  measurementMethod?: 'navy' | 'pollock_7',
+  chestFold?: number,
+  midaxillaryFold?: number,
+  tricepsFold?: number,
+  subscapularFold?: number,
+  abdominalFold?: number,
+  suprailiacFold?: number,
+  thighFold?: number
 ) {
   const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
@@ -68,13 +71,25 @@ export async function saveAssessment(
     patient_height: height || null,
     patient_weight: weight || null,
     // Add prompt text
-    prompt_text: promptText || null
+    prompt_text: promptText || null,
+    measurement_method: measurementMethod || 'navy',
   };
 
-  // Add reevaluation information if available - FIXED COLUMN NAME
+  // Add skinfold measurements if using Pollock method
+  if (measurementMethod === 'pollock_7') {
+    assessmentRecord.chest_fold = chestFold || null;
+    assessmentRecord.midaxillary_fold = midaxillaryFold || null;
+    assessmentRecord.triceps_fold = tricepsFold || null;
+    assessmentRecord.subscapular_fold = subscapularFold || null;
+    assessmentRecord.abdominal_fold = abdominalFold || null;
+    assessmentRecord.suprailiac_fold = suprailiacFold || null;
+    assessmentRecord.thigh_fold = thighFold || null;
+  }
+
+  // Add reevaluation information if available
   if (wasReevaluated && reevaluationInfo) {
     assessmentRecord.reevaluation_applied = true;
-    assessmentRecord.reevaluation_info = reevaluationInfo; // Changed from reevaluation_notes to reevaluation_info
+    assessmentRecord.reevaluation_info = reevaluationInfo;
   }
 
   // If it's a patient assessment, add all patient data

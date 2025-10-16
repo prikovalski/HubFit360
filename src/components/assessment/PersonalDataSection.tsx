@@ -19,6 +19,7 @@ interface PersonalDataSectionProps {
   onHipCircumferenceChange: (value: string) => void;
   onPatientNameChange: (value: string) => void;
   onShowInstructions: () => void;
+  measurementMethod?: 'navy' | 'pollock_7';
 }
 
 const PersonalDataSection = ({
@@ -35,6 +36,7 @@ const PersonalDataSection = ({
   onHipCircumferenceChange,
   onPatientNameChange,
   onShowInstructions,
+  measurementMethod = 'navy'
 }: PersonalDataSectionProps) => {
   return (
     <Card className="mb-8">
@@ -91,70 +93,72 @@ const PersonalDataSection = ({
           </div>
         </div>
 
-        <div className="border-t pt-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-700">
-              Circunferências <span className="text-red-500">*</span>
-              <span className="text-sm font-normal text-gray-500 ml-2">(obrigatório para análise detalhada)</span>
-            </h3>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onShowInstructions}
-              className="flex items-center gap-2 text-xs"
-            >
-              <HelpCircle className="w-4 h-4" />
-              Como medir?
-            </Button>
+        {measurementMethod === 'navy' && (
+          <div className="border-t pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-700">
+                Circunferências <span className="text-red-500">*</span>
+                <span className="text-sm font-normal text-gray-500 ml-2">(obrigatório para análise detalhada)</span>
+              </h3>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onShowInstructions}
+                className="flex items-center gap-2 text-xs"
+              >
+                <HelpCircle className="w-4 h-4" />
+                Como medir?
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="neck" className="text-sm font-medium">
+                  Pescoço (cm) <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="neck"
+                  type="number"
+                  placeholder="Ex: 38"
+                  value={neckCircumference}
+                  onChange={(e) => onNeckCircumferenceChange(e.target.value)}
+                  required
+                  className="mt-1"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="waist" className="text-sm font-medium">
+                  Cintura (cm) <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="waist"
+                  type="number"
+                  placeholder="Ex: 85"
+                  value={waistCircumference}
+                  onChange={(e) => onWaistCircumferenceChange(e.target.value)}
+                  required
+                  className="mt-1"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="hip" className="text-sm font-medium">
+                  Quadril (cm) <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="hip"
+                  type="number"
+                  placeholder="Ex: 95"
+                  value={hipCircumference}
+                  onChange={(e) => onHipCircumferenceChange(e.target.value)}
+                  required
+                  className="mt-1"
+                />
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="neck" className="text-sm font-medium">
-                Pescoço (cm) <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="neck"
-                type="number"
-                placeholder="Ex: 38"
-                value={neckCircumference}
-                onChange={(e) => onNeckCircumferenceChange(e.target.value)}
-                required
-                className="mt-1"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="waist" className="text-sm font-medium">
-                Cintura (cm) <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="waist"
-                type="number"
-                placeholder="Ex: 85"
-                value={waistCircumference}
-                onChange={(e) => onWaistCircumferenceChange(e.target.value)}
-                required
-                className="mt-1"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="hip" className="text-sm font-medium">
-                Quadril (cm) <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="hip"
-                type="number"
-                placeholder="Ex: 95"
-                value={hipCircumference}
-                onChange={(e) => onHipCircumferenceChange(e.target.value)}
-                required
-                className="mt-1"
-              />
-            </div>
-          </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -7,6 +7,8 @@ import InstructionsCard from './assessment/InstructionsCard';
 import PhotoUploadSection from './assessment/PhotoUploadSection';
 import SubmitSection from './assessment/SubmitSection';
 import PhysicalActivityGoalSection from './assessment/PhysicalActivityGoalSection';
+import { MeasurementMethodSelector } from './assessment/MeasurementMethodSelector';
+import { SevenFoldsSection } from './assessment/SevenFoldsSection';
 import { useAssessmentForm } from '@/hooks/useAssessmentForm';
 import PromptPreview from './PromptPreview';
 import LoggedPageLayout from '@/components/layout/LoggedPageLayout';
@@ -29,23 +31,39 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
   const {
     loading,
     assessmentType,
+    measurementMethod,
     photos,
     height,
     weight,
     neckCircumference,
     waistCircumference,
     hipCircumference,
+    chestFold,
+    midaxillaryFold,
+    tricepsFold,
+    subscapularFold,
+    abdominalFold,
+    suprailiacFold,
+    thighFold,
     patientName,
     goal,
     physicalActivities,
     patientData,
     canSubmit,
     setAssessmentType,
+    setMeasurementMethod,
     setHeight,
     setWeight,
     setNeckCircumference,
     setWaistCircumference,
     setHipCircumference,
+    setChestFold,
+    setMidaxillaryFold,
+    setTricepsFold,
+    setSubscapularFold,
+    setAbdominalFold,
+    setSuprailiacFold,
+    setThighFold,
     setPatientName,
     setGoal,
     setPhysicalActivities,
@@ -129,6 +147,13 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
                 onTypeChange={setAssessmentType} 
               />
 
+              {assessmentType === 'self' && (
+                <MeasurementMethodSelector
+                  method={measurementMethod}
+                  onMethodChange={setMeasurementMethod}
+                />
+              )}
+
               {assessmentType === 'self' ? (
                 <>
                   <PersonalDataSection
@@ -145,7 +170,28 @@ const AssessmentForm = ({ onBack, onSuccess, onLogoClick, onProfileClick, onLogo
                     onHipCircumferenceChange={setHipCircumference}
                     onPatientNameChange={setPatientName}
                     onShowInstructions={() => setShowInstructions(true)}
+                    measurementMethod={measurementMethod}
                   />
+
+                  {measurementMethod === 'pollock_7' && (
+                    <SevenFoldsSection
+                      chestFold={chestFold}
+                      midaxillaryFold={midaxillaryFold}
+                      tricepsFold={tricepsFold}
+                      subscapularFold={subscapularFold}
+                      abdominalFold={abdominalFold}
+                      suprailiacFold={suprailiacFold}
+                      thighFold={thighFold}
+                      onChestFoldChange={setChestFold}
+                      onMidaxillaryFoldChange={setMidaxillaryFold}
+                      onTricepsFoldChange={setTricepsFold}
+                      onSubscapularFoldChange={setSubscapularFold}
+                      onAbdominalFoldChange={setAbdominalFold}
+                      onSuprailiacFoldChange={setSuprailiacFold}
+                      onThighFoldChange={setThighFold}
+                      onShowInstructions={() => setShowInstructions(true)}
+                    />
+                  )}
                   
                   <PhysicalActivityGoalSection
                     goal={goal}
