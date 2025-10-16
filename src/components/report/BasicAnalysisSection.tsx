@@ -6,6 +6,7 @@ import PersonalInfoSection from "./sections/PersonalInfoSection";
 import EstimatesSection from "./sections/EstimatesSection";
 import IdealRangesSection from "./sections/IdealRangesSection";
 import AnalysisIncludedSection from "./sections/AnalysisIncludedSection";
+import BodyCompositionChart from "./sections/BodyCompositionChart";
 
 interface BasicAnalysisSectionProps {
   report: Report & { 
@@ -74,6 +75,15 @@ const BasicAnalysisSection = ({ report, userProfile, patientProfile }: BasicAnal
         />
 
         <EstimatesSection preview={preview} />
+
+        {report.leanMass && report.fatMass && (
+          <div className="mt-6">
+            <BodyCompositionChart 
+              leanMass={report.leanMass}
+              fatMass={report.fatMass}
+            />
+          </div>
+        )}
 
         <IdealRangesSection 
           userProfile={userProfile} 
