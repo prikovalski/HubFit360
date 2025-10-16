@@ -262,6 +262,12 @@ serve(async (req) => {
     });
 
     // Build assessment prompt for potential use
+    console.log('=== DADOS ENVIADOS PARA CONSTRUÇÃO DO PROMPT ===');
+    console.log('Altura (data.height):', data.height, 'cm');
+    console.log('Peso (data.weight):', data.weight, 'kg');
+    console.log('Tipo de avaliação:', data.assessmentType);
+    console.log('Dados do paciente (patientData):', JSON.stringify(data.patientData, null, 2));
+    
     const assessmentPrompt = buildAssessmentPrompt(
       userData,
       calculatedAge,

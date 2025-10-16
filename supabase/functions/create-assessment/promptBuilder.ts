@@ -19,11 +19,18 @@ export function buildAssessmentPrompt(
   
   console.log('=== INÍCIO DA CONSTRUÇÃO DO PROMPT ===');
   console.log('Tipo de avaliação:', assessmentType);
+  console.log('Altura recebida (parâmetro):', height, 'cm');
+  console.log('Peso recebido (parâmetro):', weight, 'kg');
   console.log('Dados do usuário recebidos:', JSON.stringify({
     hasPatientProfiles: !!(userData.patient_profiles && userData.patient_profiles.length > 0),
     patientProfilesLength: userData.patient_profiles?.length || 0,
     firstProfile: userData.patient_profiles?.[0] || null
   }, null, 2));
+  
+  if (assessmentType === 'patient' && patientData) {
+    console.log('Altura do paciente em patientData:', patientData.height);
+    console.log('Peso do paciente em patientData:', patientData.weight);
+  }
   
   // Definir qual fonte de dados usar baseado no tipo de avaliação
   let profileData: any = {};
@@ -127,6 +134,8 @@ export function buildAssessmentPrompt(
 
   console.log('=== DADOS FORMATADOS FINAIS ===');
   console.log('Dados formatados para o prompt:', {
+    altura: height,
+    peso: weight,
     circumferencias: { pescoço: neckCirc, cintura: waistCirc, quadril: hipCirc },
     atividadesFisicas: physicalActivities,
     frequenciaAtividade: physicalActivity,
@@ -240,6 +249,12 @@ Forneça um laudo técnico realista e profissional utilizando uma linguagem info
   console.log('=== PROMPT CONSTRUÍDO COM SUCESSO ===');
   console.log('Tamanho do prompt:', prompt.length);
   console.log('Contém atividades físicas:', prompt.includes(physicalActivities));
+  console.log('Dados no prompt - Altura:', height, 'cm');
+  console.log('Dados no prompt - Peso:', weight, 'kg');
+  console.log('Trecho do prompt com dados pessoais:', prompt.substring(
+    prompt.indexOf('DADOS PESSOAIS:'),
+    prompt.indexOf('DADOS PESSOAIS:') + 500
+  ));
   console.log('=== FIM DA CONSTRUÇÃO DO PROMPT ===');
 
   return prompt;
