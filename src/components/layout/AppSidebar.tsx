@@ -207,7 +207,7 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
                 <SidebarMenuSub>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      onClick={() => onNavigate('physical-dashboard')}
+                      onClick={() => onNavigate('assessment')}
                       isActive={isActive('physical-dashboard') || isActive('assessment') || isActive('report')}
                       className={isActive('physical-dashboard') || isActive('assessment') || isActive('report') ? 'bg-green-50 text-green-700' : ''}
                     >
@@ -216,7 +216,7 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
                   </SidebarMenuSubItem>
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
-                      onClick={() => onNavigate('pollock-dashboard')}
+                      onClick={() => onNavigate('pollock-assessment')}
                       isActive={isActive('pollock-dashboard') || isActive('pollock-assessment') || isActive('pollock-report')}
                       className={`h-auto py-2 ${isActive('pollock-dashboard') || isActive('pollock-assessment') || isActive('pollock-report') ? 'bg-blue-50 text-blue-700' : ''}`}
                     >
