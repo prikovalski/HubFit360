@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import LoggedPageLayout from '@/components/layout/LoggedPageLayout';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 interface PollockReport {
   id: string;
@@ -130,6 +131,21 @@ RESULTADOS DA COMPOSIÇÃO CORPORAL:
   const classification = getBodyFatClassification(report.body_fat_percentage, report.gender);
   const bmiClassification = getBMIClassification(report.bmi);
 
+  const compositionData = [
+    { name: 'Massa Magra', value: report.lean_mass, fill: 'hsl(var(--primary))' },
+    { name: 'Massa Gorda', value: report.fat_mass, fill: 'hsl(var(--destructive))' }
+  ];
+
+  const skinfoldData = [
+    { name: 'Peitoral', value: report.chest_fold },
+    { name: 'Axilar Média', value: report.midaxillary_fold },
+    { name: 'Tríceps', value: report.triceps_fold },
+    { name: 'Subescapular', value: report.subscapular_fold },
+    { name: 'Abdominal', value: report.abdominal_fold },
+    { name: 'Supra-ilíaca', value: report.suprailiac_fold },
+    { name: 'Coxa', value: report.thigh_fold }
+  ];
+
   return (
     <LoggedPageLayout
       userName={userProfile?.name || ''}
@@ -240,6 +256,35 @@ RESULTADOS DA COMPOSIÇÃO CORPORAL:
             </CardContent>
           </Card>
         </div>
+
+        {/* Body Composition Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Composição Corporal</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={compositionData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {compositionData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value: number) => `${value.toFixed(1)} kg`} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
 
         {/* Anthropometric Data */}
         <Card>
