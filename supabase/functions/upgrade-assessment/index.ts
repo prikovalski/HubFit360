@@ -370,12 +370,16 @@ serve(async (req) => {
 
     // Use data from the specific assessment instead of generic profile
     const height = assessment.assessment_type === 'patient' ? 
-                  (assessment.patient_height || 170) : 
-                  (userData.patient_profiles?.[0]?.height || 170);
+                  assessment.patient_height : 
+                  userData.patient_profiles?.[0]?.height;
     
     const weight = assessment.assessment_type === 'patient' ? 
-                  (assessment.patient_weight || 70) : 
-                  (userData.patient_profiles?.[0]?.weight || 70);
+                  assessment.patient_weight : 
+                  userData.patient_profiles?.[0]?.weight;
+
+    if (!height || !weight) {
+      throw new Error('Dados de altura e peso não encontrados para gerar a análise');
+    }
 
     const gender = assessment.assessment_type === 'patient' ? 
                   (assessment.patient_gender || 'masculino') : 
