@@ -71,13 +71,33 @@ export const PollockAssessmentForm = ({ onBack, onSubmitSuccess, userProfile }: 
           />
         </Card>
 
-        {assessmentType === 'self' && userProfile && (
+        {assessmentType === 'self' && (
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Dados Pessoais</h3>
-            <div className="space-y-2 text-sm">
-              <p><span className="font-medium">Altura:</span> {userProfile.height} cm</p>
-              <p><span className="font-medium">Peso:</span> {userProfile.weight} kg</p>
-              <p><span className="font-medium">Gênero:</span> {userProfile.gender}</p>
+            <div className="space-y-4">
+              <input 
+                placeholder="Altura (cm)" 
+                type="number"
+                value={patientData.height || userProfile?.height || ''}
+                onChange={(e) => handlePatientDataChange('height', e.target.value)}
+                className="w-full p-2 border rounded"
+              />
+              <input 
+                placeholder="Peso (kg)" 
+                type="number"
+                value={patientData.weight || userProfile?.weight || ''}
+                onChange={(e) => handlePatientDataChange('weight', e.target.value)}
+                className="w-full p-2 border rounded"
+              />
+              <select
+                value={patientData.gender || userProfile?.gender || ''}
+                onChange={(e) => handlePatientDataChange('gender', e.target.value)}
+                className="w-full p-2 border rounded"
+              >
+                <option value="">Selecione o gênero</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+              </select>
             </div>
           </Card>
         )}
@@ -113,6 +133,16 @@ export const PollockAssessmentForm = ({ onBack, onSubmitSuccess, userProfile }: 
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Upload de Fotos</h3>
           <p className="text-sm text-muted-foreground mb-4">Faça upload das 3 fotos necessárias</p>
+          <PhotoUploadSection
+            photos={photos}
+            onPhotoUpload={(position, file) => {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                handlePhotoUpload(position, reader.result as string);
+              };
+              reader.readAsDataURL(file);
+            }}
+          />
         </Card>
 
         <SevenFoldsSection

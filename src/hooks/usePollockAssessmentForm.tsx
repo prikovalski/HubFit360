@@ -26,10 +26,10 @@ export const usePollockAssessmentForm = (userProfile: any, onSubmitSuccess: (dat
   // Patient data
   const [patientData, setPatientData] = useState({
     name: '',
-    gender: '',
-    birthDate: '',
-    height: '',
-    weight: '',
+    gender: userProfile?.gender || '',
+    birthDate: userProfile?.birth_date || '',
+    height: userProfile?.height?.toString() || '',
+    weight: userProfile?.weight?.toString() || '',
   });
 
   const canSubmit = 
@@ -43,8 +43,11 @@ export const usePollockAssessmentForm = (userProfile: any, onSubmitSuccess: (dat
     abdominalFold &&
     suprailiacFold &&
     thighFold &&
+    patientData.gender && 
+    patientData.height && 
+    patientData.weight &&
     (assessmentType === 'self' || 
-      (patientData.gender && patientData.birthDate && patientData.height && patientData.weight));
+      (patientData.name && patientData.birthDate));
 
   const handlePhotoUpload = (type: 'front' | 'side' | 'back', photo: string) => {
     setPhotos(prev => ({ ...prev, [type]: photo }));
@@ -90,10 +93,10 @@ export const usePollockAssessmentForm = (userProfile: any, onSubmitSuccess: (dat
       };
 
       if (assessmentType === 'self') {
-        // Use user profile data
-        submissionData.height = userProfile?.height || 0;
-        submissionData.weight = userProfile?.weight || 0;
-        submissionData.gender = userProfile?.gender || '';
+        // Use edited patient data if available, otherwise use user profile data
+        submissionData.height = parseFloat(patientData.height) || userProfile?.height || 0;
+        submissionData.weight = parseFloat(patientData.weight) || userProfile?.weight || 0;
+        submissionData.gender = patientData.gender || userProfile?.gender || '';
         
         // Calculate age from birth_date
         if (userProfile?.birth_date) {
