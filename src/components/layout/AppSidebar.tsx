@@ -150,7 +150,7 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
                     <SidebarMenuSubButton
                       onClick={() => onNavigate('big-five-dashboard')}
                       isActive={isActive('big-five-dashboard') || isActive('big-five-assessment')}
-                      className={isActive('big-five-dashboard') || isActive('big-five-assessment') ? 'bg-purple-50 text-purple-700' : ''}
+                      className={`h-auto py-2 ${isActive('big-five-dashboard') || isActive('big-five-assessment') ? 'bg-purple-50 text-purple-700' : ''}`}
                     >
                       {!isCollapsed && (
                         <div className="flex items-center gap-2">
