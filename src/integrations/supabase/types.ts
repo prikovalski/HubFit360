@@ -16,14 +16,12 @@ export type Database = {
     Tables: {
       assessments: {
         Row: {
-          abdominal_fold: number | null
           age: number | null
           assessment_text: string | null
           assessment_type: string | null
           back_photo: string
           bmi: number | null
           body_fat_percentage: number | null
-          chest_fold: number | null
           created_at: string
           fat_mass: number | null
           front_photo: string
@@ -31,7 +29,6 @@ export type Database = {
           id: string
           lean_mass: number | null
           measurement_method: string | null
-          midaxillary_fold: number | null
           neck_circumference: number | null
           patient_birth_date: string | null
           patient_gender: string | null
@@ -48,24 +45,18 @@ export type Database = {
           reevaluation_info: string | null
           side_photo: string
           status: string | null
-          subscapular_fold: number | null
-          suprailiac_fold: number | null
-          thigh_fold: number | null
           tier: string
-          triceps_fold: number | null
           updated_at: string
           user_id: number
           waist_circumference: number | null
         }
         Insert: {
-          abdominal_fold?: number | null
           age?: number | null
           assessment_text?: string | null
           assessment_type?: string | null
           back_photo: string
           bmi?: number | null
           body_fat_percentage?: number | null
-          chest_fold?: number | null
           created_at?: string
           fat_mass?: number | null
           front_photo: string
@@ -73,7 +64,6 @@ export type Database = {
           id?: string
           lean_mass?: number | null
           measurement_method?: string | null
-          midaxillary_fold?: number | null
           neck_circumference?: number | null
           patient_birth_date?: string | null
           patient_gender?: string | null
@@ -90,24 +80,18 @@ export type Database = {
           reevaluation_info?: string | null
           side_photo: string
           status?: string | null
-          subscapular_fold?: number | null
-          suprailiac_fold?: number | null
-          thigh_fold?: number | null
           tier?: string
-          triceps_fold?: number | null
           updated_at?: string
           user_id: number
           waist_circumference?: number | null
         }
         Update: {
-          abdominal_fold?: number | null
           age?: number | null
           assessment_text?: string | null
           assessment_type?: string | null
           back_photo?: string
           bmi?: number | null
           body_fat_percentage?: number | null
-          chest_fold?: number | null
           created_at?: string
           fat_mass?: number | null
           front_photo?: string
@@ -115,7 +99,6 @@ export type Database = {
           id?: string
           lean_mass?: number | null
           measurement_method?: string | null
-          midaxillary_fold?: number | null
           neck_circumference?: number | null
           patient_birth_date?: string | null
           patient_gender?: string | null
@@ -132,11 +115,7 @@ export type Database = {
           reevaluation_info?: string | null
           side_photo?: string
           status?: string | null
-          subscapular_fold?: number | null
-          suprailiac_fold?: number | null
-          thigh_fold?: number | null
           tier?: string
-          triceps_fold?: number | null
           updated_at?: string
           user_id?: number
           waist_circumference?: number | null

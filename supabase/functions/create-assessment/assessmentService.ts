@@ -24,15 +24,7 @@ export async function saveAssessment(
   promptText?: string,
   userData?: any,
   wasReevaluated?: boolean,
-  reevaluationInfo?: string,
-  measurementMethod?: 'navy' | 'pollock_7',
-  chestFold?: number,
-  midaxillaryFold?: number,
-  tricepsFold?: number,
-  subscapularFold?: number,
-  abdominalFold?: number,
-  suprailiacFold?: number,
-  thighFold?: number
+  reevaluationInfo?: string
 ) {
   const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
@@ -72,19 +64,8 @@ export async function saveAssessment(
     patient_weight: weight || null,
     // Add prompt text
     prompt_text: promptText || null,
-    measurement_method: measurementMethod || 'navy',
+    measurement_method: 'navy',
   };
-
-  // Add skinfold measurements if using Pollock method
-  if (measurementMethod === 'pollock_7') {
-    assessmentRecord.chest_fold = chestFold || null;
-    assessmentRecord.midaxillary_fold = midaxillaryFold || null;
-    assessmentRecord.triceps_fold = tricepsFold || null;
-    assessmentRecord.subscapular_fold = subscapularFold || null;
-    assessmentRecord.abdominal_fold = abdominalFold || null;
-    assessmentRecord.suprailiac_fold = suprailiacFold || null;
-    assessmentRecord.thigh_fold = thighFold || null;
-  }
 
   // Add reevaluation information if available
   if (wasReevaluated && reevaluationInfo) {

@@ -3,7 +3,6 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { saveAssessment } from './assessmentService.ts';
 import { calculateBodyFatPercentage, calculateLeanMass, calculateFatMass } from './deurenbergFormula.ts';
-import { calculateBodyFatPollock7Fold, calculateLeanMassPollock, calculateFatMassPollock } from './pollockFormula.ts';
 import { callOpenAI } from './openaiService.ts';
 import { buildAssessmentPrompt } from './promptBuilder.ts';
 import { shouldTriggerReevaluation, reevaluateBodyComposition } from './reevaluationService.ts';
@@ -24,21 +23,12 @@ interface AssessmentData {
   height: number;
   weight: number;
   assessmentType: 'self' | 'patient';
-  measurementMethod?: 'navy' | 'pollock_7';
   patientName?: string;
   patientData?: any;
-  // Add circumference fields (for Navy method)
+  // Circumference fields for Navy method
   neckCircumference?: number;
   waistCircumference?: number;
   hipCircumference?: number;
-  // Add skinfold fields (for Pollock method)
-  chestFold?: number;
-  midaxillaryFold?: number;
-  tricepsFold?: number;
-  subscapularFold?: number;
-  abdominalFold?: number;
-  suprailiacFold?: number;
-  thighFold?: number;
 }
 
 serve(async (req) => {
@@ -138,67 +128,25 @@ serve(async (req) => {
 
     console.log('Idade calculada:', calculatedAge);
 
-    const measurementMethod = data.measurementMethod || 'navy';
-    console.log('Método de medição:', measurementMethod);
+    // Calculate body composition using Navy method (Deurenberg formula)
+    console.log('=== CÁLCULO INICIAL COM DEURENBERG (NAVY) ===');
+    
+    let bodyFatPercentage = calculateBodyFatPercentage(
+      data.weight,
+      data.height,
+      calculatedAge,
+      data.sex.toLowerCase()
+    );
+    
+    console.log('Percentual de gordura inicial:', bodyFatPercentage.toFixed(1) + '%');
 
-    // Calculate body composition based on method
-    let bodyFatPercentage: number;
+    // Check if reevaluation is needed
+    let reevaluationInfo = '';
+    let wasReevaluated = false;
     let leanMass: number;
     let fatMass: number;
 
-    if (measurementMethod === 'pollock_7') {
-      // Use Pollock 7-fold method
-      if (!data.chestFold || !data.midaxillaryFold || !data.tricepsFold || 
-          !data.subscapularFold || !data.abdominalFold || !data.suprailiacFold || !data.thighFold) {
-        throw new Error('Todas as 7 dobras cutâneas são obrigatórias para o método Pollock');
-      }
-
-      console.log('=== CÁLCULO COM MÉTODO POLLOCK 7 DOBRAS ===');
-      console.log('Dobras:', {
-        peitoral: data.chestFold,
-        axilar: data.midaxillaryFold,
-        triceps: data.tricepsFold,
-        subescapular: data.subscapularFold,
-        abdominal: data.abdominalFold,
-        suprailiaca: data.suprailiacFold,
-        coxa: data.thighFold
-      });
-
-      bodyFatPercentage = calculateBodyFatPollock7Fold(
-        data.chestFold,
-        data.midaxillaryFold,
-        data.tricepsFold,
-        data.subscapularFold,
-        data.abdominalFold,
-        data.suprailiacFold,
-        data.thighFold,
-        calculatedAge,
-        data.sex.toLowerCase()
-      );
-
-      leanMass = calculateLeanMassPollock(data.weight, bodyFatPercentage);
-      fatMass = calculateFatMassPollock(data.weight, bodyFatPercentage);
-
-      console.log('Percentual de gordura (Pollock):', bodyFatPercentage.toFixed(1) + '%');
-    } else {
-      // Use Navy method (Deurenberg formula)
-      console.log('=== CÁLCULO INICIAL COM DEURENBERG (NAVY) ===');
-      
-      bodyFatPercentage = calculateBodyFatPercentage(
-        data.weight,
-        data.height,
-        calculatedAge,
-        data.sex.toLowerCase()
-      );
-      
-      console.log('Percentual de gordura inicial:', bodyFatPercentage.toFixed(1) + '%');
-    }
-
-    // Check if reevaluation is needed (only for Navy method)
-    let reevaluationInfo = '';
-    let wasReevaluated = false;
-
-    if (measurementMethod === 'navy' && data.waistCircumference) {
+    if (data.waistCircumference) {
       const needsReevaluation = shouldTriggerReevaluation(
         bodyFatPercentage,
         data.waistCircumference,
@@ -240,11 +188,10 @@ serve(async (req) => {
           leanMass = calculateLeanMass(data.weight, bodyFatPercentage);
           fatMass = calculateFatMass(data.weight, bodyFatPercentage);
         }
-      }
     }
 
-    // If not reevaluated and using Navy method, calculate normally
-    if (!wasReevaluated && measurementMethod === 'navy') {
+    // Calculate lean and fat mass if not already calculated by reevaluation
+    if (!wasReevaluated) {
       leanMass = calculateLeanMass(data.weight, bodyFatPercentage);
       fatMass = calculateFatMass(data.weight, bodyFatPercentage);
     }
@@ -307,15 +254,7 @@ serve(async (req) => {
       assessmentPrompt,
       userData,
       wasReevaluated,
-      reevaluationInfo,
-      measurementMethod,
-      data.chestFold,
-      data.midaxillaryFold,
-      data.tricepsFold,
-      data.subscapularFold,
-      data.abdominalFold,
-      data.suprailiacFold,
-      data.thighFold
+      reevaluationInfo
     );
 
     console.log('Avaliação básica salva com ID:', savedAssessment.id);
