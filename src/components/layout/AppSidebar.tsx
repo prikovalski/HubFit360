@@ -170,7 +170,7 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
 
         {/* Avaliações Físicas */}
         <SidebarGroup>
-          <Collapsible defaultOpen={isActive('physical-dashboard') || isActive('assessment') || isActive('report')}>
+          <Collapsible defaultOpen={isActive('physical-dashboard') || isActive('assessment') || isActive('report') || isActive('pollock-dashboard') || isActive('pollock-assessment') || isActive('pollock-report')}>
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
                 <SidebarMenuButton>
@@ -192,6 +192,22 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
                       className={isActive('physical-dashboard') ? 'bg-green-50 text-green-700' : ''}
                     >
                       {!isCollapsed && <span>Avaliação por IA</span>}
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      onClick={() => onNavigate('pollock-dashboard')}
+                      isActive={isActive('pollock-dashboard') || isActive('pollock-assessment') || isActive('pollock-report')}
+                      className={isActive('pollock-dashboard') || isActive('pollock-assessment') || isActive('pollock-report') ? 'bg-blue-50 text-blue-700' : ''}
+                    >
+                      {!isCollapsed && (
+                        <div className="flex items-center gap-2">
+                          <span>Avaliação por Dobras</span>
+                          <Badge className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white border-0 text-[10px] px-1 py-0">
+                            Novo
+                          </Badge>
+                        </div>
+                      )}
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                 </SidebarMenuSub>
