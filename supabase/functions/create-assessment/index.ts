@@ -188,6 +188,7 @@ serve(async (req) => {
           leanMass = calculateLeanMass(data.weight, bodyFatPercentage);
           fatMass = calculateFatMass(data.weight, bodyFatPercentage);
         }
+      }
     }
 
     // Calculate lean and fat mass if not already calculated by reevaluation
