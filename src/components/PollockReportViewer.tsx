@@ -15,6 +15,7 @@ interface PollockReport {
   body_fat_percentage: number;
   lean_mass: number;
   fat_mass: number;
+  bmi: number;
   height: number;
   weight: number;
   age: number;
@@ -82,6 +83,7 @@ DADOS ANTROPOMÉTRICOS:
 - Peso: ${report.weight} kg
 - Idade: ${report.age} anos
 - Sexo: ${report.gender === 'MALE' ? 'Masculino' : 'Feminino'}
+- IMC: ${report.bmi?.toFixed(1)} kg/m²
 
 MEDIDAS DE DOBRAS CUTÂNEAS (mm):
 - Peitoral: ${report.chest_fold}
@@ -96,6 +98,7 @@ RESULTADOS DA COMPOSIÇÃO CORPORAL:
 - Percentual de Gordura: ${report.body_fat_percentage?.toFixed(1)}%
 - Massa Magra: ${report.lean_mass?.toFixed(1)} kg
 - Massa Gorda: ${report.fat_mass?.toFixed(1)} kg
+- IMC: ${report.bmi?.toFixed(1)} kg/m²
     `.trim();
   };
 
@@ -115,7 +118,17 @@ RESULTADOS DA COMPOSIÇÃO CORPORAL:
     }
   };
 
+  const getBMIClassification = (bmi: number) => {
+    if (bmi < 18.5) return { label: 'Abaixo do peso', color: 'bg-blue-500' };
+    if (bmi < 25) return { label: 'Normal', color: 'bg-green-500' };
+    if (bmi < 30) return { label: 'Sobrepeso', color: 'bg-yellow-500' };
+    if (bmi < 35) return { label: 'Obesidade Grau I', color: 'bg-orange-500' };
+    if (bmi < 40) return { label: 'Obesidade Grau II', color: 'bg-red-500' };
+    return { label: 'Obesidade Grau III', color: 'bg-red-700' };
+  };
+
   const classification = getBodyFatClassification(report.body_fat_percentage, report.gender);
+  const bmiClassification = getBMIClassification(report.bmi);
 
   return (
     <LoggedPageLayout
@@ -185,7 +198,7 @@ RESULTADOS DA COMPOSIÇÃO CORPORAL:
         </Card>
 
         {/* Main Results */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader>
               <CardTitle className="text-sm font-medium">Percentual de Gordura</CardTitle>
@@ -210,6 +223,20 @@ RESULTADOS DA COMPOSIÇÃO CORPORAL:
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{report.fat_mass?.toFixed(1)} kg</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium">IMC</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{report.bmi?.toFixed(1)}</div>
+              <div className="mt-2">
+                <Badge className={`${bmiClassification.color} text-white`}>
+                  {bmiClassification.label}
+                </Badge>
+              </div>
             </CardContent>
           </Card>
         </div>
