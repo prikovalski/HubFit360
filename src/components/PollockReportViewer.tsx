@@ -217,10 +217,10 @@ RESULTADOS DA COMPOSIÇÃO CORPORAL:
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm font-medium">Percentual de Gordura</CardTitle>
+              <CardTitle className="text-sm font-medium">Massa Gorda</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{report.body_fat_percentage?.toFixed(1)}%</div>
+              <div className="text-3xl font-bold">{report.fat_mass?.toFixed(1)} kg</div>
             </CardContent>
           </Card>
 
@@ -235,10 +235,10 @@ RESULTADOS DA COMPOSIÇÃO CORPORAL:
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm font-medium">Massa Gorda</CardTitle>
+              <CardTitle className="text-sm font-medium">Percentual de Gordura</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{report.fat_mass?.toFixed(1)} kg</div>
+              <div className="text-3xl font-bold">{report.body_fat_percentage?.toFixed(1)}%</div>
             </CardContent>
           </Card>
 
