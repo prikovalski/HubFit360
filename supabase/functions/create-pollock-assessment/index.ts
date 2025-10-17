@@ -1,7 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { calculateBodyFatPollock7Fold, calculateLeanMassPollock, calculateFatMassPollock } from './pollockCalculations.ts';
-import { applyRateLimit } from '../_shared/rateLimiter.ts';
+import { checkRateLimit } from '../_shared/rateLimiter.ts';
 import { createErrorResponse, ERROR_MESSAGES } from '../_shared/errorHandler.ts';
 import { 
   validateHeight, 
@@ -65,8 +65,11 @@ serve(async (req) => {
     }
 
     // Apply rate limiting
-    const rateLimitResult = await applyRateLimit(data.userId, 10, 60);
-    if (!rateLimitResult.allowed) {
+    const rateLimitAllowed = checkRateLimit(data.userId, {
+      maxRequests: 10,
+      windowMs: 60000
+    });
+    if (!rateLimitAllowed) {
       return createErrorResponse(
         new Error('Rate limit exceeded'),
         'RATE_LIMIT_EXCEEDED',
