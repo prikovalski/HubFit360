@@ -198,7 +198,7 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
                     <SidebarMenuSubButton
                       onClick={() => onNavigate('pollock-dashboard')}
                       isActive={isActive('pollock-dashboard') || isActive('pollock-assessment') || isActive('pollock-report')}
-                      className={isActive('pollock-dashboard') || isActive('pollock-assessment') || isActive('pollock-report') ? 'bg-blue-50 text-blue-700' : ''}
+                      className={`h-auto py-2 ${isActive('pollock-dashboard') || isActive('pollock-assessment') || isActive('pollock-report') ? 'bg-blue-50 text-blue-700' : ''}`}
                     >
                       {!isCollapsed && (
                         <div className="flex items-center gap-2">
