@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { Copy, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Copy, CheckCircle2, ArrowLeft, FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import LoggedPageLayout from '@/components/layout/LoggedPageLayout';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { generatePollockPDF } from '@/utils/pollockPdfGenerator';
 
 interface PollockReport {
   id: string;
@@ -67,6 +68,26 @@ const PollockReportViewer = ({
       toast({
         title: "Erro",
         description: "Não foi possível copiar o relatório",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleGeneratePDF = () => {
+    try {
+      const pdf = generatePollockPDF({ report });
+      const fileName = report.assessment_type === 'patient' && report.patient_name
+        ? `relatorio-dobras-${report.patient_name.replace(/\s+/g, '-')}-${new Date(report.created_at).toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`
+        : `relatorio-dobras-${new Date(report.created_at).toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
+      pdf.save(fileName);
+      toast({
+        title: "PDF Gerado!",
+        description: "O relatório foi baixado com sucesso",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível gerar o PDF",
         variant: "destructive",
       });
     }
@@ -166,23 +187,33 @@ RESULTADOS DA COMPOSIÇÃO CORPORAL:
             <ArrowLeft className="w-4 h-4" />
             Voltar
           </Button>
-          <Button
-            onClick={handleCopy}
-            variant="outline"
-            className="gap-2"
-          >
-            {copied ? (
-              <>
-                <CheckCircle2 className="w-4 h-4" />
-                Copiado!
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4" />
-                Copiar Relatório
-              </>
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleCopy}
+              variant="outline"
+              className="gap-2"
+            >
+              {copied ? (
+                <>
+                  <CheckCircle2 className="w-4 h-4" />
+                  Copiado!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  Copiar Relatório
+                </>
+              )}
+            </Button>
+            <Button
+              onClick={handleGeneratePDF}
+              variant="default"
+              className="gap-2"
+            >
+              <FileDown className="w-4 h-4" />
+              Gerar PDF
+            </Button>
+          </div>
         </div>
 
         {/* Report Header */}
