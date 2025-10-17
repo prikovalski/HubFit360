@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 
-export type NavigationPage = 'main-dashboard' | 'physical-dashboard' | 'tdah-dashboard' | 'big-five-dashboard' | 'profile' | 'assessment' | 'tdah-assessment' | 'diva2-assessment' | 'big-five-assessment' | 'report' | 'tdah-report' | 'big-five-report';
+export type NavigationPage = 'main-dashboard' | 'physical-dashboard' | 'tdah-dashboard' | 'big-five-dashboard' | 'pollock-dashboard' | 'profile' | 'assessment' | 'tdah-assessment' | 'diva2-assessment' | 'big-five-assessment' | 'pollock-assessment' | 'report' | 'tdah-report' | 'big-five-report' | 'pollock-report';
 
 interface NavigationState {
   currentPage: NavigationPage;
@@ -41,14 +41,17 @@ export const useNavigation = () => {
   const goToPhysicalDashboard = () => navigateTo('physical-dashboard');
   const goToTDAHDashboard = () => navigateTo('tdah-dashboard');
   const goToBigFiveDashboard = () => navigateTo('big-five-dashboard');
+  const goToPollockDashboard = () => navigateTo('pollock-dashboard');
   const goToProfile = () => navigateTo('profile');
   const goToAssessment = () => navigateTo('assessment');
   const goToTDAHAssessment = () => navigateTo('tdah-assessment');
   const goToDIVA2Assessment = () => navigateTo('diva2-assessment');
   const goToBigFiveAssessment = () => navigateTo('big-five-assessment');
+  const goToPollockAssessment = () => navigateTo('pollock-assessment');
   const goToReport = (reportData: any) => navigateTo('report', reportData);
   const goToTDAHReport = (reportData: any) => navigateTo('tdah-report', reportData);
   const goToBigFiveReport = (reportData: any) => navigateTo('big-five-report', reportData);
+  const goToPollockReport = (reportData: any) => navigateTo('pollock-report', reportData);
 
   return {
     currentPage: navigationState.currentPage,
@@ -61,13 +64,16 @@ export const useNavigation = () => {
     goToPhysicalDashboard,
     goToTDAHDashboard,
     goToBigFiveDashboard,
+    goToPollockDashboard,
     goToProfile,
     goToAssessment,
     goToTDAHAssessment,
     goToDIVA2Assessment,
     goToBigFiveAssessment,
+    goToPollockAssessment,
     goToReport,
     goToTDAHReport,
-    goToBigFiveReport
+    goToBigFiveReport,
+    goToPollockReport
   };
 };

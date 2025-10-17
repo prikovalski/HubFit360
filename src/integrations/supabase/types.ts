@@ -498,6 +498,107 @@ export type Database = {
           },
         ]
       }
+      pollock_assessments: {
+        Row: {
+          abdominal_fold: number | null
+          age: number | null
+          assessment_type: string
+          back_photo: string
+          bmi: number | null
+          body_fat_percentage: number | null
+          chest_fold: number | null
+          created_at: string
+          fat_mass: number | null
+          front_photo: string
+          gender: string | null
+          height: number | null
+          id: string
+          lean_mass: number | null
+          midaxillary_fold: number | null
+          patient_birth_date: string | null
+          patient_gender: string | null
+          patient_height: number | null
+          patient_name: string | null
+          patient_weight: number | null
+          side_photo: string
+          subscapular_fold: number | null
+          suprailiac_fold: number | null
+          thigh_fold: number | null
+          triceps_fold: number | null
+          updated_at: string
+          user_id: number
+          weight: number | null
+        }
+        Insert: {
+          abdominal_fold?: number | null
+          age?: number | null
+          assessment_type?: string
+          back_photo: string
+          bmi?: number | null
+          body_fat_percentage?: number | null
+          chest_fold?: number | null
+          created_at?: string
+          fat_mass?: number | null
+          front_photo: string
+          gender?: string | null
+          height?: number | null
+          id?: string
+          lean_mass?: number | null
+          midaxillary_fold?: number | null
+          patient_birth_date?: string | null
+          patient_gender?: string | null
+          patient_height?: number | null
+          patient_name?: string | null
+          patient_weight?: number | null
+          side_photo: string
+          subscapular_fold?: number | null
+          suprailiac_fold?: number | null
+          thigh_fold?: number | null
+          triceps_fold?: number | null
+          updated_at?: string
+          user_id: number
+          weight?: number | null
+        }
+        Update: {
+          abdominal_fold?: number | null
+          age?: number | null
+          assessment_type?: string
+          back_photo?: string
+          bmi?: number | null
+          body_fat_percentage?: number | null
+          chest_fold?: number | null
+          created_at?: string
+          fat_mass?: number | null
+          front_photo?: string
+          gender?: string | null
+          height?: number | null
+          id?: string
+          lean_mass?: number | null
+          midaxillary_fold?: number | null
+          patient_birth_date?: string | null
+          patient_gender?: string | null
+          patient_height?: number | null
+          patient_name?: string | null
+          patient_weight?: number | null
+          side_photo?: string
+          subscapular_fold?: number | null
+          suprailiac_fold?: number | null
+          thigh_fold?: number | null
+          triceps_fold?: number | null
+          updated_at?: string
+          user_id?: number
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pollock_assessments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tdah_assessments: {
         Row: {
           assessment_method: string | null
