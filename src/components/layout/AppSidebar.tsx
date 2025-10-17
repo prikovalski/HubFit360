@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { User, Brain, Activity, LogOut, ChevronDown, Info, Dumbbell, Home, Coins, Sparkles } from 'lucide-react';
 import {
   Sidebar,
@@ -31,6 +32,9 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
   const { siteName } = useSiteConfig();
   const { balance } = useUserCredits();
   const isCollapsed = state === "collapsed";
+
+  const [psychologicalOpen, setPsychologicalOpen] = useState(false);
+  const [physicalOpen, setPhysicalOpen] = useState(false);
 
   const isActive = (page: string) => currentPage === page;
 
@@ -113,15 +117,21 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
 
         {/* Avaliações Psicológicas */}
         <SidebarGroup>
-          <Collapsible defaultOpen={isActive('tdah-dashboard') || isActive('tdah-assessment') || isActive('tdah-report') || isActive('diva2-assessment') || isActive('big-five-dashboard') || isActive('big-five-assessment')}>
-            <SidebarMenuItem>
+          <Collapsible 
+            open={psychologicalOpen}
+            onOpenChange={setPsychologicalOpen}
+          >
+            <SidebarMenuItem
+              onMouseEnter={() => !isCollapsed && setPsychologicalOpen(true)}
+              onMouseLeave={() => !isCollapsed && setPsychologicalOpen(false)}
+            >
               <CollapsibleTrigger asChild>
                 <SidebarMenuButton>
                   <Brain className="h-4 w-4 text-purple-600" />
                   {!isCollapsed && (
                     <>
                       <span>Avaliações Psicológicas</span>
-                      <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                      <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${psychologicalOpen ? 'rotate-180' : ''}`} />
                     </>
                   )}
                 </SidebarMenuButton>
@@ -170,15 +180,21 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
 
         {/* Avaliações Físicas */}
         <SidebarGroup>
-          <Collapsible defaultOpen={isActive('physical-dashboard') || isActive('assessment') || isActive('report') || isActive('pollock-dashboard') || isActive('pollock-assessment') || isActive('pollock-report')}>
-            <SidebarMenuItem>
+          <Collapsible 
+            open={physicalOpen}
+            onOpenChange={setPhysicalOpen}
+          >
+            <SidebarMenuItem
+              onMouseEnter={() => !isCollapsed && setPhysicalOpen(true)}
+              onMouseLeave={() => !isCollapsed && setPhysicalOpen(false)}
+            >
               <CollapsibleTrigger asChild>
                 <SidebarMenuButton>
                   <Dumbbell className="h-4 w-4 text-green-600" />
                   {!isCollapsed && (
                     <>
                       <span>Avaliações Físicas</span>
-                      <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                      <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${physicalOpen ? 'rotate-180' : ''}`} />
                     </>
                   )}
                 </SidebarMenuButton>
