@@ -23,12 +23,14 @@ import LazyBigFiveAssessmentForm from '@/components/lazy/LazyBigFiveAssessmentFo
 import LazyBigFiveDashboard from '@/components/lazy/LazyBigFiveDashboard';
 import { PollockAssessmentDashboard } from '@/components/PollockAssessmentDashboard';
 import { PollockAssessmentForm } from '@/components/PollockAssessmentForm';
+import PollockReportViewer from '@/components/PollockReportViewer';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 const AppContent = () => {
   const [currentSection, setCurrentSection] = useState('home');
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [selectedTDAHReport, setSelectedTDAHReport] = useState<any>(null);
+  const [selectedPollockReport, setSelectedPollockReport] = useState<any>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const navigation = useNavigation();
@@ -138,6 +140,22 @@ const AppContent = () => {
     navigation.goToTDAHDashboard();
     setSelectedTDAHReport(null);
   };
+
+  const handlePollockAssessmentSuccess = (assessment: any) => {
+    console.log('AppContent: Avaliação Pollock recebida:', assessment);
+    setSelectedPollockReport(assessment);
+    navigation.goToPollockReport(assessment);
+  };
+
+  const handleViewPollockReport = (report: any) => {
+    setSelectedPollockReport(report);
+    navigation.goToPollockReport(report);
+  };
+
+  const handleBackToPollockDashboard = () => {
+    navigation.goToPollockDashboard();
+    setSelectedPollockReport(null);
+  };
   const renderSection = () => {
     // Se o usuário está logado, mostrar as seções do dashboard
     if (user) {
@@ -180,12 +198,11 @@ const AppContent = () => {
         case 'physical-dashboard':
           return <LazyPhysicalAssessmentDashboard onNewAssessment={handleNewAssessment} onViewReport={handleViewReport} onLogoClick={() => navigation.goToMainDashboard()} onProfileClick={() => navigation.goToProfile()} onLogout={handleLogout} currentPage={navigation.currentPage} onNavigate={handleNavigate} />;
         case 'pollock-dashboard':
-          return <PollockAssessmentDashboard onNavigateToAssessment={() => navigation.goToPollockAssessment()} onNavigateToReport={(report) => {
-            setSelectedReport(report);
-            navigation.goToPollockReport(report);
-          }} onLogout={handleLogout} onNavigateToProfile={() => navigation.goToProfile()} onShowAbout={() => setShowAboutModal(true)} onNavigate={handleNavigate} onLogoClick={() => navigation.goToMainDashboard()} />;
+          return <PollockAssessmentDashboard onNavigateToAssessment={() => navigation.goToPollockAssessment()} onNavigateToReport={handleViewPollockReport} onLogout={handleLogout} onNavigateToProfile={() => navigation.goToProfile()} onShowAbout={() => setShowAboutModal(true)} onNavigate={handleNavigate} onLogoClick={() => navigation.goToMainDashboard()} />;
         case 'pollock-assessment':
-          return <PollockAssessmentForm onBack={() => navigation.goToPollockDashboard()} onSubmitSuccess={() => navigation.goToPollockDashboard()} userProfile={userProfile} />;
+          return <PollockAssessmentForm onBack={() => navigation.goToPollockDashboard()} onSubmitSuccess={handlePollockAssessmentSuccess} userProfile={userProfile} />;
+        case 'pollock-report':
+          return <PollockReportViewer report={selectedPollockReport} onBack={handleBackToPollockDashboard} onLogoClick={() => navigation.goToMainDashboard()} onProfileClick={() => navigation.goToProfile()} onLogout={handleLogout} currentPage={navigation.currentPage} onNavigate={handleNavigate} />;
         case 'tdah-dashboard':
           return <TDAHDashboard onNavigate={(page, data) => {
             if (page === 'tdah-report' && data) {
