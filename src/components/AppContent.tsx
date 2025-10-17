@@ -21,6 +21,8 @@ import LazyTDAHReportViewer from '@/components/lazy/LazyTDAHReportViewer';
 import LazyDIVA2AssessmentForm from '@/components/lazy/LazyDIVA2AssessmentForm';
 import LazyBigFiveAssessmentForm from '@/components/lazy/LazyBigFiveAssessmentForm';
 import LazyBigFiveDashboard from '@/components/lazy/LazyBigFiveDashboard';
+import { PollockAssessmentDashboard } from '@/components/PollockAssessmentDashboard';
+import { PollockAssessmentForm } from '@/components/PollockAssessmentForm';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 const AppContent = () => {
@@ -177,6 +179,13 @@ const AppContent = () => {
           return <LazyBigFiveAssessmentForm onBack={() => navigation.goToBigFiveDashboard()} onSuccess={() => navigation.goToBigFiveDashboard()} />;
         case 'physical-dashboard':
           return <LazyPhysicalAssessmentDashboard onNewAssessment={handleNewAssessment} onViewReport={handleViewReport} onLogoClick={() => navigation.goToMainDashboard()} onProfileClick={() => navigation.goToProfile()} onLogout={handleLogout} currentPage={navigation.currentPage} onNavigate={handleNavigate} />;
+        case 'pollock-dashboard':
+          return <PollockAssessmentDashboard onNavigateToAssessment={() => navigation.goToPollockAssessment()} onNavigateToReport={(report) => {
+            setSelectedReport(report);
+            navigation.goToPollockReport(report);
+          }} onLogout={handleLogout} onNavigateToProfile={() => navigation.goToProfile()} onShowAbout={() => setShowAboutModal(true)} onNavigate={handleNavigate} onLogoClick={() => navigation.goToMainDashboard()} />;
+        case 'pollock-assessment':
+          return <PollockAssessmentForm onBack={() => navigation.goToPollockDashboard()} onSubmitSuccess={() => navigation.goToPollockDashboard()} userProfile={userProfile} />;
         case 'tdah-dashboard':
           return <TDAHDashboard onNavigate={(page, data) => {
             if (page === 'tdah-report' && data) {
