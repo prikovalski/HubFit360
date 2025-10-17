@@ -34,6 +34,7 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
   const isCollapsed = state === "collapsed";
 
   const [psychologicalOpen, setPsychologicalOpen] = useState(false);
+  const [physicalOpen, setPhysicalOpen] = useState(false);
 
   const isActive = (page: string) => currentPage === page;
 
@@ -179,18 +180,60 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
 
         {/* Avaliações Físicas */}
         <SidebarGroup>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={() => onNavigate('physical-overview')}
-                isActive={isActive('physical-overview')}
-                className={isActive('physical-overview') ? 'bg-green-50 text-green-700 hover:bg-green-100' : ''}
-              >
-                <Dumbbell className="h-4 w-4 text-green-600" />
-                {!isCollapsed && <span>Avaliações Físicas</span>}
-              </SidebarMenuButton>
+          <Collapsible 
+            open={physicalOpen}
+            onOpenChange={setPhysicalOpen}
+          >
+            <SidebarMenuItem
+              onMouseEnter={() => !isCollapsed && setPhysicalOpen(true)}
+              onMouseLeave={() => !isCollapsed && setPhysicalOpen(false)}
+            >
+              <CollapsibleTrigger asChild>
+                <SidebarMenuButton
+                  onClick={() => onNavigate('physical-overview')}
+                  isActive={isActive('physical-overview') || isActive('physical-dashboard') || isActive('pollock-dashboard') || isActive('pollock-assessment') || isActive('pollock-report') || isActive('assessment') || isActive('report')}
+                  className={isActive('physical-overview') || isActive('physical-dashboard') || isActive('pollock-dashboard') || isActive('pollock-assessment') || isActive('pollock-report') || isActive('assessment') || isActive('report') ? 'bg-green-50 text-green-700 hover:bg-green-100' : ''}
+                >
+                  <Dumbbell className="h-4 w-4 text-green-600" />
+                  {!isCollapsed && (
+                    <>
+                      <span>Avaliações Físicas</span>
+                      <ChevronDown className={`ml-auto h-4 w-4 transition-transform ${physicalOpen ? 'rotate-180' : ''}`} />
+                    </>
+                  )}
+                </SidebarMenuButton>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <SidebarMenuSub>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      onClick={() => onNavigate('physical-dashboard')}
+                      isActive={isActive('physical-dashboard') || isActive('assessment') || isActive('report')}
+                      className={isActive('physical-dashboard') || isActive('assessment') || isActive('report') ? 'bg-green-50 text-green-700' : ''}
+                    >
+                      {!isCollapsed && <span>Avaliação por IA</span>}
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      onClick={() => onNavigate('pollock-dashboard')}
+                      isActive={isActive('pollock-dashboard') || isActive('pollock-assessment') || isActive('pollock-report')}
+                      className={`h-auto py-2 ${isActive('pollock-dashboard') || isActive('pollock-assessment') || isActive('pollock-report') ? 'bg-blue-50 text-blue-700' : ''}`}
+                    >
+                      {!isCollapsed && (
+                        <div className="flex items-center gap-2">
+                          <span>Avaliação por Dobras</span>
+                          <Badge className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white border-0 text-[10px] px-1 py-0">
+                            Novo
+                          </Badge>
+                        </div>
+                      )}
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                </SidebarMenuSub>
+              </CollapsibleContent>
             </SidebarMenuItem>
-          </SidebarMenu>
+          </Collapsible>
         </SidebarGroup>
       </SidebarContent>
 
