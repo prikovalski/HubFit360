@@ -209,18 +209,35 @@ serve(async (req) => {
       wasReevaluated
     });
 
+    // Determine correct height and weight based on assessment type
+    let promptHeight: number;
+    let promptWeight: number;
+    
+    if (data.assessmentType === 'patient' && data.patientData) {
+      // For patient assessment, use patient data
+      promptHeight = data.patientData.height || data.height;
+      promptWeight = data.patientData.weight || data.weight;
+    } else {
+      // For self assessment, use user profile data or fallback to data values
+      promptHeight = userData.patient_profiles?.[0]?.height || data.height;
+      promptWeight = userData.patient_profiles?.[0]?.weight || data.weight;
+    }
+
     // Build assessment prompt for potential use
     console.log('=== DADOS ENVIADOS PARA CONSTRUÇÃO DO PROMPT ===');
-    console.log('Altura (data.height):', data.height, 'cm');
-    console.log('Peso (data.weight):', data.weight, 'kg');
     console.log('Tipo de avaliação:', data.assessmentType);
+    console.log('Altura original (data.height):', data.height, 'cm');
+    console.log('Peso original (data.weight):', data.weight, 'kg');
+    console.log('Altura para prompt:', promptHeight, 'cm');
+    console.log('Peso para prompt:', promptWeight, 'kg');
     console.log('Dados do paciente (patientData):', JSON.stringify(data.patientData, null, 2));
+    console.log('Perfil do usuário:', JSON.stringify(userData.patient_profiles?.[0], null, 2));
     
     const assessmentPrompt = buildAssessmentPrompt(
       userData,
       calculatedAge,
-      data.height,
-      data.weight,
+      promptHeight,
+      promptWeight,
       data.sex,
       bodyFatPercentage,
       leanMass,
