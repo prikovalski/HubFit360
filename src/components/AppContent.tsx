@@ -24,6 +24,7 @@ import LazyBigFiveDashboard from '@/components/lazy/LazyBigFiveDashboard';
 import { PollockAssessmentDashboard } from '@/components/PollockAssessmentDashboard';
 import { PollockAssessmentForm } from '@/components/PollockAssessmentForm';
 import PollockReportViewer from '@/components/PollockReportViewer';
+import PhysicalAssessmentsOverview from '@/components/PhysicalAssessmentsOverview';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 const AppContent = () => {
@@ -195,6 +196,8 @@ const AppContent = () => {
           return <LazyBigFiveDashboard onBack={() => navigation.goToMainDashboard()} onNewAssessment={() => navigation.goToBigFiveAssessment()} />;
         case 'big-five-assessment':
           return <LazyBigFiveAssessmentForm onBack={() => navigation.goToBigFiveDashboard()} onSuccess={() => navigation.goToBigFiveDashboard()} />;
+        case 'physical-overview':
+          return <PhysicalAssessmentsOverview onLogoClick={() => navigation.goToMainDashboard()} onProfileClick={() => navigation.goToProfile()} onLogout={handleLogout} currentPage={navigation.currentPage} onNavigate={handleNavigate} />;
         case 'physical-dashboard':
           return <LazyPhysicalAssessmentDashboard onNewAssessment={handleNewAssessment} onViewReport={handleViewReport} onLogoClick={() => navigation.goToMainDashboard()} onProfileClick={() => navigation.goToProfile()} onLogout={handleLogout} currentPage={navigation.currentPage} onNavigate={handleNavigate} />;
         case 'pollock-dashboard':

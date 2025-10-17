@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 
-export type NavigationPage = 'main-dashboard' | 'physical-dashboard' | 'tdah-dashboard' | 'big-five-dashboard' | 'pollock-dashboard' | 'profile' | 'assessment' | 'tdah-assessment' | 'diva2-assessment' | 'big-five-assessment' | 'pollock-assessment' | 'report' | 'tdah-report' | 'big-five-report' | 'pollock-report';
+export type NavigationPage = 'main-dashboard' | 'physical-dashboard' | 'physical-overview' | 'tdah-dashboard' | 'big-five-dashboard' | 'pollock-dashboard' | 'profile' | 'assessment' | 'tdah-assessment' | 'diva2-assessment' | 'big-five-assessment' | 'pollock-assessment' | 'report' | 'tdah-report' | 'big-five-report' | 'pollock-report';
 
 interface NavigationState {
   currentPage: NavigationPage;
@@ -39,6 +39,7 @@ export const useNavigation = () => {
 
   const goToMainDashboard = () => navigateTo('main-dashboard');
   const goToPhysicalDashboard = () => navigateTo('physical-dashboard');
+  const goToPhysicalOverview = () => navigateTo('physical-overview');
   const goToTDAHDashboard = () => navigateTo('tdah-dashboard');
   const goToBigFiveDashboard = () => navigateTo('big-five-dashboard');
   const goToPollockDashboard = () => navigateTo('pollock-dashboard');
@@ -62,6 +63,7 @@ export const useNavigation = () => {
     goBack,
     goToMainDashboard,
     goToPhysicalDashboard,
+    goToPhysicalOverview,
     goToTDAHDashboard,
     goToBigFiveDashboard,
     goToPollockDashboard,
