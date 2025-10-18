@@ -143,10 +143,44 @@ const AppContent = () => {
     setSelectedTDAHReport(null);
   };
 
-  const handlePollockAssessmentSuccess = (assessment: any) => {
-    console.log('AppContent: Avaliação Pollock recebida:', assessment);
-    setSelectedPollockReport(assessment);
-    navigation.goToPollockReport(assessment);
+  const handlePollockAssessmentSuccess = async (assessment: any) => {
+    console.log('AppContent: Avaliação Pollock criada, buscando dados completos...');
+    
+    try {
+      setLoadingPollockReport(true);
+      
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: completeReport, error } = await supabase
+        .from('pollock_assessments')
+        .select('*')
+        .eq('id', assessment.id)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar relatório completo:', error);
+        const { toast } = await import('@/hooks/use-toast');
+        toast({
+          title: 'Erro',
+          description: 'Avaliação criada mas não foi possível carregar o relatório',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      console.log('Relatório Pollock completo carregado:', completeReport);
+      setSelectedPollockReport(completeReport);
+      navigation.goToPollockReport(completeReport);
+    } catch (error) {
+      console.error('Erro ao carregar relatório:', error);
+      const { toast } = await import('@/hooks/use-toast');
+      toast({
+        title: 'Erro',
+        description: 'Avaliação criada mas não foi possível carregar o relatório',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoadingPollockReport(false);
+    }
   };
 
   const handleViewPollockReport = async (report: any) => {
