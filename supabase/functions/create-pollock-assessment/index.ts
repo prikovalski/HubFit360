@@ -269,9 +269,9 @@ serve(async (req) => {
     const assessmentRecord: any = {
       user_id: internalUserId,
       assessment_type: assessmentType,
-      front_photo: data.frontPhoto,
-      side_photo: data.sidePhoto,
-      back_photo: data.backPhoto,
+      front_photo: data.frontPhoto || null,
+      side_photo: data.sidePhoto || null,
+      back_photo: data.backPhoto || null,
       chest_fold: data.chestFold,
       midaxillary_fold: data.midaxillaryFold,
       triceps_fold: data.tricepsFold,

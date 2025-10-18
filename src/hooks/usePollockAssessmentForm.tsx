@@ -33,9 +33,6 @@ export const usePollockAssessmentForm = (userProfile: any, onSubmitSuccess: (dat
   });
 
   const canSubmit = 
-    photos.front && 
-    photos.side && 
-    photos.back &&
     chestFold &&
     midaxillaryFold &&
     tricepsFold &&
@@ -79,9 +76,9 @@ export const usePollockAssessmentForm = (userProfile: any, onSubmitSuccess: (dat
       // Prepare submission data
       const submissionData: any = {
         userId: user.id,
-        frontPhoto: photos.front,
-        sidePhoto: photos.side,
-        backPhoto: photos.back,
+        frontPhoto: photos.front || '',
+        sidePhoto: photos.side || '',
+        backPhoto: photos.back || '',
         chestFold: parseFloat(chestFold),
         midaxillaryFold: parseFloat(midaxillaryFold),
         tricepsFold: parseFloat(tricepsFold),

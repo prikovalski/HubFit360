@@ -482,13 +482,13 @@ export type Database = {
           abdominal_fold: number | null
           age: number | null
           assessment_type: string
-          back_photo: string
+          back_photo: string | null
           bmi: number | null
           body_fat_percentage: number | null
           chest_fold: number | null
           created_at: string
           fat_mass: number | null
-          front_photo: string
+          front_photo: string | null
           gender: string | null
           height: number | null
           id: string
@@ -499,7 +499,7 @@ export type Database = {
           patient_height: number | null
           patient_name: string | null
           patient_weight: number | null
-          side_photo: string
+          side_photo: string | null
           subscapular_fold: number | null
           suprailiac_fold: number | null
           thigh_fold: number | null
@@ -512,13 +512,13 @@ export type Database = {
           abdominal_fold?: number | null
           age?: number | null
           assessment_type?: string
-          back_photo: string
+          back_photo?: string | null
           bmi?: number | null
           body_fat_percentage?: number | null
           chest_fold?: number | null
           created_at?: string
           fat_mass?: number | null
-          front_photo: string
+          front_photo?: string | null
           gender?: string | null
           height?: number | null
           id?: string
@@ -529,7 +529,7 @@ export type Database = {
           patient_height?: number | null
           patient_name?: string | null
           patient_weight?: number | null
-          side_photo: string
+          side_photo?: string | null
           subscapular_fold?: number | null
           suprailiac_fold?: number | null
           thigh_fold?: number | null
@@ -542,13 +542,13 @@ export type Database = {
           abdominal_fold?: number | null
           age?: number | null
           assessment_type?: string
-          back_photo?: string
+          back_photo?: string | null
           bmi?: number | null
           body_fat_percentage?: number | null
           chest_fold?: number | null
           created_at?: string
           fat_mass?: number | null
-          front_photo?: string
+          front_photo?: string | null
           gender?: string | null
           height?: number | null
           id?: string
@@ -559,7 +559,7 @@ export type Database = {
           patient_height?: number | null
           patient_name?: string | null
           patient_weight?: number | null
-          side_photo?: string
+          side_photo?: string | null
           subscapular_fold?: number | null
           suprailiac_fold?: number | null
           thigh_fold?: number | null
