@@ -32,6 +32,7 @@ const AppContent = () => {
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [selectedTDAHReport, setSelectedTDAHReport] = useState<any>(null);
   const [selectedPollockReport, setSelectedPollockReport] = useState<any>(null);
+  const [loadingPollockReport, setLoadingPollockReport] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const navigation = useNavigation();
@@ -150,7 +151,9 @@ const AppContent = () => {
 
   const handleViewPollockReport = async (report: any) => {
     try {
-      // Fetch complete assessment data
+      console.log('Carregando relatório Pollock completo para ID:', report.id);
+      setLoadingPollockReport(true);
+      
       const { supabase } = await import('@/integrations/supabase/client');
       const { data: completeReport, error } = await supabase
         .from('pollock_assessments')
@@ -160,6 +163,13 @@ const AppContent = () => {
 
       if (error) {
         console.error('Erro ao buscar relatório completo:', error);
+        const { toast } = await import('@/hooks/use-toast');
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível carregar o relatório',
+          variant: 'destructive'
+        });
+        setLoadingPollockReport(false);
         return;
       }
 
@@ -168,6 +178,14 @@ const AppContent = () => {
       navigation.goToPollockReport(completeReport);
     } catch (error) {
       console.error('Erro ao carregar relatório:', error);
+      const { toast } = await import('@/hooks/use-toast');
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível carregar o relatório',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoadingPollockReport(false);
     }
   };
 
@@ -223,6 +241,14 @@ const AppContent = () => {
         case 'pollock-assessment':
           return <PollockAssessmentForm onBack={() => navigation.goToPollockDashboard()} onSubmitSuccess={handlePollockAssessmentSuccess} userProfile={userProfile} />;
         case 'pollock-report':
+          if (loadingPollockReport) {
+            return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Carregando relatório...</p>
+              </div>
+            </div>;
+          }
           return <PollockReportViewer report={selectedPollockReport} onBack={handleBackToPollockDashboard} onLogoClick={() => navigation.goToMainDashboard()} onProfileClick={() => navigation.goToProfile()} onLogout={handleLogout} currentPage={navigation.currentPage} onNavigate={handleNavigate} />;
         case 'tdah-dashboard':
           return <TDAHDashboard onNavigate={(page, data) => {
