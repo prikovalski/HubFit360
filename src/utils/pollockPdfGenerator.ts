@@ -10,10 +10,13 @@ interface GeneratePollockPDFProps {
     lean_mass: number;
     fat_mass: number;
     bmi: number;
-    height: number;
-    weight: number;
-    age: number;
-    gender: string;
+    height?: number;
+    weight?: number;
+    age?: number;
+    gender?: string;
+    patient_height?: number;
+    patient_weight?: number;
+    patient_gender?: string;
     chest_fold: number;
     midaxillary_fold: number;
     triceps_fold: number;
@@ -30,6 +33,12 @@ export const generatePollockPDF = ({ report }: GeneratePollockPDFProps): jsPDF =
   const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 20;
   let yPos = margin;
+
+  // Get correct values based on assessment type
+  const height = report.height || report.patient_height || 0;
+  const weight = report.weight || report.patient_weight || 0;
+  const age = report.age || 0;
+  const gender = report.gender || report.patient_gender || 'MALE';
 
   const getBodyFatClassification = (bodyFat: number, gender: string) => {
     if (gender === 'MALE') {
@@ -117,7 +126,7 @@ export const generatePollockPDF = ({ report }: GeneratePollockPDFProps): jsPDF =
   doc.setTextColor(0, 0, 0);
 
   // Patient Info
-  const classification = getBodyFatClassification(report.body_fat_percentage, report.gender);
+  const classification = getBodyFatClassification(report.body_fat_percentage, gender);
   addText(report.assessment_type === 'patient' && report.patient_name ? `Paciente: ${report.patient_name}` : 'Autoavaliação', 12, 'bold');
   addText(`Data: ${new Date(report.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}`, 10, 'normal', [100, 100, 100]);
   addText(`Classificação: ${classification}`, 11, 'bold', [59, 130, 246]);
@@ -169,10 +178,10 @@ export const generatePollockPDF = ({ report }: GeneratePollockPDFProps): jsPDF =
   // Anthropometric Data
   addSection('DADOS ANTROPOMÉTRICOS');
   const dataBoxWidth = (pageWidth - 2 * margin - 15) / 4;
-  addMetricBox('Altura', `${report.height} cm`, 0, dataBoxWidth);
-  addMetricBox('Peso', `${report.weight} kg`, dataBoxWidth + 5, dataBoxWidth);
-  addMetricBox('Idade', `${report.age} anos`, (dataBoxWidth + 5) * 2, dataBoxWidth);
-  addMetricBox('Sexo', report.gender === 'MALE' ? 'Masculino' : 'Feminino', (dataBoxWidth + 5) * 3, dataBoxWidth);
+  addMetricBox('Altura', `${height} cm`, 0, dataBoxWidth);
+  addMetricBox('Peso', `${weight} kg`, dataBoxWidth + 5, dataBoxWidth);
+  addMetricBox('Idade', `${age} anos`, (dataBoxWidth + 5) * 2, dataBoxWidth);
+  addMetricBox('Sexo', gender === 'MALE' ? 'Masculino' : 'Feminino', (dataBoxWidth + 5) * 3, dataBoxWidth);
   yPos += 30;
 
   // Skinfold Measurements

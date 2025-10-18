@@ -18,10 +18,13 @@ interface PollockReport {
   lean_mass: number;
   fat_mass: number;
   bmi: number;
-  height: number;
-  weight: number;
-  age: number;
-  gender: string;
+  height?: number;
+  weight?: number;
+  age?: number;
+  gender?: string;
+  patient_height?: number;
+  patient_weight?: number;
+  patient_gender?: string;
   chest_fold: number;
   midaxillary_fold: number;
   triceps_fold: number;
@@ -101,10 +104,10 @@ ${report.assessment_type === 'patient' ? `Paciente: ${report.patient_name}` : 'A
 Data: ${new Date(report.created_at).toLocaleDateString('pt-BR')}
 
 DADOS ANTROPOMÉTRICOS:
-- Altura: ${report.height} cm
-- Peso: ${report.weight} kg
-- Idade: ${report.age} anos
-- Sexo: ${report.gender === 'MALE' ? 'Masculino' : 'Feminino'}
+- Altura: ${height} cm
+- Peso: ${weight} kg
+- Idade: ${age} anos
+- Sexo: ${gender === 'MALE' ? 'Masculino' : 'Feminino'}
 - IMC: ${report.bmi?.toFixed(1)} kg/m²
 
 MEDIDAS DE DOBRAS CUTÂNEAS (mm):
@@ -149,12 +152,18 @@ RESULTADOS DA COMPOSIÇÃO CORPORAL:
     return { label: 'Obesidade Grau III', color: 'bg-red-700' };
   };
 
-  const classification = getBodyFatClassification(report.body_fat_percentage, report.gender);
-  const bmiClassification = getBMIClassification(report.bmi);
+  // Get correct values based on assessment type
+  const height = report.height || report.patient_height || 0;
+  const weight = report.weight || report.patient_weight || 0;
+  const age = report.age || 0;
+  const gender = report.gender || report.patient_gender || 'MALE';
+  
+  const classification = getBodyFatClassification(report.body_fat_percentage || 0, gender);
+  const bmiClassification = getBMIClassification(report.bmi || 0);
 
   const compositionData = [
-    { name: 'Massa Magra', value: report.lean_mass, fill: 'hsl(var(--primary))' },
-    { name: 'Massa Gorda', value: report.fat_mass, fill: 'hsl(var(--destructive))' }
+    { name: 'Massa Magra', value: report.lean_mass || 0, fill: 'hsl(var(--primary))' },
+    { name: 'Massa Gorda', value: report.fat_mass || 0, fill: 'hsl(var(--destructive))' }
   ];
 
   const skinfoldData = [
@@ -326,20 +335,20 @@ RESULTADOS DA COMPOSIÇÃO CORPORAL:
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Altura</p>
-                <p className="text-lg font-semibold">{report.height} cm</p>
+                <p className="text-lg font-semibold">{height} cm</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Peso</p>
-                <p className="text-lg font-semibold">{report.weight} kg</p>
+                <p className="text-lg font-semibold">{weight} kg</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Idade</p>
-                <p className="text-lg font-semibold">{report.age} anos</p>
+                <p className="text-lg font-semibold">{age} anos</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Sexo</p>
                 <p className="text-lg font-semibold">
-                  {report.gender === 'MALE' ? 'Masculino' : 'Feminino'}
+                  {gender === 'MALE' ? 'Masculino' : 'Feminino'}
                 </p>
               </div>
             </div>
