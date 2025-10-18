@@ -143,7 +143,7 @@ const AppContent = () => {
     setSelectedTDAHReport(null);
   };
 
-  const handlePollockAssessmentSuccess = async (assessment: any) => {
+  const handlePollockAssessmentSuccess = async (data: any) => {
     console.log('AppContent: Avaliação Pollock criada, buscando dados completos...');
     
     try {
@@ -153,7 +153,7 @@ const AppContent = () => {
       const { data: completeReport, error } = await supabase
         .from('pollock_assessments')
         .select('*')
-        .eq('id', assessment.id)
+        .eq('id', data.assessment.id)
         .single();
 
       if (error) {
