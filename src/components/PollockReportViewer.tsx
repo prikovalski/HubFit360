@@ -57,6 +57,32 @@ const PollockReportViewer = ({
   const { userProfile } = useUserProfile();
   const [copied, setCopied] = useState(false);
 
+  // Safety check - if report is null or undefined, show error
+  if (!report) {
+    return (
+      <LoggedPageLayout
+        userName={userProfile?.name || ''}
+        currentPage={currentPage}
+        onLogoClick={onLogoClick}
+        onProfileClick={onProfileClick}
+        onLogout={onLogout}
+        onNavigate={onNavigate}
+      >
+        <div className="container mx-auto p-6">
+          <Button onClick={onBack} variant="ghost" className="gap-2 mb-4">
+            <ArrowLeft className="w-4 h-4" />
+            Voltar
+          </Button>
+          <Card>
+            <CardContent className="p-8 text-center">
+              <p className="text-muted-foreground">Erro ao carregar relatório. Por favor, tente novamente.</p>
+            </CardContent>
+          </Card>
+        </div>
+      </LoggedPageLayout>
+    );
+  }
+
   const handleCopy = async () => {
     const reportText = generateReportText();
     try {
