@@ -148,9 +148,27 @@ const AppContent = () => {
     navigation.goToPollockReport(assessment);
   };
 
-  const handleViewPollockReport = (report: any) => {
-    setSelectedPollockReport(report);
-    navigation.goToPollockReport(report);
+  const handleViewPollockReport = async (report: any) => {
+    try {
+      // Fetch complete assessment data
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: completeReport, error } = await supabase
+        .from('pollock_assessments')
+        .select('*')
+        .eq('id', report.id)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar relatório completo:', error);
+        return;
+      }
+
+      console.log('Relatório Pollock completo carregado:', completeReport);
+      setSelectedPollockReport(completeReport);
+      navigation.goToPollockReport(completeReport);
+    } catch (error) {
+      console.error('Erro ao carregar relatório:', error);
+    }
   };
 
   const handleBackToPollockDashboard = () => {

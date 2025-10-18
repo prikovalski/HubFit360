@@ -31,10 +31,10 @@ export const usePollockDashboardData = () => {
         throw new Error('User data not found');
       }
 
-      // Fetch Pollock assessments
+      // Fetch Pollock assessments - only basic fields for listing
       const { data: pollockData, error: pollockError } = await supabase
         .from('pollock_assessments')
-        .select('*')
+        .select('id, created_at, patient_name, assessment_type, body_fat_percentage')
         .eq('user_id', userData.id)
         .order('created_at', { ascending: false });
 
