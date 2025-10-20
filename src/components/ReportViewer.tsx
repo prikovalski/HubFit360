@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Copy, CheckCircle2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import ReportHeader from './report/ReportHeader';
 import BasicAnalysisSection from './report/BasicAnalysisSection';
 import PremiumSection from './report/PremiumSection';
@@ -63,6 +64,29 @@ const ReportViewer = ({
   const [isPaid, setIsPaid] = useState(false);
   const [loading, setLoading] = useState(true);
   const { userProfile, patientProfile } = useUserProfile();
+
+  // Safety check - if report is null or undefined, show error
+  if (!currentReport) {
+    return (
+      <LoggedPageLayout
+        userName={userProfile?.name || ''}
+        currentPage={currentPage}
+        onLogoClick={onLogoClick}
+        onProfileClick={onProfileClick}
+        onLogout={onLogout}
+        onNavigate={onNavigate}
+      >
+        <div className="container mx-auto p-6">
+          <Button onClick={onBack} variant="ghost" className="gap-2 mb-4">
+            Voltar
+          </Button>
+          <div className="text-center p-8">
+            <p className="text-muted-foreground">Erro ao carregar relatório. Por favor, tente novamente.</p>
+          </div>
+        </div>
+      </LoggedPageLayout>
+    );
+  }
 
   console.log('ReportViewer: Dados do report recebidos:', {
     id: currentReport.id,
