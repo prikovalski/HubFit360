@@ -112,6 +112,24 @@ export const PollockAssessmentForm = ({ onBack, onSubmitSuccess, userProfile }: 
                 onChange={(e) => handlePatientDataChange('name', e.target.value)}
                 className="w-full p-2 border rounded"
               />
+              <div>
+                <label className="block text-sm font-medium mb-1">Data de Nascimento</label>
+                <input 
+                  type="date" 
+                  value={patientData.birthDate}
+                  onChange={(e) => handlePatientDataChange('birthDate', e.target.value)}
+                  className="w-full p-2 border rounded"
+                />
+              </div>
+              <select
+                value={patientData.gender}
+                onChange={(e) => handlePatientDataChange('gender', e.target.value)}
+                className="w-full p-2 border rounded"
+              >
+                <option value="">Selecione o gênero</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Feminino">Feminino</option>
+              </select>
               <input 
                 placeholder="Altura (cm)" 
                 type="number"

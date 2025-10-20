@@ -40,11 +40,11 @@ export const usePollockAssessmentForm = (userProfile: any, onSubmitSuccess: (dat
     abdominalFold &&
     suprailiacFold &&
     thighFold &&
-    patientData.gender && 
     patientData.height && 
     patientData.weight &&
-    (assessmentType === 'self' || 
-      (patientData.name && patientData.birthDate));
+    (assessmentType === 'self' ? 
+      patientData.gender :
+      (patientData.name && patientData.birthDate && patientData.gender));
 
   const handlePhotoUpload = (type: 'front' | 'side' | 'back', photo: string) => {
     setPhotos(prev => ({ ...prev, [type]: photo }));
