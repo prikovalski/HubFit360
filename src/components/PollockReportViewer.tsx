@@ -14,6 +14,7 @@ interface PollockReport {
   created_at: string;
   assessment_type: 'self' | 'patient';
   patient_name?: string;
+  patient_birth_date?: string;
   body_fat_percentage: number;
   lean_mass: number;
   fat_mass: number;
@@ -133,7 +134,7 @@ DADOS ANTROPOMÉTRICOS:
 - Altura: ${height} cm
 - Peso: ${weight} kg
 - Idade: ${age} anos
-- Sexo: ${gender === 'MALE' ? 'Masculino' : 'Feminino'}
+- Sexo: ${gender === 'MALE' || gender === 'Masculino' ? 'Masculino' : 'Feminino'}
 - IMC: ${report.bmi?.toFixed(1)} kg/m²
 
 MEDIDAS DE DOBRAS CUTÂNEAS (mm):
@@ -181,8 +182,26 @@ RESULTADOS DA COMPOSIÇÃO CORPORAL:
   // Get correct values based on assessment type
   const height = report.height || report.patient_height || 0;
   const weight = report.weight || report.patient_weight || 0;
-  const age = report.age || 0;
-  const gender = report.gender || report.patient_gender || 'MALE';
+  
+  // Calculate age from birth date for patient assessments
+  let age = report.age || 0;
+  if (report.assessment_type === 'patient' && report.patient_birth_date) {
+    const birthDate = new Date(report.patient_birth_date);
+    const today = new Date();
+    age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+  }
+  
+  // Convert gender format from Portuguese to English
+  let gender = report.gender || report.patient_gender || 'MALE';
+  if (gender === 'Masculino') {
+    gender = 'MALE';
+  } else if (gender === 'Feminino') {
+    gender = 'FEMALE';
+  }
   
   const classification = getBodyFatClassification(report.body_fat_percentage || 0, gender);
   const bmiClassification = getBMIClassification(report.bmi || 0);
@@ -374,7 +393,7 @@ RESULTADOS DA COMPOSIÇÃO CORPORAL:
               <div>
                 <p className="text-sm text-muted-foreground">Sexo</p>
                 <p className="text-lg font-semibold">
-                  {gender === 'MALE' ? 'Masculino' : 'Feminino'}
+                  {gender === 'MALE' || gender === 'Masculino' ? 'Masculino' : 'Feminino'}
                 </p>
               </div>
             </div>

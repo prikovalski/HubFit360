@@ -6,6 +6,7 @@ interface GeneratePollockPDFProps {
     created_at: string;
     assessment_type: 'self' | 'patient';
     patient_name?: string;
+    patient_birth_date?: string;
     body_fat_percentage: number;
     lean_mass: number;
     fat_mass: number;
@@ -37,8 +38,26 @@ export const generatePollockPDF = ({ report }: GeneratePollockPDFProps): jsPDF =
   // Get correct values based on assessment type
   const height = report.height || report.patient_height || 0;
   const weight = report.weight || report.patient_weight || 0;
-  const age = report.age || 0;
-  const gender = report.gender || report.patient_gender || 'MALE';
+  
+  // Calculate age from birth date for patient assessments
+  let age = report.age || 0;
+  if (report.assessment_type === 'patient' && report.patient_birth_date) {
+    const birthDate = new Date(report.patient_birth_date);
+    const today = new Date();
+    age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+  }
+  
+  // Convert gender format from Portuguese to English
+  let gender = report.gender || report.patient_gender || 'MALE';
+  if (gender === 'Masculino') {
+    gender = 'MALE';
+  } else if (gender === 'Feminino') {
+    gender = 'FEMALE';
+  }
 
   const getBodyFatClassification = (bodyFat: number, gender: string) => {
     if (gender === 'MALE') {
