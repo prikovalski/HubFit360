@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Claude Code (skills do Spec Kit em .claude/skills são versionadas)
+.claude/settings.local.json
