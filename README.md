@@ -72,3 +72,15 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Spec-Driven Development
+
+Este projeto usa o [GitHub Spec Kit](https://github.com/github/spec-kit). Os princípios do
+projeto estão em `.specify/memory/constitution.md` e o fluxo de trabalho com Claude Code é:
+
+1. `/speckit-specify <descrição da feature>`
+2. `/speckit-clarify` (obrigatório para dados de saúde, créditos ou IA)
+3. `/speckit-plan <decisões técnicas>`
+4. `/speckit-tasks` → `/speckit-analyze` → `/speckit-implement`
+
+As specs de cada feature ficam em `specs/NNN-nome-da-feature/`.
