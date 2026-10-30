@@ -1,14 +1,11 @@
 
-import { useState } from 'react';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { useUserCredits } from '@/hooks/useUserCredits';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useNavigate } from 'react-router-dom';
 import LoggedPageLayout from '@/components/layout/LoggedPageLayout';
 import DashboardHeader from './dashboard/DashboardHeader';
 import OptimizedDashboardStats from './dashboard/OptimizedDashboardStats';
 import OptimizedAssessmentsList from './dashboard/OptimizedAssessmentsList';
-import CreditsModal from './credits/CreditsModal';
 import { DashboardStatsSkeleton } from '@/components/ui/dashboard-skeleton';
 import { Activity } from 'lucide-react';
 
@@ -23,11 +20,9 @@ interface PhysicalAssessmentDashboardProps {
 }
 
 const PhysicalAssessmentDashboard = ({ onNewAssessment, onViewReport, onLogoClick, onProfileClick, onLogout, currentPage, onNavigate }: PhysicalAssessmentDashboardProps) => {
-  const [creditsModalOpen, setCreditsModalOpen] = useState(false);
   
   // Parallel data loading - all hooks start loading simultaneously
   const { userProfile, loading: profileLoading } = useUserProfile();
-  const { credits, loading: creditsLoading } = useUserCredits();
   const { assessments, assessmentsLoading, assessmentsError, refetchAssessments } = useDashboardData();
   
   const navigate = useNavigate();
@@ -40,11 +35,6 @@ const PhysicalAssessmentDashboard = ({ onNewAssessment, onViewReport, onLogoClic
   const handleViewReport = (report: any) => {
     console.log('Visualizando relatório:', report);
     onViewReport(report);
-  };
-
-  const handleBuyCredits = () => {
-    console.log('Abrindo modal de compra de créditos');
-    setCreditsModalOpen(true);
   };
 
   // Show loading only when essential data (profile) is loading
@@ -97,7 +87,6 @@ const PhysicalAssessmentDashboard = ({ onNewAssessment, onViewReport, onLogoClic
             userName={userProfile?.name || 'Usuário'}
             onNewAssessment={handleNewAssessment}
             onUserProfile={onProfileClick}
-            onBuyCredits={handleBuyCredits}
           />
           
           {/* Stats load immediately with available data */}
@@ -113,11 +102,6 @@ const PhysicalAssessmentDashboard = ({ onNewAssessment, onViewReport, onLogoClic
           />
         </div>
       </div>
-
-      <CreditsModal 
-        isOpen={creditsModalOpen}
-        onClose={() => setCreditsModalOpen(false)}
-      />
     </LoggedPageLayout>
   );
 };

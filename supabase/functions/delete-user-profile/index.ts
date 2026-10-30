@@ -64,31 +64,7 @@ Deno.serve(async (req) => {
 
     // Delete in correct order of dependencies (deepest children first)
     
-    // 1. Delete credit transactions (they reference users and assessments)
-    const { error: creditTransactionsError } = await supabase
-      .from('credit_transactions')
-      .delete()
-      .eq('user_id', userProfile.id)
-    
-    if (creditTransactionsError) {
-      console.error('Error deleting credit transactions:', creditTransactionsError)
-    } else {
-      console.log('Deleted credit transactions for user')
-    }
-
-    // 2. Delete user credits (they reference users)
-    const { error: userCreditsError } = await supabase
-      .from('user_credits')
-      .delete()
-      .eq('user_id', userProfile.id)
-    
-    if (userCreditsError) {
-      console.error('Error deleting user credits:', userCreditsError)
-    } else {
-      console.log('Deleted user credits for user')
-    }
-
-    // 3. Delete assessments (they reference users)
+    // 1. Delete assessments (they reference users)
     const { error: assessmentsError } = await supabase
       .from('assessments')
       .delete()
@@ -100,7 +76,7 @@ Deno.serve(async (req) => {
       console.log('Deleted assessments for user')
     }
 
-    // 4. Delete patient profile (references users)
+    // 2. Delete patient profile (references users)
     const { error: patientProfileError } = await supabase
       .from('patient_profiles')
       .delete()
@@ -112,7 +88,7 @@ Deno.serve(async (req) => {
       console.log('Deleted patient profile for user')
     }
 
-    // 5. Delete user profile
+    // 3. Delete user profile
     const { error: userProfileError } = await supabase
       .from('users')
       .delete()
@@ -125,7 +101,7 @@ Deno.serve(async (req) => {
       console.log('Deleted user profile')
     }
 
-    // 6. Finally, delete the auth user (this will cascade and clean up auth-related data)
+    // 4. Finally, delete the auth user (this will cascade and clean up auth-related data)
     const { error: authDeleteError } = await supabase.auth.admin.deleteUser(user.id)
     
     if (authDeleteError) {

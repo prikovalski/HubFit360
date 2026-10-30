@@ -43,9 +43,8 @@ export const DeleteProfileDialog = ({
             </p>
             <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
               <li>Todas as suas avaliações físicas</li>
-              <li>Avaliações pagas e relatórios</li>
+              <li>Relatórios e análises detalhadas</li>
               <li>Dados pessoais e perfil</li>
-              <li>Histórico de pagamentos</li>
               <li>Conta de login</li>
             </ul>
             <p className="text-red-600 font-medium">

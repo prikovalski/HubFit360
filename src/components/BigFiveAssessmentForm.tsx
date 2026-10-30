@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { useUserCredits } from '@/hooks/useUserCredits';
 
 interface BigFiveAssessmentFormProps {
   onBack: () => void;
@@ -74,7 +73,6 @@ const RESPONSE_OPTIONS = [
 const BigFiveAssessmentForm = ({ onBack, onSuccess }: BigFiveAssessmentFormProps) => {
   const { toast } = useToast();
   const { userProfile } = useUserProfile();
-  const { hasCredits } = useUserCredits();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<'info' | 'questions'>('info');
   
@@ -98,15 +96,6 @@ const BigFiveAssessmentForm = ({ onBack, onSuccess }: BigFiveAssessmentFormProps
   const allQuestionsAnswered = Object.keys(responses).length === BIG_FIVE_QUESTIONS.length;
 
   const handleSubmit = async () => {
-    if (!hasCredits) {
-      toast({
-        title: "Créditos insuficientes",
-        description: "Você precisa de créditos para criar uma avaliação Big Five.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (!allQuestionsAnswered) {
       toast({
         title: "Respostas incompletas",
@@ -179,17 +168,6 @@ const BigFiveAssessmentForm = ({ onBack, onSuccess }: BigFiveAssessmentFormProps
             </div>
           </div>
         </div>
-
-        {!hasCredits && (
-          <Card className="mb-6 border-destructive">
-            <CardHeader>
-              <CardTitle className="text-destructive">Créditos Insuficientes</CardTitle>
-              <CardDescription>
-                Você não possui créditos suficientes para criar uma avaliação Big Five.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        )}
 
         {step === 'info' && (
           <Card>
@@ -274,7 +252,7 @@ const BigFiveAssessmentForm = ({ onBack, onSuccess }: BigFiveAssessmentFormProps
 
               <Button
                 onClick={() => setStep('questions')}
-                disabled={!isInfoComplete() || !hasCredits}
+                disabled={!isInfoComplete()}
                 className="w-full"
               >
                 Continuar para Questionário

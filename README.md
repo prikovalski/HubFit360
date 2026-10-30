@@ -1,77 +1,56 @@
+# HubFit360
 
-# Welcome to your Lovable project
+Plataforma web de avaliações de saúde e comportamento, desenvolvida como projeto open source
+de portfólio. Todas as funcionalidades são gratuitas e não há nenhum tipo de cobrança.
 
-## Project info
+> As avaliações e análises geradas não substituem o acompanhamento de um profissional de saúde.
 
-**URL**: https://lovable.dev/projects/e5588017-59bf-469c-9de5-ba65d4af585e
+## Funcionalidades
 
-## How can I edit this code?
+- **Composição corporal**: estimativa de % de gordura, massa magra e IMC a partir de medidas
+  (fórmulas de Deurenberg e Navy), com análise detalhada opcional gerada por IA.
+- **Pollock 7 dobras**: protocolo de dobras cutâneas, totalmente determinístico.
+- **Big Five**: inventário de personalidade (44 itens) com análise detalhada por IA gerada na
+  criação.
+- **TDAH (ASRS-18 e DIVA 2.0)**: triagem com pontuação, classificação e análise detalhada
+  opcional por IA.
+- Relatórios em PDF, perfis de paciente para profissionais e exclusão completa de conta.
 
-There are several ways of editing your application.
+## Stack
 
-**Use Lovable**
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui, TanStack Query,
+  React Hook Form + Zod, jsPDF
+- **Backend**: Supabase (Postgres com RLS, Auth, Storage) e Edge Functions em Deno
+- **IA**: OpenAI (composição corporal) e Lovable AI Gateway (Big Five e TDAH), chamadas
+  apenas pelas Edge Functions
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e5588017-59bf-469c-9de5-ba65d4af585e) and start prompting.
+## Rodando localmente
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Requisitos: Node.js 20+ e npm.
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+git clone https://github.com/prikovalski/HubFit360.git
+cd HubFit360
+npm ci
+npm run dev        # http://localhost:8080
 ```
 
-**Edit a file directly in GitHub**
+Outros comandos: `npm run build`, `npm run lint`.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+O frontend aponta para o projeto Supabase configurado em
+`src/integrations/supabase/client.ts`. Para usar o seu próprio projeto, troque a URL e a chave
+publishable nesse arquivo, aplique as migrations de `supabase/migrations/` e publique as
+funções de `supabase/functions/` (`supabase db push` e `supabase functions deploy`).
 
-**Use GitHub Codespaces**
+### Secrets das Edge Functions
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+| Secret | Usado por | Sem ele |
+|---|---|---|
+| `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | Todas (fornecidos pelo Supabase) | As funções não funcionam |
+| `OPENAI_API_KEY` | `create-assessment`, `generate-body-analysis` | Cálculos funcionam; a análise detalhada de composição corporal fica indisponível |
+| `LOVABLE_API_KEY` | `create-big-five-assessment`, `generate-tdah-analysis` | Escores funcionam; a análise detalhada de Big Five/TDAH fica indisponível |
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/e5588017-59bf-469c-9de5-ba65d4af585e) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+A `LOVABLE_API_KEY` só está disponível em projetos hospedados no [Lovable](https://lovable.dev).
 
 ## Spec-Driven Development
 
@@ -79,7 +58,7 @@ Este projeto usa o [GitHub Spec Kit](https://github.com/github/spec-kit). Os pri
 projeto estão em `.specify/memory/constitution.md` e o fluxo de trabalho com Claude Code é:
 
 1. `/speckit-specify <descrição da feature>`
-2. `/speckit-clarify` (obrigatório para dados de saúde, créditos ou IA)
+2. `/speckit-clarify` (obrigatório para dados de saúde ou IA)
 3. `/speckit-plan <decisões técnicas>`
 4. `/speckit-tasks` → `/speckit-analyze` → `/speckit-implement`
 

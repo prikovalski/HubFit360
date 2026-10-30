@@ -1,7 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useUserProfile } from './useUserProfile';
-import { useUserCredits } from './useUserCredits';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,7 +14,6 @@ interface Assessment {
   status: string;
   assessment_text: string;
   tier: string;
-  payment_status?: string;
   patient_name?: string | null;
   patient_goal?: string | null;
   patient_gender?: string | null;
@@ -46,7 +44,7 @@ export const useDashboardData = (): DashboardData => {
       setAssessmentsLoading(true);
       setAssessmentsError(null);
 
-      // Buscar avaliações com transações de crédito (sem payments)
+      // Buscar avaliações do usuário
       const { data, error } = await supabase
         .from('assessments')
         .select(`
@@ -64,13 +62,7 @@ export const useDashboardData = (): DashboardData => {
           patient_goal,
           patient_gender,
           patient_height,
-          patient_weight,
-          credit_transactions!left (
-            id,
-            type,
-            amount,
-            description
-          )
+          patient_weight
         `)
         .eq('user_id', userProfile.id)
         .order('created_at', { ascending: false })
@@ -87,30 +79,10 @@ export const useDashboardData = (): DashboardData => {
         return;
       }
 
-      // Transformar dados com verificação simplificada (apenas créditos)
       const transformedAssessments = (data || []).map(assessment => {
-        // Para avaliações premium, verificar se foi paga via créditos
-        let isPaid = false;
-
-        if (assessment.tier === 'premium') {
-          // Verificar se foi feita via créditos (transação de uso)
-          const hasUsageCredit = assessment.credit_transactions && 
-            assessment.credit_transactions.some((t: any) => 
-              t.type === 'usage' && t.amount < 0 // Valor negativo indica débito/uso
-            );
-
-          isPaid = hasUsageCredit;
-        }
-
-        // Para avaliações básicas, sempre são consideradas "pagas" (não precisam de pagamento)
-        if (assessment.tier === 'basic') {
-          isPaid = true;
-        }
-
         return {
           ...assessment,
           assessmentText: assessment.assessment_text,
-          payment_status: isPaid ? 'paid' : 'pending',
           preview: {
             leanMass: assessment.lean_mass ? `${assessment.lean_mass.toFixed(1)}kg` : 'N/A',
             bodyFat: assessment.body_fat_percentage ? `${assessment.body_fat_percentage.toFixed(1)}%` : 'N/A',

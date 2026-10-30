@@ -10,20 +10,14 @@ interface ReportHeaderProps {
   report: any;
   userProfile: UserProfile | null;
   patientProfile: PatientProfile | null;
-  isPaid: boolean;
   onBack?: () => void;
-  onManualPaymentCheck?: () => Promise<void>;
-  isCheckingPayment?: boolean;
 }
 
 const ReportHeader = ({ 
   report, 
   userProfile, 
   patientProfile, 
-  isPaid, 
-  onBack,
-  onManualPaymentCheck,
-  isCheckingPayment 
+  onBack
 }: ReportHeaderProps) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
@@ -89,16 +83,6 @@ const ReportHeader = ({
           </div>
           
           <div className="flex gap-2">
-            {onManualPaymentCheck && !isPaid && (
-              <Button
-                onClick={onManualPaymentCheck}
-                disabled={isCheckingPayment}
-                className="bg-white/20 text-white hover:bg-white/30 font-semibold px-4 py-2"
-              >
-                {isCheckingPayment ? 'Verificando...' : 'Verificar Pagamento'}
-              </Button>
-            )}
-            
             <Button
               onClick={handleDownloadPDF}
               disabled={isGeneratingPDF}

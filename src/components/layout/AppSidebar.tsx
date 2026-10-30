@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, Brain, Activity, LogOut, ChevronDown, Info, Dumbbell, Home, Coins, Sparkles } from 'lucide-react';
+import { User, Brain, Activity, LogOut, ChevronDown, Info, Dumbbell, Home, Sparkles } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -17,7 +17,6 @@ import {
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useSiteConfig } from '@/hooks/useSiteConfig';
-import { useUserCredits } from '@/hooks/useUserCredits';
 import { Badge } from '@/components/ui/badge';
 
 interface AppSidebarProps {
@@ -30,7 +29,6 @@ interface AppSidebarProps {
 export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: AppSidebarProps) {
   const { state, setOpen } = useSidebar();
   const { siteName } = useSiteConfig();
-  const { balance } = useUserCredits();
   const isCollapsed = state === "collapsed";
 
   const [psychologicalOpen, setPsychologicalOpen] = useState(false);
@@ -58,27 +56,6 @@ export function AppSidebar({ currentPage, onNavigate, onLogout, onShowAbout }: A
               {siteName}
             </span>
           )}
-        </div>
-        
-        {/* Créditos */}
-        <div className={`${isCollapsed ? 'px-2 py-2' : 'px-4 py-3'} border-t bg-gradient-to-r from-primary/5 to-purple-500/5`}>
-          <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} gap-2`}>
-            {isCollapsed ? (
-              <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
-                {balance}
-              </Badge>
-            ) : (
-              <>
-                <div className="flex items-center gap-2">
-                  <Coins className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium text-muted-foreground">Créditos</span>
-                </div>
-                <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 font-bold">
-                  {balance}
-                </Badge>
-              </>
-            )}
-          </div>
         </div>
       </SidebarHeader>
 

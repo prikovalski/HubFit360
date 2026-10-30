@@ -264,7 +264,7 @@ const TDAHDashboard = ({ onNavigate }: TDAHDashboardProps) => {
             </p>
             <p>
               Com base nas suas respostas, será gerado um relatório com pontuação e classificação, 
-              além de recomendações personalizadas. Faça upgrade para análise detalhada por IA!
+              além de recomendações personalizadas. Gere também uma análise detalhada por IA.
             </p>
           </CardContent>
         </Card>

@@ -1,16 +1,14 @@
 
 import { Button } from "@/components/ui/button";
 import { Plus, User, Sparkles } from 'lucide-react';
-import CreditsWidget from '@/components/credits/CreditsWidget';
 
 interface DashboardHeaderProps {
   userName: string;
   onNewAssessment: () => void;
   onUserProfile: () => void;
-  onBuyCredits: () => void;
 }
 
-const DashboardHeader = ({ userName, onNewAssessment, onUserProfile, onBuyCredits }: DashboardHeaderProps) => {
+const DashboardHeader = ({ userName, onNewAssessment, onUserProfile }: DashboardHeaderProps) => {
   return (
     <div className="space-y-6 mb-8">
       <div className="glass rounded-3xl p-8 backdrop-blur-xl border border-white/20 shadow-xl relative overflow-hidden">
@@ -42,14 +40,6 @@ const DashboardHeader = ({ userName, onNewAssessment, onUserProfile, onBuyCredit
             </Button>
           </div>
         </div>
-      </div>
-
-      <div className="w-full md:w-80">
-        <CreditsWidget 
-          onBuyCredits={onBuyCredits}
-          onViewHistory={() => console.log('Ver histórico de créditos')}
-          showActions={true}
-        />
       </div>
     </div>
   );

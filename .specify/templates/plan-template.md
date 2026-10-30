@@ -45,10 +45,9 @@ Ver `.specify/memory/constitution.md`. Marque cada gate; justifique violações 
 - [ ] **I. LGPD/Dados de saúde**: novas tabelas com RLS na mesma migration; buckets privados; sem dados sensíveis em logs; finalidade e exclusão de conta definidas
 - [ ] **II. Identidade via JWT**: Edge Functions usam `auth.getUser(token)`; nenhum `userId` do body para autorização; erros via `_shared/errorHandler.ts`
 - [ ] **III. Cálculos determinísticos**: fórmulas/escores em funções puras com referência e testes
-- [ ] **IV. IA controlada**: OpenAI só no backend; prompt em módulo dedicado; resposta validada; falha não consome crédito; aviso profissional
-- [ ] **V. Créditos/pagamentos**: débito atômico após sucesso; webhook verifica segredo; idempotência
-- [ ] **VI. Testes por risco**: testes para fórmulas, créditos, autorização e validação
-- [ ] **VII. Stack/simplicidade**: usa shadcn/TanStack Query/RHF+Zod/lazy; deps novas justificadas; textos pt-BR
+- [ ] **IV. IA controlada**: IA só no backend; prompt em módulo dedicado; resposta validada; falha não impede relatório/cálculos; rate limit; aviso profissional
+- [ ] **V. Testes por risco**: testes para fórmulas, autorização, validação de entrada e de respostas de IA
+- [ ] **VI. Stack/simplicidade**: usa shadcn/TanStack Query/RHF+Zod/lazy; deps novas justificadas; textos pt-BR
 
 ## Project Structure
 

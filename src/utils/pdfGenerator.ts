@@ -283,90 +283,88 @@ export const generateAssessmentPDF = ({ report, userProfile, patientProfile }: G
   
   currentY += idealCardHeight + 10;
 
-  // Recomendações (apenas se for versão premium)
-  if (report.status === 'paid' || report.tier === 'premium') {
-    checkPageSpace(80);
-    addSectionTitle('Recomendações Personalizadas');
-    
-    // Recomendações baseadas no objetivo
-    const goal = report.patient_goal || patientProfile?.goal;
-    if (goal) {
-      doc.setFontSize(11);
-      doc.setFont(undefined, 'bold');
-      doc.setTextColor(colors.gray800[0], colors.gray800[1], colors.gray800[2]);
-      doc.text(`Programa personalizado para: ${goal}`, margin, currentY);
-      currentY += 10;
-    }
-    
+  // Recomendações
+  checkPageSpace(80);
+  addSectionTitle('Recomendações Personalizadas');
+  
+  // Recomendações baseadas no objetivo
+  const goal = report.patient_goal || patientProfile?.goal;
+  if (goal) {
     doc.setFontSize(11);
     doc.setFont(undefined, 'bold');
-    doc.text('Programa de Treino:', margin, currentY);
-    currentY += 6;
-    
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'normal');
-    
-    if (goal?.toLowerCase().includes('perda')) {
-      doc.text('• 4-5x por semana de exercícios', margin + 5, currentY);
-      currentY += 5;
-      doc.text('• Foco em exercícios aeróbicos', margin + 5, currentY);
-      currentY += 5;
-      doc.text('• 3-4x cardio moderado a intenso', margin + 5, currentY);
-      currentY += 5;
-      doc.text('• Treino funcional e HIIT', margin + 5, currentY);
-      currentY += 8;
-    } else {
-      doc.text('• 4-5x por semana de musculação', margin + 5, currentY);
-      currentY += 5;
-      doc.text('• Foco em exercícios compostos', margin + 5, currentY);
-      currentY += 5;
-      doc.text('• 2-3x cardio moderado', margin + 5, currentY);
-      currentY += 5;
-      doc.text('• Ênfase em hipertrofia', margin + 5, currentY);
-      currentY += 8;
-    }
-    
-    doc.setFont(undefined, 'bold');
-    doc.text('Plano Nutricional:', margin, currentY);
-    currentY += 6;
-    
-    doc.setFont(undefined, 'normal');
-    const weight = displayWeight;
-    if (weight) {
-      const calories = goal?.toLowerCase().includes('perda') ? 
-        Math.round(weight * 24) : 
-        Math.round(weight * 32);
-      doc.text(`• ${calories}-${calories + 200} kcal/dia`, margin + 5, currentY);
-      currentY += 5;
-      doc.text(`• ${(weight * 1.8).toFixed(1)}g proteína/dia`, margin + 5, currentY);
-      currentY += 5;
-    }
-    
-    doc.text('• Distribuição balanceada de macronutrientes', margin + 5, currentY);
+    doc.setTextColor(colors.gray800[0], colors.gray800[1], colors.gray800[2]);
+    doc.text(`Programa personalizado para: ${goal}`, margin, currentY);
+    currentY += 10;
+  }
+  
+  doc.setFontSize(11);
+  doc.setFont(undefined, 'bold');
+  doc.text('Programa de Treino:', margin, currentY);
+  currentY += 6;
+  
+  doc.setFontSize(10);
+  doc.setFont(undefined, 'normal');
+  
+  if (goal?.toLowerCase().includes('perda')) {
+    doc.text('• 4-5x por semana de exercícios', margin + 5, currentY);
     currentY += 5;
-    doc.text('• 5-6 refeições ao dia', margin + 5, currentY);
+    doc.text('• Foco em exercícios aeróbicos', margin + 5, currentY);
+    currentY += 5;
+    doc.text('• 3-4x cardio moderado a intenso', margin + 5, currentY);
+    currentY += 5;
+    doc.text('• Treino funcional e HIIT', margin + 5, currentY);
     currentY += 8;
-    
-    // Considerações especiais baseadas no perfil
-    const foodAllergy = report.patient_food_allergy || patientProfile?.food_allergy;
-    if (foodAllergy) {
-      doc.setFont(undefined, 'bold');
-      doc.text('Restrições Alimentares:', margin, currentY);
-      currentY += 6;
-      doc.setFont(undefined, 'normal');
-      doc.text(`• ${foodAllergy}`, margin + 5, currentY);
-      currentY += 8;
-    }
-    
-    const medicalRestriction = report.patient_medical_restriction || patientProfile?.medical_restriction;
-    if (medicalRestriction) {
-      doc.setFont(undefined, 'bold');
-      doc.text('Restrições Médicas:', margin, currentY);
-      currentY += 6;
-      doc.setFont(undefined, 'normal');
-      doc.text(`• ${medicalRestriction}`, margin + 5, currentY);
-      currentY += 10;
-    }
+  } else {
+    doc.text('• 4-5x por semana de musculação', margin + 5, currentY);
+    currentY += 5;
+    doc.text('• Foco em exercícios compostos', margin + 5, currentY);
+    currentY += 5;
+    doc.text('• 2-3x cardio moderado', margin + 5, currentY);
+    currentY += 5;
+    doc.text('• Ênfase em hipertrofia', margin + 5, currentY);
+    currentY += 8;
+  }
+  
+  doc.setFont(undefined, 'bold');
+  doc.text('Plano Nutricional:', margin, currentY);
+  currentY += 6;
+  
+  doc.setFont(undefined, 'normal');
+  const weight = displayWeight;
+  if (weight) {
+    const calories = goal?.toLowerCase().includes('perda') ? 
+      Math.round(weight * 24) : 
+      Math.round(weight * 32);
+    doc.text(`• ${calories}-${calories + 200} kcal/dia`, margin + 5, currentY);
+    currentY += 5;
+    doc.text(`• ${(weight * 1.8).toFixed(1)}g proteína/dia`, margin + 5, currentY);
+    currentY += 5;
+  }
+  
+  doc.text('• Distribuição balanceada de macronutrientes', margin + 5, currentY);
+  currentY += 5;
+  doc.text('• 5-6 refeições ao dia', margin + 5, currentY);
+  currentY += 8;
+  
+  // Considerações especiais baseadas no perfil
+  const foodAllergy = report.patient_food_allergy || patientProfile?.food_allergy;
+  if (foodAllergy) {
+    doc.setFont(undefined, 'bold');
+    doc.text('Restrições Alimentares:', margin, currentY);
+    currentY += 6;
+    doc.setFont(undefined, 'normal');
+    doc.text(`• ${foodAllergy}`, margin + 5, currentY);
+    currentY += 8;
+  }
+  
+  const medicalRestriction = report.patient_medical_restriction || patientProfile?.medical_restriction;
+  if (medicalRestriction) {
+    doc.setFont(undefined, 'bold');
+    doc.text('Restrições Médicas:', margin, currentY);
+    currentY += 6;
+    doc.setFont(undefined, 'normal');
+    doc.text(`• ${medicalRestriction}`, margin + 5, currentY);
+    currentY += 10;
   }
 
   // Nota Técnica

@@ -15,7 +15,7 @@ export interface BigFiveAssessment {
   classification: string;
   recommendations?: string;
   full_report?: string;
-  is_premium: boolean;
+  has_detailed_analysis: boolean;
   status: string;
   created_at: string;
   updated_at: string;

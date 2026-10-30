@@ -2,13 +2,14 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { checkRateLimit, getRateLimitHeaders } from '../_shared/rateLimiter.ts';
 import { createErrorResponse } from '../_shared/errorHandler.ts';
+import { isValidAnalysis } from '../_shared/aiResponse.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface UpgradeRequest {
+interface GenerateAnalysisRequest {
   assessment_id: string;
 }
 
@@ -135,7 +136,7 @@ Deno.serve(async (req) => {
       return createErrorResponse(authError, 'UNAUTHORIZED', 401, corsHeaders);
     }
 
-    // Rate limiting: 10 upgrades per minute per user
+    // Rate limiting: 10 requests per minute per user
     if (!checkRateLimit(user.id, { maxRequests: 10, windowMs: 60000 })) {
       return createErrorResponse(
         new Error('Rate limit exceeded'),
@@ -162,7 +163,7 @@ Deno.serve(async (req) => {
     const userId = userData.id;
 
     // Parse request body
-    const { assessment_id }: UpgradeRequest = await req.json();
+    const { assessment_id }: GenerateAnalysisRequest = await req.json();
 
     // Validate UUID format
     if (!assessment_id || typeof assessment_id !== 'string') {
@@ -195,26 +196,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check if already premium
-    if (assessment.is_premium) {
-      return new Response(JSON.stringify({ error: 'Assessment is already premium' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Check user credits
-    const { data: creditsData, error: creditsError } = await supabaseClient
-      .from('user_credits')
-      .select('balance')
-      .eq('user_id', userId)
-      .single();
-
-    if (creditsError || !creditsData || creditsData.balance < 1) {
-      return new Response(JSON.stringify({ error: 'Insufficient credits' }), {
-        status: 402,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    // Idempotent: return the existing analysis
+    if (assessment.has_detailed_analysis) {
+      return new Response(
+        JSON.stringify({ success: true, full_report: assessment.full_report, already_generated: true }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     // Generate AI analysis
@@ -230,11 +220,16 @@ Deno.serve(async (req) => {
       assessment.assessment_method || 'ASRS-18'
     );
 
-    // Update assessment to premium with AI analysis
+    if (!isValidAnalysis(fullReport)) {
+      console.error('Invalid AI response for assessment:', assessment_id);
+      return createErrorResponse(new Error('Invalid AI response'), 'DEFAULT', 502, corsHeaders);
+    }
+
+    // Save detailed AI analysis
     const { error: updateError } = await supabaseClient
       .from('tdah_assessments')
       .update({
-        is_premium: true,
+        has_detailed_analysis: true,
         full_report: fullReport,
         updated_at: new Date().toISOString(),
       })
@@ -245,36 +240,13 @@ Deno.serve(async (req) => {
       throw updateError;
     }
 
-    // Consume 1 credit
-    const { error: creditError } = await supabaseClient
-      .from('user_credits')
-      .update({ balance: creditsData.balance - 1 })
-      .eq('user_id', userId);
-
-    if (creditError) {
-      console.error('Error consuming credit:', creditError);
-      throw creditError;
-    }
-
-    // Record transaction
-    await supabaseClient.from('credit_transactions').insert({
-      user_id: userId,
-      type: 'debit',
-      amount: -1,
-      source: 'upgrade',
-      reference_id: assessment_id,
-      description: 'Upgrade de avaliação TDAH para premium',
-      assessment_id: assessment_id,
-      assessment_type: 'tdah',
-    });
-
-    console.log('Assessment upgraded successfully:', assessment_id);
+    console.log('Detailed analysis generated:', assessment_id);
 
     return new Response(
       JSON.stringify({
         success: true,
         full_report: fullReport,
-        new_balance: creditsData.balance - 1,
+        already_generated: false,
       }),
       {
         status: 200,
@@ -282,7 +254,7 @@ Deno.serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error('Error in upgrade-tdah-assessment:', error);
+    console.error('Error in generate-tdah-analysis:', error);
     return createErrorResponse(error, 'DEFAULT', 500, corsHeaders);
   }
 });
