@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Sparkles, Download, Trash2, ArrowLeft, Eye } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useBigFiveAssessments } from '@/hooks/useBigFiveAssessments';
 import { generateBigFivePDF } from '@/utils/bigFivePdfGenerator';
@@ -121,11 +120,6 @@ const BigFiveDashboard = ({ onBack, onNewAssessment }: BigFiveDashboardProps) =>
                     <div>
                       <CardTitle className="flex items-center gap-2">
                         {assessment.patient_name || 'Autoavaliação'}
-                        {assessment.is_premium && (
-                          <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                            Premium
-                          </Badge>
-                        )}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground mt-1">
                         {new Date(assessment.created_at).toLocaleDateString('pt-BR', {

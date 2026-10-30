@@ -10,7 +10,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { useUserCredits } from '@/hooks/useUserCredits';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface DIVA2AssessmentFormProps {
@@ -134,7 +133,6 @@ const RESPONSE_OPTIONS = [
 const DIVA2AssessmentForm = ({ onBack, onSuccess }: DIVA2AssessmentFormProps) => {
   const { toast } = useToast();
   const { userProfile } = useUserProfile();
-  const { hasCredits, balance } = useUserCredits();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<'info' | 'questions'>('info');
   const [currentPeriod, setCurrentPeriod] = useState<'childhood' | 'adulthood'>('childhood');
@@ -225,15 +223,6 @@ const DIVA2AssessmentForm = ({ onBack, onSuccess }: DIVA2AssessmentFormProps) =>
   };
 
   const handleSubmit = async () => {
-    if (!hasCredits) {
-      toast({
-        title: "Créditos insuficientes",
-        description: "Você precisa de créditos para criar uma avaliação TDAH DIVA 2.0.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (!allQuestionsAnswered) {
       toast({
         title: "Respostas incompletas",
@@ -442,12 +431,6 @@ const DIVA2AssessmentForm = ({ onBack, onSuccess }: DIVA2AssessmentFormProps) =>
                   </div>
                 </div>
               )}
-            </div>
-
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <p className="text-sm text-amber-900">
-                <strong>Importante:</strong> Esta avaliação consome 1 crédito. Você possui {balance} crédito(s) disponível(is).
-              </p>
             </div>
 
             <div className="flex justify-end gap-3">

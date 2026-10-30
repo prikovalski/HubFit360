@@ -363,8 +363,7 @@ serve(async (req) => {
         // Include preview for compatibility
         preview: preview,
         // Include display data for immediate use
-        date: completeAssessment.created_at,
-        payment_status: 'paid' // Basic assessments are always considered paid
+        date: completeAssessment.created_at
       }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

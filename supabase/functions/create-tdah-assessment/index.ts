@@ -107,21 +107,6 @@ Deno.serve(async (req) => {
 
     const userId = userData.id;
 
-    // Check user credits
-    const { data: creditsData, error: creditsError } = await supabaseClient
-      .from('user_credits')
-      .select('balance')
-      .eq('user_id', userId)
-      .single();
-
-    if (creditsError || !creditsData || creditsData.balance < 1) {
-      console.error('Insufficient credits:', creditsError);
-      return new Response(JSON.stringify({ error: 'Insufficient credits' }), {
-        status: 402,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     // Parse request body
     const requestBody: TDAHAssessmentRequest = await req.json();
     
@@ -256,7 +241,7 @@ Deno.serve(async (req) => {
         recommendations,
         assessment_method: assessmentMethod || 'ASRS-18',
         full_report: '',
-        is_premium: false,
+        has_detailed_analysis: false,
         status: 'completed',
       })
       .select()
@@ -268,28 +253,6 @@ Deno.serve(async (req) => {
     }
 
     console.log('Assessment created:', assessment.id);
-
-    // Consume 1 credit
-    const { error: creditError } = await supabaseClient
-      .from('user_credits')
-      .update({ balance: creditsData.balance - 1 })
-      .eq('user_id', userId);
-
-    if (creditError) {
-      console.error('Error consuming credit:', creditError);
-    }
-
-    // Record transaction
-    await supabaseClient.from('credit_transactions').insert({
-      user_id: userId,
-      type: 'debit',
-      amount: -1,
-      source: 'assessment',
-      reference_id: assessment.id,
-      description: 'Criação de avaliação TDAH',
-      assessment_id: assessment.id,
-      assessment_type: 'tdah',
-    });
 
     console.log('TDAH assessment completed successfully');
 

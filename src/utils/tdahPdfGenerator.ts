@@ -11,7 +11,7 @@ interface TDAHReportData {
   classification?: string;
   recommendations?: string;
   full_report?: string;
-  is_premium: boolean;
+  has_detailed_analysis: boolean;
   created_at: string;
 }
 
@@ -398,8 +398,8 @@ export const generateTDAHAssessmentPDF = ({ report }: GenerateTDAHPDFProps) => {
     currentY += 5;
   }
 
-  // Análise Premium com subseções
-  if (report.is_premium && report.full_report) {
+  // Análise detalhada com subseções
+  if (report.has_detailed_analysis && report.full_report) {
     addSection('ANALISE DETALHADA COM IA');
     
     // Dividir o texto em subseções

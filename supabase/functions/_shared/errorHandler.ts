@@ -2,7 +2,6 @@
 
 export const ERROR_MESSAGES: Record<string, string> = {
   INVALID_INPUT: 'Entrada inválida fornecida',
-  INSUFFICIENT_CREDITS: 'Créditos insuficientes',
   NOT_FOUND: 'Recurso não encontrado',
   UNAUTHORIZED: 'Não autorizado',
   RATE_LIMIT_EXCEEDED: 'Limite de requisições excedido. Tente novamente mais tarde',

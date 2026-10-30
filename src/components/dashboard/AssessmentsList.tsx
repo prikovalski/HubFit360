@@ -37,8 +37,8 @@ const AssessmentsList = ({ assessments, loading, onReportClick, onNewAssessment 
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'paid':
-        return <Badge className="bg-[#019f80] hover:bg-[#017a63]">Completo</Badge>;
+      case 'completed':
+        return <Badge className="bg-[#019f80] hover:bg-[#017a63]">Concluída</Badge>;
       case 'processing':
         return <Badge variant="secondary">Processando</Badge>;
       default:

@@ -137,7 +137,7 @@ export type Database = {
           created_at: string
           full_report: string | null
           id: string
-          is_premium: boolean
+          has_detailed_analysis: boolean
           patient_age: number | null
           patient_birth_date: string | null
           patient_gender: string | null
@@ -155,7 +155,7 @@ export type Database = {
           created_at?: string
           full_report?: string | null
           id?: string
-          is_premium?: boolean
+          has_detailed_analysis?: boolean
           patient_age?: number | null
           patient_birth_date?: string | null
           patient_gender?: string | null
@@ -173,7 +173,7 @@ export type Database = {
           created_at?: string
           full_report?: string | null
           id?: string
-          is_premium?: boolean
+          has_detailed_analysis?: boolean
           patient_age?: number | null
           patient_birth_date?: string | null
           patient_gender?: string | null
@@ -224,60 +224,6 @@ export type Database = {
           },
         ]
       }
-      credit_transactions: {
-        Row: {
-          amount: number
-          assessment_id: string | null
-          assessment_type: string | null
-          created_at: string
-          description: string | null
-          id: string
-          reference_id: string | null
-          source: string
-          type: string
-          user_id: number
-        }
-        Insert: {
-          amount: number
-          assessment_id?: string | null
-          assessment_type?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          reference_id?: string | null
-          source?: string
-          type: string
-          user_id: number
-        }
-        Update: {
-          amount?: number
-          assessment_id?: string | null
-          assessment_type?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          reference_id?: string | null
-          source?: string
-          type?: string
-          user_id?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "credit_transactions_assessment_id_fkey"
-            columns: ["assessment_id"]
-            isOneToOne: false
-            referencedRelation: "assessments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "credit_transactions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       estados: {
         Row: {
           id: string
@@ -295,93 +241,6 @@ export type Database = {
           sigla?: string
         }
         Relationships: []
-      }
-      hotmart_products: {
-        Row: {
-          assessment_access: boolean | null
-          created_at: string
-          credits_amount: number | null
-          hotmart_product_id: string
-          id: string
-          offer_id: string | null
-          price: number
-          product_name: string
-          type: string
-          updated_at: string
-        }
-        Insert: {
-          assessment_access?: boolean | null
-          created_at?: string
-          credits_amount?: number | null
-          hotmart_product_id: string
-          id?: string
-          offer_id?: string | null
-          price: number
-          product_name: string
-          type: string
-          updated_at?: string
-        }
-        Update: {
-          assessment_access?: boolean | null
-          created_at?: string
-          credits_amount?: number | null
-          hotmart_product_id?: string
-          id?: string
-          offer_id?: string | null
-          price?: number
-          product_name?: string
-          type?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      hotmart_transactions: {
-        Row: {
-          created_at: string
-          hotmart_product_id: string | null
-          id: string
-          processed_at: string | null
-          status: string
-          transaction_id: string
-          user_id: number | null
-          webhook_data: Json | null
-        }
-        Insert: {
-          created_at?: string
-          hotmart_product_id?: string | null
-          id?: string
-          processed_at?: string | null
-          status: string
-          transaction_id: string
-          user_id?: number | null
-          webhook_data?: Json | null
-        }
-        Update: {
-          created_at?: string
-          hotmart_product_id?: string | null
-          id?: string
-          processed_at?: string | null
-          status?: string
-          transaction_id?: string
-          user_id?: number | null
-          webhook_data?: Json | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "hotmart_transactions_hotmart_product_id_fkey"
-            columns: ["hotmart_product_id"]
-            isOneToOne: false
-            referencedRelation: "hotmart_products"
-            referencedColumns: ["hotmart_product_id"]
-          },
-          {
-            foreignKeyName: "hotmart_transactions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       patient_profiles: {
         Row: {
@@ -586,7 +445,7 @@ export type Database = {
           created_at: string
           full_report: string | null
           id: string
-          is_premium: boolean
+          has_detailed_analysis: boolean
           patient_age: number | null
           patient_birth_date: string | null
           patient_gender: string | null
@@ -605,7 +464,7 @@ export type Database = {
           created_at?: string
           full_report?: string | null
           id?: string
-          is_premium?: boolean
+          has_detailed_analysis?: boolean
           patient_age?: number | null
           patient_birth_date?: string | null
           patient_gender?: string | null
@@ -624,7 +483,7 @@ export type Database = {
           created_at?: string
           full_report?: string | null
           id?: string
-          is_premium?: boolean
+          has_detailed_analysis?: boolean
           patient_age?: number | null
           patient_birth_date?: string | null
           patient_gender?: string | null
@@ -637,38 +496,6 @@ export type Database = {
           user_id?: number
         }
         Relationships: []
-      }
-      user_credits: {
-        Row: {
-          balance: number
-          created_at: string
-          id: string
-          updated_at: string
-          user_id: number
-        }
-        Insert: {
-          balance?: number
-          created_at?: string
-          id?: string
-          updated_at?: string
-          user_id: number
-        }
-        Update: {
-          balance?: number
-          created_at?: string
-          id?: string
-          updated_at?: string
-          user_id?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_credits_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       user_roles: {
         Row: {

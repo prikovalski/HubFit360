@@ -1,5 +1,8 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { checkRateLimit, getRateLimitHeaders } from '../_shared/rateLimiter.ts';
+import { createErrorResponse } from '../_shared/errorHandler.ts';
+import { isValidAnalysis } from '../_shared/aiResponse.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -26,6 +29,16 @@ serve(async (req) => {
 
     if (userError || !user) {
       throw new Error('Unauthorized');
+    }
+
+    // Rate limiting: 10 assessments per minute per user
+    if (!checkRateLimit(user.id, { maxRequests: 10, windowMs: 60000 })) {
+      return createErrorResponse(
+        new Error('Rate limit exceeded'),
+        'RATE_LIMIT_EXCEEDED',
+        429,
+        { ...corsHeaders, ...getRateLimitHeaders(user.id) }
+      );
     }
 
     const { data: userData, error: userDataError } = await supabase
@@ -86,29 +99,14 @@ serve(async (req) => {
       neuroticism: calculateTraitScore('neuroticism'),
     };
 
-    // Check user credits
-    const { data: creditsData, error: creditsError } = await supabase
-      .from('user_credits')
-      .select('balance')
-      .eq('user_id', userData.id)
-      .single();
-
-    if (creditsError || !creditsData || creditsData.balance < 1) {
-      throw new Error('Insufficient credits');
-    }
-
-    // Generate AI analysis if user has premium
+    // Generate detailed AI analysis (only at creation time)
     let fullReport = '';
-    let isPremium = false;
 
-    if (creditsData.balance >= 1) {
-      isPremium = true;
-      
-      const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-      
-      if (LOVABLE_API_KEY) {
-        try {
-          const prompt = `Como psicólogo especialista, analise este perfil de personalidade Big Five:
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+
+    if (LOVABLE_API_KEY) {
+      try {
+        const prompt = `Como psicólogo especialista, analise este perfil de personalidade Big Five:
 
 Abertura a Experiências: ${scores.openness}/50 (${((scores.openness / 50) * 100).toFixed(1)}%)
 Conscienciosidade: ${scores.conscientiousness}/50 (${((scores.conscientiousness / 50) * 100).toFixed(1)}%)
@@ -143,36 +141,37 @@ Forneça uma análise detalhada e profissional em português brasileiro, estrutu
 
 Seja específico, empático e profissional.`;
 
-          const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              model: 'google/gemini-2.5-flash',
-              messages: [
-                {
-                  role: 'system',
-                  content: 'Você é um psicólogo experiente especializado em análise de personalidade usando o modelo Big Five.'
-                },
-                {
-                  role: 'user',
-                  content: prompt
-                }
-              ],
-            }),
-          });
+        const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'google/gemini-2.5-flash',
+            messages: [
+              {
+                role: 'system',
+                content: 'Você é um psicólogo experiente especializado em análise de personalidade usando o modelo Big Five.'
+              },
+              {
+                role: 'user',
+                content: prompt
+              }
+            ],
+          }),
+        });
 
-          if (aiResponse.ok) {
-            const aiData = await aiResponse.json();
-            fullReport = aiData.choices[0]?.message?.content || '';
-          }
-        } catch (aiError) {
-          console.error('Error generating AI analysis:', aiError);
+        if (aiResponse.ok) {
+          const aiData = await aiResponse.json();
+          fullReport = aiData.choices[0]?.message?.content || '';
         }
+      } catch (aiError) {
+        console.error('Error generating AI analysis:', aiError);
       }
     }
+
+    const hasDetailedAnalysis = isValidAnalysis(fullReport);
 
     // Create assessment
     const { data: assessment, error: assessmentError } = await supabase
@@ -187,8 +186,8 @@ Seja específico, empático e profissional.`;
         responses,
         scores,
         classification: 'completed',
-        full_report: fullReport,
-        is_premium: isPremium,
+        full_report: hasDetailedAnalysis ? fullReport : '',
+        has_detailed_analysis: hasDetailedAnalysis,
         status: 'completed',
       })
       .select()
@@ -196,34 +195,6 @@ Seja específico, empático e profissional.`;
 
     if (assessmentError) {
       throw assessmentError;
-    }
-
-    // Consume credit
-    if (isPremium) {
-      const { error: updateError } = await supabase
-        .from('user_credits')
-        .update({ balance: creditsData.balance - 1 })
-        .eq('user_id', userData.id);
-
-      if (updateError) {
-        console.error('Error updating credits:', updateError);
-      }
-
-      const { error: transactionError } = await supabase
-        .from('credit_transactions')
-        .insert({
-          user_id: userData.id,
-          type: 'usage',
-          amount: -1,
-          source: 'system',
-          reference_id: assessment.id,
-          description: 'Avaliação Big Five',
-          assessment_type: 'big_five',
-        });
-
-      if (transactionError) {
-        console.error('Error creating transaction:', transactionError);
-      }
     }
 
     return new Response(

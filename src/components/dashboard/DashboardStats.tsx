@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowUpRight, ArrowDownLeft } from 'lucide-react';
-import CreditsWidget from '@/components/credits/CreditsWidget';
 
 interface DashboardStatsProps {
   assessments: any[];

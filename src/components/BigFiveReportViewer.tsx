@@ -1,7 +1,7 @@
 import { ArrowLeft, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import ProfessionalDisclaimer from '@/components/report/ProfessionalDisclaimer';
 import { useToast } from '@/hooks/use-toast';
 import { generateBigFivePDF } from '@/utils/bigFivePdfGenerator';
 
@@ -64,11 +64,6 @@ const BigFiveReportViewer = ({ assessment, onBack }: BigFiveReportViewerProps) =
                   })}
                 </p>
               </div>
-              {assessment.is_premium && (
-                <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                  Premium
-                </Badge>
-              )}
             </div>
           </CardHeader>
         </Card>
@@ -145,29 +140,24 @@ const BigFiveReportViewer = ({ assessment, onBack }: BigFiveReportViewerProps) =
           </CardContent>
         </Card>
 
-        {assessment.is_premium && assessment.full_report && (
+        {assessment.has_detailed_analysis && assessment.full_report ? (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Análise Detalhada</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="prose max-w-none">
+                  <p className="whitespace-pre-wrap">{assessment.full_report}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <ProfessionalDisclaimer />
+          </div>
+        ) : (
           <Card>
-            <CardHeader>
-              <CardTitle>Análise Detalhada</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="prose max-w-none">
-                <p className="whitespace-pre-wrap">{assessment.full_report}</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {!assessment.is_premium && (
-          <Card className="border-purple-200 bg-purple-50/50">
-            <CardContent className="p-6 text-center">
-              <h3 className="text-lg font-semibold mb-2">Análise Premium Disponível</h3>
-              <p className="text-muted-foreground mb-4">
-                Desbloqueie uma análise detalhada e personalizada da sua personalidade.
-              </p>
-              <Button className="bg-purple-600 hover:bg-purple-700">
-                Fazer Upgrade
-              </Button>
+            <CardContent className="p-6 text-center text-muted-foreground">
+              Análise detalhada indisponível para esta avaliação.
             </CardContent>
           </Card>
         )}

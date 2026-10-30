@@ -1,7 +1,7 @@
 # HubFit360 — guia para agentes
 
-Plataforma SaaS de avaliações (composição corporal por IA, Pollock 7 dobras, Big Five,
-TDAH/DIVA-2) com sistema de créditos via Hotmart.
+Projeto open source de portfólio: plataforma de avaliações (composição corporal por IA, Pollock 7 dobras, Big Five,
+TDAH/DIVA-2).
 
 - Frontend: React 18 + TypeScript + Vite, shadcn/ui, Tailwind, TanStack Query, RHF + Zod (`src/`)
 - Backend: Supabase (Postgres + RLS, Auth, Storage) e Edge Functions Deno (`supabase/functions/`)

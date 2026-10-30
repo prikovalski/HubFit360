@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { checkRateLimit, getRateLimitHeaders } from '../_shared/rateLimiter.ts';
 import { createErrorResponse } from '../_shared/errorHandler.ts';
+import { isValidAnalysis } from '../_shared/aiResponse.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,23 +25,11 @@ function buildAssessmentPrompt(
   const bmi = weight / (heightM * heightM);
   const genderForPrompt = sex === 'male' ? 'Masculino' : 'Feminino';
 
-  console.log('=== CONSTRUÇÃO DO PROMPT DE UPGRADE ===');
-  console.log('Assessment data:', JSON.stringify(assessment, null, 2));
-  
   // Use circumferences from the assessment itself (prioritize direct fields over patient fields)
   const neckCirc = assessment.neck_circumference || assessment.patient_neck_circumference || null;
   const waistCirc = assessment.waist_circumference || assessment.patient_waist_circumference || null;
   const hipCirc = assessment.hip_circumference || assessment.patient_hip_circumference || null;
 
-  console.log('Dados de circunferência para o prompt:', {
-    neck_circumference: assessment.neck_circumference,
-    waist_circumference: assessment.waist_circumference,
-    hip_circumference: assessment.hip_circumference,
-    patient_neck_circumference: assessment.patient_neck_circumference,
-    patient_waist_circumference: assessment.patient_waist_circumference,
-    patient_hip_circumference: assessment.patient_hip_circumference,
-    valores_finais: { neckCirc, waistCirc, hipCirc }
-  });
 
   // Get patient profile data for additional context
   const patientProfile = userData.patient_profiles?.[0] || {};
@@ -59,8 +48,6 @@ function buildAssessmentPrompt(
 
   // Formatação das atividades físicas
   const formatPhysicalActivities = (activities: any): string => {
-    console.log('Formatando atividades físicas:', activities);
-    
     if (!activities || (Array.isArray(activities) && activities.length === 0)) {
       return 'Nenhuma atividade informada';
     }
@@ -96,12 +83,6 @@ function buildAssessmentPrompt(
     assessment.patient_physical_activities || patientProfile.physical_activities || []
   );
   const goal = assessment.patient_goal || patientProfile.goal || 'Não informado';
-
-  console.log('Circunferências formatadas para o prompt:', {
-    pescoço: formattedNeck,
-    cintura: formattedWaist,
-    quadril: formattedHip
-  });
 
   return `Você é um avaliador físico profissional especializado em análise de composição corporal.
 
@@ -201,11 +182,7 @@ Forneça um laudo técnico realista e profissional utilizando uma linguagem info
 }
 
 async function callOpenAI(prompt: string): Promise<string> {
-  console.log('=== PROMPT ENVIADO PARA OPENAI ===');
-  console.log(prompt);
-  console.log('=== FIM DO PROMPT ===');
-  
-  console.log('Enviando prompt para OpenAI...');
+  console.log('Enviando prompt para OpenAI, tamanho:', prompt.length);
 
   const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -228,19 +205,14 @@ async function callOpenAI(prompt: string): Promise<string> {
   });
 
   if (!openAIResponse.ok) {
-    const errorText = await openAIResponse.text();
-    console.error('Erro na API do OpenAI:', errorText);
+    console.error('Erro na API do OpenAI, status:', openAIResponse.status);
     throw new Error('Erro na API do OpenAI');
   }
 
   const openAIData = await openAIResponse.json();
   const responseContent = openAIData.choices[0].message.content;
   
-  console.log('=== RESPOSTA COMPLETA DO OPENAI ===');
-  console.log('Resposta bruta:', JSON.stringify(openAIData, null, 2));
-  console.log('=== CONTEÚDO DA RESPOSTA ===');
-  console.log(responseContent);
-  console.log('=== FIM DA RESPOSTA ===');
+  console.log('Resposta do OpenAI recebida, tamanho:', responseContent?.length ?? 0);
   
   return responseContent;
 }
@@ -321,24 +293,14 @@ serve(async (req) => {
       .single();
 
     if (assessmentError || !assessment) {
-      throw new Error('Avaliação não encontrada');
+      return createErrorResponse(assessmentError, 'NOT_FOUND', 404, corsHeaders);
     }
 
-    if (assessment.tier === 'premium') {
-      throw new Error('Esta avaliação já é premium');
-    }
-
-    // Verificar créditos
-    const { data: credits } = await supabase
-      .from('user_credits')
-      .select('balance')
-      .eq('user_id', dbUser.id)
-      .single();
-
-    const currentBalance = credits?.balance || 0;
-
-    if (currentBalance < 1) {
-      throw new Error('Créditos insuficientes');
+    if (assessment.tier === 'detailed') {
+      return new Response(JSON.stringify({ success: true, already_generated: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      });
     }
 
     // Buscar dados do usuário para gerar análise
@@ -348,23 +310,13 @@ serve(async (req) => {
       .eq('id', dbUser.id)
       .single();
 
-    console.log('Dados da avaliação para upgrade:', {
+    console.log('Gerando análise detalhada:', {
       assessment_id: assessment.id,
       assessment_type: assessment.assessment_type,
       has_circumferences: {
-        neck: !!assessment.neck_circumference,
-        waist: !!assessment.waist_circumference,
-        hip: !!assessment.hip_circumference
-      },
-      circumference_values: {
-        neck: assessment.neck_circumference,
-        waist: assessment.waist_circumference,
-        hip: assessment.hip_circumference
-      },
-      patient_circumferences: {
-        neck: assessment.patient_neck_circumference,
-        waist: assessment.patient_waist_circumference,
-        hip: assessment.patient_hip_circumference
+        neck: !!(assessment.neck_circumference || assessment.patient_neck_circumference),
+        waist: !!(assessment.waist_circumference || assessment.patient_waist_circumference),
+        hip: !!(assessment.hip_circumference || assessment.patient_hip_circumference)
       }
     });
 
@@ -380,7 +332,7 @@ serve(async (req) => {
                   (assessment.patient_gender || 'masculino') : 
                   (userData.gender || 'masculino');
 
-    // Gerar análise premium
+    // Gerar análise detalhada
     const prompt = buildAssessmentPrompt(
       assessment,
       userData,
@@ -395,49 +347,30 @@ serve(async (req) => {
 
     const assessmentText = await callOpenAI(prompt);
 
-    // Atualizar avaliação para premium
+    if (!isValidAnalysis(assessmentText)) {
+      console.error('Resposta da IA inválida para assessment:', assessment_id);
+      return createErrorResponse(new Error('Invalid AI response'), 'DEFAULT', 502, corsHeaders);
+    }
+
+    // Atualizar avaliação com a análise detalhada
     const { error: updateError } = await supabase
       .from('assessments')
       .update({
         assessment_text: assessmentText,
-        tier: 'premium',
+        tier: 'detailed',
         prompt_text: prompt
       })
       .eq('id', assessment_id);
 
     if (updateError) throw updateError;
 
-    // Consumir crédito
-    const newBalance = currentBalance - 1;
-    
-    await supabase
-      .from('user_credits')
-      .update({ balance: newBalance })
-      .eq('user_id', dbUser.id);
-
-    // Registrar transação
-    await supabase
-      .from('credit_transactions')
-      .insert({
-        user_id: dbUser.id,
-        type: 'usage',
-        amount: -1,
-        source: 'system',
-        description: 'Upgrade para análise premium',
-        assessment_id: assessment_id
-      });
-
-    return new Response(JSON.stringify({
-      success: true,
-      new_balance: newBalance,
-      message: 'Avaliação atualizada para premium com sucesso'
-    }), {
+    return new Response(JSON.stringify({ success: true, already_generated: false }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
 
   } catch (error) {
-    console.error('Erro ao fazer upgrade:', error);
+    console.error('Erro ao gerar análise detalhada:', error);
     return createErrorResponse(error, 'DEFAULT', 500, corsHeaders);
   }
 });

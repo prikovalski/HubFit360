@@ -106,8 +106,8 @@ const LoggedPageLayout = ({
                     </h3>
                     <p className="text-sm text-muted-foreground">
                       Questionário ASRS-18 cientificamente validado para triagem de TDAH em adultos.
-                      Obtenha resultados imediatos com pontuação, classificação e recomendações profissionais.
-                      Faça upgrade para relatório premium com análise detalhada por IA.
+                      Obtenha resultados imediatos com pontuação, classificação e recomendações profissionais,
+                      além de uma análise detalhada gerada por IA.
                     </p>
                   </div>
                 </div>
@@ -116,11 +116,12 @@ const LoggedPageLayout = ({
               <div className="p-4 bg-primary/5 rounded-lg border border-primary/10">
                 <h4 className="font-semibold mb-2 flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-primary" />
-                  Sistema de Créditos
+                  Projeto open source
                 </h4>
                 <p className="text-sm text-muted-foreground">
-                  Cada avaliação consome 1 crédito. Você recebeu 1 crédito de boas-vindas! 
-                  Adquira mais créditos para continuar usando todas as funcionalidades da plataforma.
+                  Todas as avaliações e análises estão disponíveis gratuitamente. O HubFit360 é um projeto
+
+                  de portfólio com código aberto e não substitui o acompanhamento de um profissional de saúde.
                 </p>
               </div>
 

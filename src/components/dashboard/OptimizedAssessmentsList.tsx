@@ -19,8 +19,6 @@ interface Assessment {
   status: string;
   assessment_text: string;
   tier: string;
-  payment_status?: string;
-  upgrade_via_credits?: boolean;
   patient_name?: string;
   preview?: {
     leanMass: string;
@@ -54,20 +52,14 @@ const OptimizedAssessmentsList = memo(({
   };
 
   const getStatusBadge = (assessment: Assessment) => {
-    // Lógica simplificada de status
+    if (assessment.tier === 'detailed') {
+      return <Badge className="bg-[#019f80] hover:bg-[#017a63]">Análise detalhada</Badge>;
+    }
+
     if (assessment.tier === 'basic') {
-      return <Badge className="bg-[#019f80] hover:bg-[#017a63]">Básica Completa</Badge>;
+      return <Badge className="bg-[#019f80] hover:bg-[#017a63]">Concluída</Badge>;
     }
-    
-    if (assessment.tier === 'premium') {
-      const isPaid = assessment.payment_status === 'paid' || assessment.upgrade_via_credits === true;
-      if (isPaid) {
-        return <Badge className="bg-[#019f80] hover:bg-[#017a63]">Premium Completa</Badge>;
-      } else {
-        return <Badge variant="secondary">Premium Pendente</Badge>;
-      }
-    }
-    
+
     return <Badge variant="outline">Processando</Badge>;
   };
 

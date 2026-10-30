@@ -1,28 +1,30 @@
 <!--
 Sync Impact Report
-- Version change: 1.0.0 → 1.1.0 (MINOR: skills de referência adicionadas ao P-VII)
-- Histórico: 1.0.0 (2026-10-30) ratificação inicial
-- Princípios definidos:
-  I. Privacidade e Dados Sensíveis de Saúde (LGPD)
-  II. Identidade Derivada do JWT, Nunca do Payload
-  III. Cálculos Determinísticos Antes da IA
-  IV. IA como Componente Controlado
-  V. Créditos e Pagamentos Íntegros
-  VI. Testes Proporcionais ao Risco
-  VII. Consistência com a Stack e Simplicidade
-- Seções adicionadas: Restrições Técnicas e de Segurança; Fluxo de Desenvolvimento (SDD)
-- Seções removidas: nenhuma
+- Version change: 1.1.0 → 2.0.0 (MAJOR: remoção do princípio de créditos/pagamentos —
+  o projeto passa a ser open source de portfólio sem cobrança; feature 001-remove-billing-credits)
+- Histórico: 1.0.0 (2026-10-30) ratificação inicial; 1.1.0 (2026-10-30) skills de referência
+- Princípios modificados:
+  IV. IA como Componente Controlado — "sem consumir crédito" → "MUST NOT impedir o relatório
+      nem o acesso aos cálculos"; abrange todos os provedores de IA (OpenAI, Lovable AI)
+  VI. Testes Proporcionais ao Risco → V (renumerado; removido "consumo de créditos e webhooks")
+  VII. Consistência com a Stack e Simplicidade → VI (renumerado, sem mudança de conteúdo)
+- Princípios removidos: V. Créditos e Pagamentos Íntegros
+- Seções alteradas: Restrições Técnicas (sem Hotmart); Fluxo SDD (clarify sem "créditos";
+  gates I–VI)
 - Templates:
-  ✅ .specify/templates/plan-template.md (Constitution Check preenchido com os gates I–VII)
+  ✅ .specify/templates/plan-template.md (gate V removido; gates I–VI)
   ✅ .specify/templates/spec-template.md (sem alteração necessária)
-  ✅ .specify/templates/tasks-template.md (sem alteração necessária; testes já são condicionais)
-  ✅ CLAUDE.md (criado, aponta para esta constituição e o fluxo /speckit-*)
+  ✅ .specify/templates/tasks-template.md (sem alteração necessária)
+  ✅ README.md (passo de clarify sem "créditos")
+  ✅ CLAUDE.md (não referencia números de princípios)
+  ⚠ specs/001-remove-billing-credits/* usam a numeração 1.1.0 (I–VII); são artefatos
+    históricos da feature e não precisam ser renumerados
 - TODOs de follow-up (dívida existente que viola esta constituição):
   - TODO(P-II): create-assessment e create-pollock-assessment usam data.userId do body
     com service role key; migrar para auth.getUser(token).
-  - TODO(P-V): hotmart-webhook não compara X-Hotmart-Hottok com HOTMART_WEBHOOK_SECRET
-    e aceita requisições quando o segredo não está configurado.
-  - TODO(P-VI): não há test runner configurado (adicionar Vitest + deno test).
+  - TODO(P-IV): prompts de generate-body-analysis (cópia local de buildAssessmentPrompt),
+    generate-tdah-analysis e create-big-five-assessment montados fora de módulo dedicado.
+  - TODO(P-V): não há test runner configurado (adicionar Vitest + deno test).
 -->
 
 # HubFit360 Constitution
@@ -42,7 +44,7 @@ de profissionais.
   respostas de questionários ou valores clínicos identificáveis; logar IDs e flags.
 - Toda spec que coleta um dado novo MUST declarar finalidade, base legal e o
   comportamento na exclusão de conta (`delete-user-profile`).
-- Dados enviados à OpenAI MUST ser os mínimos necessários para o prompt.
+- Dados enviados a provedores de IA MUST ser os mínimos necessários para o prompt.
 
 **Racional**: vazamento de dado de saúde é o pior risco de negócio e regulatório do produto.
 
@@ -74,31 +76,23 @@ avaliações em nome de outro (IDOR).
 
 ### IV. IA como Componente Controlado
 
-- Chamadas à OpenAI MUST ocorrer somente em Edge Functions, nunca no frontend.
+- Chamadas a provedores de IA (OpenAI, Lovable AI) MUST ocorrer somente em Edge
+  Functions, nunca no frontend.
 - Prompts MUST ser construídos em módulos dedicados (`promptBuilder.ts`) e versionados
   no código; a troca de modelo MUST ser registrada na spec/plan da feature.
-- A resposta MUST ser validada contra um schema esperado antes de ser persistida; em
-  falha, o fluxo MUST degradar com mensagem clara e sem consumir crédito.
+- A resposta MUST ser validada (formato/tamanho mínimo esperado, ex.:
+  `_shared/aiResponse.ts`) antes de ser persistida; em falha, o fluxo MUST degradar com
+  mensagem clara e MUST NOT impedir o relatório nem o acesso aos cálculos.
 - Textos gerados MUST incluir aviso de que não substituem avaliação profissional
   (nutricionista, educador físico, psicólogo/psiquiatra).
 
 **Racional**: saídas de LLM são não-determinísticas; o produto precisa ser seguro mesmo
 quando a IA falha.
 
-### V. Créditos e Pagamentos Íntegros
+### V. Testes Proporcionais ao Risco
 
-- Débito de crédito MUST ser atômico (função SQL/transação) e ocorrer somente após o
-  sucesso da operação paga; falhas MUST NOT consumir crédito.
-- Webhooks de pagamento (Hotmart) MUST verificar o segredo compartilhado e MUST
-  rejeitar a requisição se o segredo não estiver configurado.
-- Processamento de webhook MUST ser idempotente por ID de transação.
-
-**Racional**: crédito é dinheiro; inconsistência gera prejuízo ou cobrança indevida.
-
-### VI. Testes Proporcionais ao Risco
-
-- MUST ter testes automatizados: fórmulas e escores (P-III), consumo de créditos e
-  webhooks (P-V), validação de entrada e autorização de Edge Functions (P-II).
+- MUST ter testes automatizados: fórmulas e escores (P-III), validação de entrada e
+  autorização de Edge Functions (P-II) e validação de respostas de IA (P-IV).
 - Frontend: Vitest + Testing Library para hooks e lógica; UI puramente visual MAY
   ser validada manualmente com o roteiro do `quickstart.md` da feature.
 - Edge Functions: `deno test` para módulos puros.
@@ -106,7 +100,7 @@ quando a IA falha.
 
 **Racional**: foco de teste onde o erro causa dano real, sem burocracia em UI simples.
 
-### VII. Consistência com a Stack e Simplicidade
+### VI. Consistência com a Stack e Simplicidade
 
 - Frontend: React 18 + TypeScript + Vite, shadcn/ui (`src/components/ui`), Tailwind,
   TanStack Query para dados de servidor, React Hook Form + Zod para formulários,
@@ -129,7 +123,7 @@ divergência entre ferramentas.
 
 - Mudanças de schema MUST ser feitas exclusivamente por migrations em
   `supabase/migrations/`, e `src/integrations/supabase/types.ts` MUST ser regenerado.
-- Segredos (OpenAI, Hotmart, service role) MUST existir apenas como secrets das Edge
+- Segredos (OpenAI, Lovable AI, service role) MUST existir apenas como secrets das Edge
   Functions; variáveis `VITE_*` são públicas e MUST conter só a chave publishable.
 - Novas Edge Functions MUST ser declaradas em `supabase/config.toml` com `verify_jwt`
   explícito.
@@ -141,8 +135,8 @@ divergência entre ferramentas.
 ## Fluxo de Desenvolvimento (SDD)
 
 1. `/speckit-specify` — o quê e por quê (sem decisões técnicas). Specs em `specs/NNN-nome/`.
-2. `/speckit-clarify` — obrigatório quando a feature toca dados de saúde, créditos ou IA.
-3. `/speckit-plan` — o plano MUST passar no Constitution Check (gates I–VII).
+2. `/speckit-clarify` — obrigatório quando a feature toca dados de saúde ou IA.
+3. `/speckit-plan` — o plano MUST passar no Constitution Check (gates I–VI).
 4. `/speckit-tasks` → `/speckit-analyze` → `/speckit-implement`.
 5. Uma branch por feature (`NNN-nome`); PR referencia a spec e informa o resultado do
    Constitution Check.
@@ -160,4 +154,4 @@ divergência entre ferramentas.
   features novas nas áreas afetadas.
 - Orientação de runtime para agentes: `CLAUDE.md`.
 
-**Version**: 1.1.0 | **Ratified**: 2026-10-30 | **Last Amended**: 2026-10-30
+**Version**: 2.0.0 | **Ratified**: 2026-10-30 | **Last Amended**: 2026-10-30

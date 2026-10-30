@@ -11,11 +11,9 @@ export interface Report {
   id: string;
   date: string;
   status: string;
-  tier: string;
+  tier: 'basic' | 'detailed';
   age?: number;
   assessmentText?: string;
-  payment_status?: string;
-  upgrade_via_credits?: boolean;
   preview: ReportPreview;
 }
 

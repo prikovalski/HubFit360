@@ -1,13 +1,9 @@
-import { useState } from 'react';
 import LoggedPageLayout from './layout/LoggedPageLayout';
 import { Button } from '@/components/ui/button';
 import { Plus, Activity } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import CreditsWidget from './credits/CreditsWidget';
-import CreditsModal from './credits/CreditsModal';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { useUserCredits } from '@/hooks/useUserCredits';
 import { usePollockDashboardData } from '@/hooks/usePollockDashboardData';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -31,10 +27,8 @@ export const PollockAssessmentDashboard = ({
   onNavigate,
   onLogoClick
 }: PollockAssessmentDashboardProps) => {
-  const [showCreditsModal, setShowCreditsModal] = useState(false);
   
   const { userProfile, loading: profileLoading } = useUserProfile();
-  const { credits, loading: creditsLoading } = useUserCredits();
   const { 
     assessments, 
     stats, 
@@ -89,15 +83,6 @@ export const PollockAssessmentDashboard = ({
               Nova Avaliação
             </Button>
           </div>
-        </div>
-
-        {/* Credits Widget */}
-        <div className="w-full md:w-80">
-          <CreditsWidget 
-            onBuyCredits={() => setShowCreditsModal(true)}
-            onViewHistory={() => console.log('Ver histórico')}
-            showActions={true}
-          />
         </div>
 
         {/* Stats */}
@@ -207,11 +192,6 @@ export const PollockAssessmentDashboard = ({
           </CardContent>
         </Card>
       </div>
-
-      <CreditsModal
-        isOpen={showCreditsModal}
-        onClose={() => setShowCreditsModal(false)}
-      />
     </LoggedPageLayout>
   );
 };
