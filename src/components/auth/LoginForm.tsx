@@ -35,7 +35,7 @@ export const LoginForm = ({
 
   return (
     <div className="space-y-4">
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={(e) => { e.preventDefault(); onSubmit(e); }} className="space-y-4">
         <div>
           <Label htmlFor="email">Email</Label>
           <Input
